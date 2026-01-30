@@ -22,7 +22,7 @@ export const signAccessToken = (user: {
             token_version: user.token_version,
         },
         ACCESS_TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "1d" }
     );
 };
 

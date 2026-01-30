@@ -66,6 +66,26 @@ export async function updateProduct(id: string, product: UpdateProductDTO): Prom
     return rows[0] || null;
 }
 
+export async function updateProductImage(id: string, image: ProductImageDTO): Promise<ProductImageDB | null> {
+    const { rows } = await pool.query(
+        `UPDATE product_images SET product_id=$1, image_url=$2, isprimary=$3 WHERE id=$4 RETURNING *`,
+        [
+            image.product_id,
+            image.image_url,
+            image.isprimary,
+            id,
+        ]
+    );
+    return rows[0] || null;
+}
+
+export async function deleteProductImages(productId: string): Promise<void> {
+    await pool.query(
+        `DELETE FROM product_images WHERE product_id = $1`,
+        [productId]
+    );
+}
+
 export async function findProductById(id: string): Promise<ProductDB | null> {
     const { rows } = await pool.query(
         `SELECT * FROM products WHERE id=$1`,
