@@ -29,10 +29,10 @@ export const config = {
         password: process.env.REDIS_PASSWORD,
     },
     s3: {
-        access_key: process.env.S3_ACCESS_KEY,
-        secret_key: process.env.S3_SECRET_KEY,
-        bucket: process.env.S3_BUCKET,
-        region: process.env.S3_REGION,
+        access_key: process.env.AWS_ACCESS_KEY_ID,
+        secret_key: process.env.AWS_SECRET_ACCESS_KEY,
+        bucket: process.env.AWS_BUCKET_NAME,
+        region: process.env.AWS_REGION,
     },
     email: {
         host: process.env.EMAIL_HOST,

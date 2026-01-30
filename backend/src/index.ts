@@ -6,6 +6,7 @@ import { connectDB } from "./db/db";
 import { config } from "../src/config/config";
 import userRouter from "../src/routes/user.route";
 import { errorHandler } from "./middlewares/error.middleware";
+import productRouter from "../src/routes/product.route";
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use(morgan("dev"));
 
 connectDB();
 app.use("/api/users", userRouter);
+app.use("/api/products", productRouter);
 // ❗ MUST BE LAST
 app.use(errorHandler);
 app.listen(config.app.port, () => {

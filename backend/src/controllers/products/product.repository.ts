@@ -106,3 +106,29 @@ export async function findAllProducts(): Promise<ProductWithImagesDTO[] | null> 
     `);
     return rows as ProductWithImagesDTO[] || null;
 }
+
+
+export async function findProductWithImagesById(id: string): Promise<ProductWithImagesDTO | null> {
+    const { rows } = await pool.query(`
+        SELECT 
+            p.*,
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', pi.id,
+                        'image_url', pi.image_url,
+                        'alt_text', pi.alt_text,
+                        'isprimary', pi.isprimary
+                    )
+                    ORDER BY pi.isprimary DESC, pi.created_at ASC
+                ) FILTER (WHERE pi.id IS NOT NULL),
+                '[]'
+            ) AS images
+        FROM products p
+        LEFT JOIN product_images pi ON pi.product_id = p.id
+        WHERE p.deleted_at IS NULL AND p.id = $1
+        GROUP BY p.id
+    `, [id]);
+    return rows[0] || null;
+}
+
