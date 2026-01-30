@@ -2,7 +2,7 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, createProduct, deleteProduct, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductImage, createProduct, deleteProduct, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
@@ -42,12 +42,34 @@ export class ProductService {
         return existingProduct;
     }
 
-    static async updateProductService(id: string, product: UpdateProductDTO): Promise<ProductDB | null> {
-        const existingProduct = await findById(id);
+    static async updateProductService(id: string, product: UpdateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
+        const existingProduct = await findProductWithImagesById(id);
         if (!existingProduct) {
             throw new HttpError("Product not found", 404);
         }
-        return await updateProduct(id, product);
+
+        await updateProduct(id, product);
+        const validFiles = files?.filter((f) => f.size > 0);
+        if (validFiles?.length) {
+            if (existingProduct.images?.length) {
+                for (const image of existingProduct.images) {
+                    const key = extractKeyFromS3Url(image.image_url);
+                    await deleteFromS3(key);
+                }
+            }
+            await deleteProductImages(id);
+
+            for (let i = 0; i < validFiles.length; i++) {
+                const uploaded = await uploadSingleImage(validFiles[i]);
+                await addProductImage({
+                    product_id: id,
+                    image_url: uploaded.url,
+                    isprimary: i === 0,
+                });
+            }
+        }
+
+        return await findProductWithImagesById(id);
     }
     static async getById(id: string): Promise<ProductWithImagesDTO> {
         const product = await findProductWithImagesById(id);

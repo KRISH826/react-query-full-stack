@@ -51,4 +51,18 @@ export class ProductController {
             next(error);
         }
     }
+
+    static async updateProductController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const id = req.params.id as string;
+            const files = req.files as Express.Multer.File[] | undefined;
+            const product = await ProductService.updateProductService(id, req.body, files);
+            return res.status(200).json({
+                product,
+                message: "Product updated successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

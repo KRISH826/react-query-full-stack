@@ -10,7 +10,7 @@ router.post("/", requireAuth, requireRole("admin"), upload.array("images"), Prod
 router.get("/:id", ProductController.getByIdController);
 router.get("/", ProductController.getAllController);
 router.delete("/:id", requireAuth, requireRole("admin"), ProductController.deleteProductController);
-// router.put("/:id", requireAuth, requireRole("admin"), upload.array("images"), ProductController.updateProductController)
+router.put("/:id", requireAuth, requireRole("admin"), upload.array("images"), ProductController.updateProductController);
 
 
 export default router;
