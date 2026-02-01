@@ -13,14 +13,15 @@ export interface CartItemDB {
 }
 
 export interface AddToCartDTO {
-    user_id: string;
+    cart_id: string;
     product_id: string;
     quantity: number;
-    price: number;
+    price_at_add: number;
 }
 
 export interface UpdateCartDTO {
-    userId: string;
-    productId: string;
+    cart_id: string;
+    product_id: string;
     quantity: number;
+    price_at_add: number;
 }
