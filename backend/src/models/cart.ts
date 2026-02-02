@@ -25,3 +25,21 @@ export interface UpdateCartDTO {
     quantity: number;
     price_at_add: number;
 }
+
+/* ================= CART RESPONSE ================= */
+
+export interface CartItemResponseDTO {
+    productId: string;
+    quantity: number;
+    price: number;
+    subtotal: number;
+}
+
+
+export interface CartResponseDTO {
+    cartId: string;
+    items: CartItemResponseDTO[];
+    total: number;
+    updatedAt: Date;
+}
+
