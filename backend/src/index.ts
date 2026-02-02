@@ -7,6 +7,7 @@ import { config } from "../src/config/config";
 import userRouter from "../src/routes/user.route";
 import { errorHandler } from "./middlewares/error.middleware";
 import productRouter from "../src/routes/product.route";
+import cartRouter from "../src/routes/cart.routes";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use(morgan("dev"));
 connectDB();
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
+app.use("/api/cart", cartRouter);
 // ❗ MUST BE LAST
 app.use(errorHandler);
 app.listen(config.app.port, () => {
