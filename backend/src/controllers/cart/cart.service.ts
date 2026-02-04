@@ -1,5 +1,5 @@
 import { HttpError } from "../../middlewares/error.middleware";
-import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
 
 interface CartItemResponseDTO {
@@ -31,11 +31,14 @@ export class CartService {
         const items = await getCartItems(cart.id);
 
         const formattedItems = items.map(
-            (item: CartItemDB) => {
+            (item: CartItemWithDetailsDB) => {
                 const subtotal = item.quantity * Number(item.price_at_add);
 
                 return {
                     productId: item.product_id,
+                    productName: item.productname,
+                    brand: item.brand,
+                    imageUrl: item.image_url ?? undefined,
                     quantity: item.quantity,
                     price: Number(item.price_at_add),
                     subtotal
