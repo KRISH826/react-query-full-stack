@@ -1,3 +1,5 @@
+// models/cart.ts
+
 export interface CartDB {
     id: string;
     user_id: string;
@@ -16,25 +18,32 @@ export interface AddToCartDTO {
     cart_id: string;
     product_id: string;
     quantity: number;
-    price_at_add: number;
+}
+
+export interface AddToCartResponse {
+    cart_id: string;
+    product_id: string;
+    quantity: number;
+    price: number;
 }
 
 export interface UpdateCartDTO {
     cart_id: string;
     product_id: string;
     quantity: number;
-    price_at_add: number;
 }
 
 /* ================= CART RESPONSE ================= */
 
 export interface CartItemResponseDTO {
     productId: string;
+    productName?: string;
+    brand?: string;
+    imageUrl?: string;
     quantity: number;
     price: number;
     subtotal: number;
 }
-
 
 export interface CartResponseDTO {
     cartId: string;
@@ -42,4 +51,3 @@ export interface CartResponseDTO {
     total: number;
     updatedAt: Date;
 }
-
