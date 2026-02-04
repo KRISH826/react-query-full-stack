@@ -1,5 +1,14 @@
 import { pool } from "../../db/db";
-import { AddToCartDTO, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+
+export async function getProductPrice(productId: string): Promise<number | null> {
+    const { rows } = await pool.query(
+        `SELECT price FROM products WHERE id=$1`,
+        [productId]
+    )
+
+    return rows[0]?.price || null;
+}
 
 export async function findCartByUserId(userId: string): Promise<CartDB | null> {
     const { rows } = await pool.query(
@@ -30,14 +39,14 @@ export async function findCartItem(cartId: string, productId: string): Promise<C
     return rows[0] || null
 }
 
-export async function createCartItem(data: AddToCartDTO): Promise<CartItemDB | null> {
+export async function createCartItem(data: AddToCartResponse): Promise<CartItemDB | null> {
     const { rows } = await pool.query(
         `INSERT INTO cart_items (cart_id, product_id, quantity, price_at_add) VALUES ($1, $2, $3, $4) RETURNING *`,
         [
             data.cart_id,
             data.product_id,
             data.quantity,
-            data.price_at_add
+            data.price,
         ]
     )
 
@@ -70,7 +79,18 @@ export async function deleteCartItem(cartId: string, productId: string): Promise
 
 export async function getCartItems(cartId: string): Promise<CartItemDB[]> {
     const { rows } = await pool.query(
-        `SELECT * FROM cart_items WHERE cart_id=$1`,
+        `SELECT
+    ci.product_id,
+    ci.quantity,
+    ci.price_at_add,
+    p.productname,
+    p.brand,
+    pi.image_url
+FROM cart_items ci
+JOIN products p ON ci.product_id = p.id
+LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.isprimary = true
+WHERE ci.cart_id = $1
+    `,
         [cartId]
     )
 

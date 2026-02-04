@@ -30,17 +30,16 @@ export class CartController {
                 throw new HttpError('Unauthorized', 401);
             }
 
-            const { product_id, quantity, price_at_add } = req.body;
+            const { product_id, quantity } = req.body;
 
-            if (!product_id || !quantity || !price_at_add) {
+            if (!product_id || !quantity) {
                 throw new HttpError('All Fields Are Required', 401);
             }
 
             const cart = await CartService.addToCart(userId, {
                 cart_id: "",
                 product_id,
-                quantity,
-                price_at_add
+                quantity
             })
 
             return res.status(200).json({
@@ -67,8 +66,7 @@ export class CartController {
             const cart = await CartService.updateQuantity(userId, {
                 cart_id: "",
                 product_id,
-                quantity,
-                price_at_add: 0
+                quantity
             });
 
             return res.status(200).json({

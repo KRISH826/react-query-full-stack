@@ -1,6 +1,6 @@
 import { HttpError } from "../../middlewares/error.middleware";
-import { AddToCartDTO, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
-import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, updateCartItem } from "./cart.repository";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
 
 interface CartItemResponseDTO {
     productId: string;
@@ -30,7 +30,7 @@ export class CartService {
         const cart = await this.getOrCreateCart(userId);
         const items = await getCartItems(cart.id);
 
-        const formattedItems: CartItemResponseDTO[] = items.map(
+        const formattedItems = items.map(
             (item: CartItemDB) => {
                 const subtotal = item.quantity * Number(item.price_at_add);
 
@@ -57,6 +57,11 @@ export class CartService {
 
     static async addToCart(userId: string, data: AddToCartDTO): Promise<CartResponseDTO> {
         const cart = await this.getOrCreateCart(userId);
+        const price = await getProductPrice(data.product_id);
+
+        if (!price) {
+            throw new HttpError('Product not found', 404);
+        }
 
         const existingCart = await findCartItem(cart.id, data.product_id);
 
@@ -65,14 +70,13 @@ export class CartService {
                 cart_id: cart.id,
                 product_id: data.product_id,
                 quantity: data.quantity,
-                price_at_add: data.price_at_add
             })
         } else {
             await createCartItem({
                 cart_id: cart.id,
                 product_id: data.product_id,
                 quantity: data.quantity,
-                price_at_add: data.price_at_add
+                price: price,
             })
         }
 
@@ -94,7 +98,6 @@ export class CartService {
                 cart_id: cart.id,
                 product_id: data.product_id,
                 quantity: data.quantity,
-                price_at_add: data.price_at_add
             })
         }
 
@@ -115,11 +118,10 @@ export class CartService {
 
     static async clearCart(userId: string): Promise<void> {
         const cart = await this.getOrCreateCart(userId);
-
-        await getCartItems(cart.id);
+        const items = await getCartItems(cart.id);
 
         await Promise.all(
-            (await getCartItems(cart.id)).map((item) =>
+            items.map((item) =>
                 deleteCartItem(cart.id, item.product_id)
             )
         )
