@@ -53,6 +53,7 @@ export interface CartResponseDTO {
 }
 
 export interface CartItemWithDetailsDB {
+    subtotal(subtotal: any): number;
     product_id: string;
     quantity: number;
     price_at_add: number;
