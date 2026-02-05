@@ -1,5 +1,5 @@
 import { pool } from "../../db/db";
-import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 
 export async function getProductPrice(productId: string): Promise<number | null> {
     const { rows } = await pool.query(
@@ -77,7 +77,7 @@ export async function deleteCartItem(cartId: string, productId: string): Promise
 }
 
 
-export async function getCartItems(cartId: string): Promise<CartItemDB[]> {
+export async function getCartItems(cartId: string): Promise<CartItemWithDetailsDB[]> {
     const { rows } = await pool.query(
         `SELECT
     ci.product_id,
