@@ -1,3 +1,5 @@
+import { PoolClient } from "pg";
+import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import {
     LoginDTO,
@@ -18,19 +20,29 @@ function toUserResponse(user: UserDB | null): UserResponseDTO | null {
 
 export class AuthService {
     static async register(payload: RegisterDTO): Promise<UserResponseDTO | null> {
-        const existingUser = await findByEmail(payload.email);
-        if (existingUser) {
-            throw new HttpError("User already exists", 409);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const existingUser = await findByEmail(payload.email, client);
+            if (existingUser) {
+                throw new HttpError("User already exists", 409);
+            }
+
+            if (!payload.email || !payload.name || !payload.password || !payload.role) {
+                throw new HttpError("All fields are required", 400);
+            }
+
+            const hashedPassword = await argon2.hash(payload.password);
+            const user = await createUser({ ...payload, password: hashedPassword }, client);
+
+            await client.query('COMMIT');
+            return toUserResponse(user);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        if (!payload.email || !payload.name || !payload.password || !payload.role) {
-            throw new HttpError("All fields are required", 400);
-        }
-
-        const hashedPassword = await argon2.hash(payload.password);
-        const user = await createUser({ ...payload, password: hashedPassword });
-
-        return toUserResponse(user);
     }
 
     static async login(payload: LoginDTO): Promise<LoginResponseDTO> {
@@ -79,9 +91,19 @@ export class AuthService {
 
     // 🔥 REAL LOGOUT (token invalidation)
     static async logOut(id: string): Promise<void> {
-        const user = await logout(id);
-        if (!user) {
-            throw new HttpError("User not found", 404);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const user = await logout(id, client);
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
     }
 }

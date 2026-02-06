@@ -1,3 +1,5 @@
+import { PoolClient } from "pg";
+import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
@@ -11,11 +13,12 @@ interface CartItemResponseDTO {
 
 
 export class CartService {
-    static async getOrCreateCart(userId: string): Promise<CartDB> {
-        let cart = await findCartByUserId(userId);
+    static async getOrCreateCart(userId: string, client?: PoolClient): Promise<CartDB> {
+        const db = client || pool;
+        let cart = await findCartByUserId(userId, db);
 
         if (!cart) {
-            cart = await createCart(userId);
+            cart = await createCart(userId, db);
 
             if (!cart) {
                 throw new HttpError('failed to create cart', 404);
@@ -59,75 +62,113 @@ export class CartService {
     }
 
     static async addToCart(userId: string, data: AddToCartDTO): Promise<CartResponseDTO> {
-        const cart = await this.getOrCreateCart(userId);
-        const price = await getProductPrice(data.product_id);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const cart = await this.getOrCreateCart(userId, client);
+            const price = await getProductPrice(data.product_id, client);
 
-        if (!price) {
-            throw new HttpError('Product not found', 404);
+            if (!price) {
+                throw new HttpError('Product not found', 404);
+            }
+
+            const existingCart = await findCartItem(cart.id, data.product_id, client);
+
+            if (existingCart) {
+                await updateCartItem({
+                    cart_id: cart.id,
+                    product_id: data.product_id,
+                    quantity: data.quantity,
+                }, client)
+            } else {
+                await createCartItem({
+                    cart_id: cart.id,
+                    product_id: data.product_id,
+                    quantity: data.quantity,
+                    price: price,
+                }, client)
+            }
+            await client.query('COMMIT');
+            return this.getUserCart(userId);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        const existingCart = await findCartItem(cart.id, data.product_id);
-
-        if (existingCart) {
-            await updateCartItem({
-                cart_id: cart.id,
-                product_id: data.product_id,
-                quantity: data.quantity,
-            })
-        } else {
-            await createCartItem({
-                cart_id: cart.id,
-                product_id: data.product_id,
-                quantity: data.quantity,
-                price: price,
-            })
-        }
-
-        return this.getUserCart(userId);
     }
 
     static async updateQuantity(userId: string, data: UpdateCartDTO): Promise<CartResponseDTO> {
-        const cart = await this.getOrCreateCart(userId);
-        const item = await findCartItem(cart.id, data.product_id);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const cart = await this.getOrCreateCart(userId, client);
+            const item = await findCartItem(cart.id, data.product_id, client);
 
-        if (!item) {
-            throw new HttpError('Cart Items Not Found', 404);
+            if (!item) {
+                throw new HttpError('Cart Items Not Found', 404);
+            }
+
+            if (data.quantity <= 0) {
+                await deleteCartItem(cart.id, data.product_id, client)
+            } else {
+                await updateCartItem({
+                    cart_id: cart.id,
+                    product_id: data.product_id,
+                    quantity: data.quantity,
+                }, client)
+            }
+            await client.query('COMMIT');
+            return this.getUserCart(userId);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        if (data.quantity <= 0) {
-            await deleteCartItem(cart.id, data.product_id)
-        } else {
-            await updateCartItem({
-                cart_id: cart.id,
-                product_id: data.product_id,
-                quantity: data.quantity,
-            })
-        }
-
-        return this.getUserCart(userId);
     }
 
     static async deleteCart(userId: string, productId: string): Promise<CartResponseDTO> {
-        const cart = await this.getOrCreateCart(userId);
-        const item = await findCartItem(cart.id, productId);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const cart = await this.getOrCreateCart(userId, client);
+            const item = await findCartItem(cart.id, productId, client);
 
-        if (!item) {
-            throw new HttpError("Cart item not found", 404);
+            if (!item) {
+                throw new HttpError("Cart item not found", 404);
+            }
+
+            await deleteCartItem(cart.id, productId, client);
+            await client.query('COMMIT');
+            return this.getUserCart(userId);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        await deleteCartItem(cart.id, productId);
-        return this.getUserCart(userId);
     }
 
     static async clearCart(userId: string): Promise<void> {
-        const cart = await this.getOrCreateCart(userId);
-        const items = await getCartItems(cart.id);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const cart = await this.getOrCreateCart(userId, client);
+            const items = await getCartItems(cart.id, client);
 
-        await Promise.all(
-            items.map((item) =>
-                deleteCartItem(cart.id, item.product_id)
+            await Promise.all(
+                items.map((item) =>
+                    deleteCartItem(cart.id, item.product_id, client)
+                )
             )
-        )
+            await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
 }

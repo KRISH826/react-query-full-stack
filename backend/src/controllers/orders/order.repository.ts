@@ -1,9 +1,10 @@
+import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { CreateOrderDTO, OrderDB, OrderItemDB, OrderItemResponseDTO, OrderStatus } from "../../models/order";
 import { ProductWithImagesResponseDTO } from "../../models/product";
 
-export async function createOrder(userId: string, data: CreateOrderDTO, totalamount: number): Promise<OrderDB | null> {
-    const { rows } = await pool.query(
+export async function createOrder(userId: string, data: CreateOrderDTO, totalamount: number, db: Pool | PoolClient = pool): Promise<OrderDB | null> {
+    const { rows } = await db.query(
         `INSERT INTO orders (
             user_id,
             order_number,
@@ -35,8 +36,8 @@ export async function createOrder(userId: string, data: CreateOrderDTO, totalamo
     return rows[0] || null;
 }
 
-export async function findOrderById(orderId: string): Promise<OrderDB | null> {
-    const { rows } = await pool.query(
+export async function findOrderById(orderId: string, db: Pool | PoolClient = pool): Promise<OrderDB | null> {
+    const { rows } = await db.query(
         `SELECT * FROM orders WHERE id = $1`,
         [orderId]
     )
@@ -44,8 +45,8 @@ export async function findOrderById(orderId: string): Promise<OrderDB | null> {
     return rows[0] || null;
 }
 
-export async function findUsersOrders(user_id: string): Promise<OrderDB[] | null> {
-    const { rows } = await pool.query(
+export async function findUsersOrders(user_id: string, db: Pool | PoolClient = pool): Promise<OrderDB[] | null> {
+    const { rows } = await db.query(
         `SELECT * FROM orders WHERE user_id = $1`,
         [user_id]
     )
@@ -53,8 +54,8 @@ export async function findUsersOrders(user_id: string): Promise<OrderDB[] | null
     return rows;
 }
 
-export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderDB | null> {
-    const { rows } = await pool.query(
+export async function updateOrderStatus(orderId: string, status: OrderStatus, db: Pool | PoolClient = pool): Promise<OrderDB | null> {
+    const { rows } = await db.query(
         `UPDATE orders SET status= $1 ${status === 'delivered' ? ', delivered_at = CURRENT_TIMESTAMP' : ''} ${status === 'cancelled' ? ', cancelled_at = CURRENT_TIMESTAMP' : ''}
         WHERE id = $2
         RETURNING *
@@ -68,8 +69,8 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
     return rows[0] || null;
 }
 
-export async function createOrderItem(orderId: string, productId: string, productName: string, productBrand: string, quantity: number, price: number, subtotal: number, image_url: string | null): Promise<OrderItemDB | null> {
-    const { rows } = await pool.query(
+export async function createOrderItem(orderId: string, productId: string, productName: string, productBrand: string, quantity: number, price: number, subtotal: number, image_url: string | null, db: Pool | PoolClient = pool): Promise<OrderItemDB | null> {
+    const { rows } = await db.query(
         `INSERT into order_items(
             order_id,
             product_id,
@@ -98,8 +99,8 @@ export async function createOrderItem(orderId: string, productId: string, produc
     return rows[0] || null;
 }
 
-export async function findOrderItems(orderId: string): Promise<OrderItemDB[]> {
-    const { rows } = await pool.query(
+export async function findOrderItems(orderId: string, db: Pool | PoolClient = pool): Promise<OrderItemDB[]> {
+    const { rows } = await db.query(
         `SELECT 
             oi.*,
             pi.image_url
@@ -120,8 +121,8 @@ export async function getOrderWithItems(orderId: string): Promise<{ order: Order
     return { order, items };
 }
 
-export async function buyNowProductByid(productId: string): Promise<ProductWithImagesResponseDTO | null> {
-    const { rows } = await pool.query(
+export async function buyNowProductByid(productId: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesResponseDTO | null> {
+    const { rows } = await db.query(
         `
             SELECT p.id, p.productname, p.price, p.brand, pi.image_url
             FROM products p

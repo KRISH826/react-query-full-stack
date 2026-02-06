@@ -8,7 +8,7 @@ import { config } from "../config/config";
 export const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 1024 * 1024 * 5,
+        fileSize: 1024 * 1024 * 15, // 10 mb
     },
     fileFilter(_, file, callback) {
         if (!file.mimetype.startsWith("image/")) {

@@ -1,25 +1,26 @@
+import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { OrderDB, OrderResponseDTO } from "../../models/order";
 import { CreateProductDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
 
-export async function findProductByid(productname: string): Promise<ProductDB | null> {
-    const { rows } = await pool.query(
+export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
+    const { rows } = await db.query(
         "SELECT * FROM products WHERE productname = $1",
         [productname]
     );
     return rows[0] || null;
 }
 
-export async function findById(id: string): Promise<ProductDB | null> {
-    const { rows } = await pool.query(
+export async function findById(id: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
+    const { rows } = await db.query(
         "SELECT * FROM products WHERE id = $1",
         [id]
     );
     return rows[0] || null;
 }
 
-export async function createProduct(product: CreateProductDTO): Promise<ProductDB> {
-    const { rows } = await pool.query(
+export async function createProduct(product: CreateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB> {
+    const { rows } = await db.query(
         `INSERT INTO products (productname, description, price, brand, stock_quantity, is_track_inventory, status, created_by) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [
@@ -36,8 +37,8 @@ export async function createProduct(product: CreateProductDTO): Promise<ProductD
     return rows[0];
 }
 
-export async function addProductImage(image: ProductImageDTO): Promise<ProductImageDB> {
-    const { rows } = await pool.query(
+export async function addProductImage(image: ProductImageDTO, db: Pool | PoolClient = pool): Promise<ProductImageDB> {
+    const { rows } = await db.query(
         `INSERT INTO product_images (product_id, image_url, isprimary) 
          VALUES ($1, $2, $3) RETURNING *`,
         [
@@ -50,8 +51,8 @@ export async function addProductImage(image: ProductImageDTO): Promise<ProductIm
 }
 
 
-export async function updateProduct(id: string, product: UpdateProductDTO): Promise<ProductDB | null> {
-    const { rows } = await pool.query(
+export async function updateProduct(id: string, product: UpdateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
+    const { rows } = await db.query(
         `UPDATE products SET productname=$1, description=$2, price=$3, brand=$4, stock_quantity=$5, is_track_inventory=$6, status=$7 WHERE id=$8 RETURNING *`,
         [
             product.productname,
@@ -67,8 +68,8 @@ export async function updateProduct(id: string, product: UpdateProductDTO): Prom
     return rows[0] || null;
 }
 
-export async function updateProductImage(id: string, image: ProductImageDTO): Promise<ProductImageDB | null> {
-    const { rows } = await pool.query(
+export async function updateProductImage(id: string, image: ProductImageDTO, db: Pool | PoolClient = pool): Promise<ProductImageDB | null> {
+    const { rows } = await db.query(
         `UPDATE product_images SET product_id=$1, image_url=$2, isprimary=$3 WHERE id=$4 RETURNING *`,
         [
             image.product_id,
@@ -80,31 +81,31 @@ export async function updateProductImage(id: string, image: ProductImageDTO): Pr
     return rows[0] || null;
 }
 
-export async function deleteProductImages(productId: string): Promise<void> {
-    await pool.query(
+export async function deleteProductImages(productId: string, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(
         `DELETE FROM product_images WHERE product_id = $1`,
         [productId]
     );
 }
 
-export async function findProductById(id: string): Promise<ProductDB | null> {
-    const { rows } = await pool.query(
+export async function findProductById(id: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
+    const { rows } = await db.query(
         `SELECT * FROM products WHERE id=$1`,
         [id]
     );
     return rows[0] || null;
 }
 
-export async function deleteProduct(id: string): Promise<ProductDB | null> {
-    const { rows } = await pool.query(
+export async function deleteProduct(id: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
+    const { rows } = await db.query(
         `UPDATE products SET deleted_at=NOW() WHERE id=$1 AND deleted_at IS NULL RETURNING *`,
         [id]
     );
     return rows[0] || null;
 }
 
-export async function findAllProducts(): Promise<ProductWithImagesDTO[] | null> {
-    const { rows } = await pool.query(`
+export async function findAllProducts(db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO[] | null> {
+    const { rows } = await db.query(`
         SELECT 
             p.*,
             COALESCE(
@@ -129,8 +130,8 @@ export async function findAllProducts(): Promise<ProductWithImagesDTO[] | null> 
 }
 
 
-export async function findProductWithImagesById(id: string): Promise<ProductWithImagesDTO | null> {
-    const { rows } = await pool.query(`
+export async function findProductWithImagesById(id: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO | null> {
+    const { rows } = await db.query(`
         SELECT 
             p.*,
             COALESCE(

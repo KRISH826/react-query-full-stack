@@ -1,8 +1,9 @@
+import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 
-export async function getProductPrice(productId: string): Promise<number | null> {
-    const { rows } = await pool.query(
+export async function getProductPrice(productId: string, db: Pool | PoolClient = pool): Promise<number | null> {
+    const { rows } = await db.query(
         `SELECT price FROM products WHERE id=$1`,
         [productId]
     )
@@ -10,8 +11,8 @@ export async function getProductPrice(productId: string): Promise<number | null>
     return rows[0]?.price || null;
 }
 
-export async function findCartByUserId(userId: string): Promise<CartDB | null> {
-    const { rows } = await pool.query(
+export async function findCartByUserId(userId: string, db: Pool | PoolClient = pool): Promise<CartDB | null> {
+    const { rows } = await db.query(
         `SELECT * from carts WHERE user_id=$1`,
         [userId]
     )
@@ -19,8 +20,8 @@ export async function findCartByUserId(userId: string): Promise<CartDB | null> {
     return rows[0] || null;
 }
 
-export async function createCart(userId: string): Promise<CartDB | null> {
-    const { rows } = await pool.query(
+export async function createCart(userId: string, db: Pool | PoolClient = pool): Promise<CartDB | null> {
+    const { rows } = await db.query(
         `INSERT INTO carts (user_id) VALUES ($1) RETURNING *`,
         [userId]
     )
@@ -30,8 +31,8 @@ export async function createCart(userId: string): Promise<CartDB | null> {
 
 // cart items
 
-export async function findCartItem(cartId: string, productId: string): Promise<CartItemDB | null> {
-    const { rows } = await pool.query(
+export async function findCartItem(cartId: string, productId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
+    const { rows } = await db.query(
         `SELECT * FROM cart_items WHERE cart_id=$1 AND product_id=$2`,
         [cartId, productId]
     )
@@ -39,8 +40,8 @@ export async function findCartItem(cartId: string, productId: string): Promise<C
     return rows[0] || null
 }
 
-export async function createCartItem(data: AddToCartResponse): Promise<CartItemDB | null> {
-    const { rows } = await pool.query(
+export async function createCartItem(data: AddToCartResponse, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
+    const { rows } = await db.query(
         `INSERT INTO cart_items (cart_id, product_id, quantity, price_at_add) VALUES ($1, $2, $3, $4) RETURNING *`,
         [
             data.cart_id,
@@ -53,8 +54,8 @@ export async function createCartItem(data: AddToCartResponse): Promise<CartItemD
     return rows[0];
 }
 
-export async function updateCartItem(data: UpdateCartDTO): Promise<CartResponseDTO | null> {
-    const { rows } = await pool.query(
+export async function updateCartItem(data: UpdateCartDTO, db: Pool | PoolClient = pool): Promise<CartResponseDTO | null> {
+    const { rows } = await db.query(
         `UPDATE cart_items SET quantity=$1 WHERE cart_id=$2 AND product_id=$3 RETURNING *`,
         [
             data.quantity,
@@ -66,8 +67,8 @@ export async function updateCartItem(data: UpdateCartDTO): Promise<CartResponseD
     return rows[0]
 }
 
-export async function deleteCartItem(cartId: string, productId: string): Promise<CartItemDB | null> {
-    const { rows } = await pool.query(
+export async function deleteCartItem(cartId: string, productId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
+    const { rows } = await db.query(
         `DELETE FROM cart_items
         WHERE cart_id=$1 AND product_id=$2 RETURNING *`,
         [cartId, productId]
@@ -77,8 +78,8 @@ export async function deleteCartItem(cartId: string, productId: string): Promise
 }
 
 
-export async function getCartItems(cartId: string): Promise<CartItemWithDetailsDB[]> {
-    const { rows } = await pool.query(
+export async function getCartItems(cartId: string, db: Pool | PoolClient = pool): Promise<CartItemWithDetailsDB[]> {
+    const { rows } = await db.query(
         `SELECT
     ci.product_id,
     ci.quantity,
