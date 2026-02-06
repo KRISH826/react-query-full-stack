@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderService } from "./order.service";
 import { OrderStatus } from "../../models/order";
+import { ProductService } from "../products/product.service";
 
 export class OrderController {
     static async createOrderController(
@@ -12,7 +13,7 @@ export class OrderController {
     ) {
         try {
             const userId = req.user?.id;
-            if (userId) {
+            if (!userId) {
                 throw new HttpError("User not found", 404);
             }
             const { shippingAddress, phone, email } = req.body;
@@ -48,6 +49,30 @@ export class OrderController {
                 .json({ message: "Orders fetched successfully", orders });
         } catch (error) {
             next(error);
+        }
+    }
+
+    static async buyNowController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new HttpError('Unauthorized', 401)
+            }
+            const { productId, shippingAddress, phone, email } = req.body;
+
+            if (!productId || !shippingAddress || !phone || !email) {
+                throw new HttpError('All fields are required', 400)
+            }
+
+            const order = await OrderService.buyNowService(productId, {
+                shippingAddress,
+                quantity: 1,
+                phone,
+                email,
+            }, userId);
+            return res.status(201).json({ message: 'Order created successfully', order })
+        } catch (error) {
+            next(error)
         }
     }
 

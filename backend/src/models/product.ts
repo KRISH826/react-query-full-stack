@@ -113,3 +113,7 @@ export interface ProductQueryDTO {
 export interface ProductWithImagesDTO extends ProductDB {
     images: ProductImageDB[];
 }
+
+export interface ProductWithImagesResponseDTO extends ProductResponseDTO {
+    image_url: string;
+}
