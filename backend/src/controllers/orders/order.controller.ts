@@ -65,8 +65,9 @@ export class OrderController {
             }
 
             const order = await OrderService.buyNowService(productId, {
-                shippingAddress,
+                productId,
                 quantity: 1,
+                shippingAddress,
                 phone,
                 email,
             }, userId);

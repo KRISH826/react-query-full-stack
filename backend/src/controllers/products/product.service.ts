@@ -1,3 +1,5 @@
+import { PoolClient } from "pg";
+import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
@@ -9,29 +11,40 @@ export class ProductService {
         if (!product.productname || !product.description || !product.price) {
             throw new HttpError("All fields are required", 400);
         }
-        const existingProduct = await findProductByid(product.productname);
-        if (existingProduct) {
-            throw new HttpError("Product already exists", 400);
-        }
 
-        const created = await createProduct({
-            ...product,
-            status: product.status || ProductStatus.DRAFT,
-            is_track_inventory: product.is_track_inventory || true,
-            stock_quantity: product.stock_quantity || 0,
-        })
-
-        if (files?.length) {
-            for (let i = 0; i <= files.length; i++) {
-                const uploaded = await uploadSingleImage(files[i]);
-                await addProductImage({
-                    product_id: created.id,
-                    image_url: uploaded.url,
-                    isprimary: i === 0,
-                })
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const existingProduct = await findProductByid(product.productname, client);
+            if (existingProduct) {
+                throw new HttpError("Product already exists", 400);
             }
+
+            const created = await createProduct({
+                ...product,
+                status: product.status || ProductStatus.DRAFT,
+                is_track_inventory: product.is_track_inventory || true,
+                stock_quantity: product.stock_quantity || 0,
+            }, client)
+
+            if (files?.length) {
+                for (let i = 0; i < files.length; i++) {
+                    const uploaded = await uploadSingleImage(files[i]);
+                    await addProductImage({
+                        product_id: created.id,
+                        image_url: uploaded.url,
+                        isprimary: i === 0,
+                    }, client)
+                }
+            }
+            await client.query('COMMIT');
+            return await findProductWithImagesById(created.id);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-        return await findProductWithImagesById(created.id);
     }
 
     static async findByProductIdService(id: string): Promise<ProductDB | null> {
@@ -43,33 +56,42 @@ export class ProductService {
     }
 
     static async updateProductService(id: string, product: UpdateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
-        const existingProduct = await findProductWithImagesById(id);
-        if (!existingProduct) {
-            throw new HttpError("Product not found", 404);
-        }
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const existingProduct = await findProductWithImagesById(id, client);
+            if (!existingProduct) {
+                throw new HttpError("Product not found", 404);
+            }
 
-        await updateProduct(id, product);
-        const validFiles = files?.filter((f) => f.size > 0);
-        if (validFiles?.length) {
-            if (existingProduct.images?.length) {
-                for (const image of existingProduct.images) {
-                    const key = extractKeyFromS3Url(image.image_url);
-                    await deleteFromS3(key);
+            await updateProduct(id, product, client);
+            const validFiles = files?.filter((f) => f.size > 0);
+            if (validFiles?.length) {
+                if (existingProduct.images?.length) {
+                    for (const image of existingProduct.images) {
+                        const key = extractKeyFromS3Url(image.image_url);
+                        await deleteFromS3(key);
+                    }
+                }
+                await deleteProductImages(id, client);
+
+                for (let i = 0; i < validFiles.length; i++) {
+                    const uploaded = await uploadSingleImage(validFiles[i]);
+                    await addProductImage({
+                        product_id: id,
+                        image_url: uploaded.url,
+                        isprimary: i === 0,
+                    }, client);
                 }
             }
-            await deleteProductImages(id);
-
-            for (let i = 0; i < validFiles.length; i++) {
-                const uploaded = await uploadSingleImage(validFiles[i]);
-                await addProductImage({
-                    product_id: id,
-                    image_url: uploaded.url,
-                    isprimary: i === 0,
-                });
-            }
+            await client.query('COMMIT');
+            return await findProductWithImagesById(id);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        return await findProductWithImagesById(id);
     }
     static async getById(id: string): Promise<ProductWithImagesDTO> {
         const product = await findProductWithImagesById(id);
@@ -88,20 +110,30 @@ export class ProductService {
     }
 
     static async deleteProductService(id: string): Promise<ProductDB | null> {
-        const existingProduct = await findProductWithImagesById(id);
-        if (!existingProduct) {
-            throw new HttpError("Product not found", 404);
-        }
-        if (existingProduct.images) {
-            for (let i = 0; i < existingProduct.images.length; i++) {
-                const key = extractKeyFromS3Url(existingProduct.images[i].image_url);
-                await deleteFromS3(key);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const existingProduct = await findProductWithImagesById(id, client);
+            if (!existingProduct) {
+                throw new HttpError("Product not found", 404);
             }
+            if (existingProduct.images) {
+                for (let i = 0; i < existingProduct.images.length; i++) {
+                    const key = extractKeyFromS3Url(existingProduct.images[i].image_url);
+                    await deleteFromS3(key);
+                }
+            }
+            const deleted = await deleteProduct(id, client);
+            if (!deleted) {
+                throw new HttpError("Product not deleted", 404);
+            }
+            await client.query('COMMIT');
+            return deleted;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-        const deleted = await deleteProduct(id);
-        if (!deleted) {
-            throw new HttpError("Product not deleted", 404);
-        }
-        return deleted;
     }
 }

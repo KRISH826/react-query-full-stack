@@ -1,3 +1,4 @@
+import { PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { CreateOrderDTO, DirectPurchaseDTO, OrderDB, OrderItemResponseDTO, OrderResponseDTO, OrderStatus } from "../../models/order";
@@ -10,8 +11,8 @@ export class OrderService {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
-            const cart = await CartService.getOrCreateCart(userId);
-            const cartItems = await getCartItems(cart.id);
+            const cart = await CartService.getOrCreateCart(userId, client);
+            const cartItems = await getCartItems(cart.id, client);
             if (cartItems.length === 0) {
                 throw new HttpError('Cart is empty', 400);
             }
@@ -20,7 +21,7 @@ export class OrderService {
                 return sum + (item.quantity * Number(item.price_at_add));
             }, 0);
 
-            const order = await createOrder(userId, orderData, totalAmount);
+            const order = await createOrder(userId, orderData, totalAmount, client);
 
             if (!order) {
                 throw new HttpError('Failed to create order', 500);
@@ -37,7 +38,8 @@ export class OrderService {
                     cartItem.quantity,
                     price,
                     subtotal,
-                    cartItem.image_url
+                    cartItem.image_url,
+                    client
                 )
             });
 
@@ -83,60 +85,79 @@ export class OrderService {
 
 
     static async updateStatusServices(orderId: string, userId: string, status: OrderStatus): Promise<OrderResponseDTO> {
-        const order = await findOrderById(orderId);
-        if (!order) {
-            throw new HttpError('Order Not Found', 404);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const order = await findOrderById(orderId, client);
+            if (!order) {
+                throw new HttpError('Order Not Found', 404);
+            }
+
+            if (order.user_id !== userId) {
+                throw new HttpError('Please Sign In to access this order', 401);
+            }
+
+            if (status === 'cancelled' && ['shipped', 'delivered'].includes(order.status)) {
+                throw new HttpError('Cannot cancel shipped or delivered orders', 400);
+            }
+
+            const updateOrder = await updateOrderStatus(orderId, status, client);
+            if (!updateOrder) {
+                throw new HttpError('Failed to update order', 500);
+            }
+
+            const items = await findOrderItems(orderId, client);
+            await client.query('COMMIT');
+            return this.formatOrderResponseService(updateOrder, items);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-
-        if (order.user_id !== userId) {
-            throw new HttpError('Please Sign In to access this order', 401);
-        }
-
-        if (status === 'cancelled' && ['shipped', 'delivered'].includes(order.status)) {
-            throw new HttpError('Cannot cancel shipped or delivered orders', 400);
-        }
-
-        const updateOrder = await updateOrderStatus(orderId, status);
-        if (!updateOrder) {
-            throw new HttpError('Failed to update order', 500);
-        }
-
-        const items = await findOrderItems(orderId);
-        return this.formatOrderResponseService(updateOrder, items);
-
-
     }
 
     static async buyNowService(productId: string, orderData: DirectPurchaseDTO, userId: string): Promise<OrderResponseDTO> {
-        const product = await buyNowProductByid(productId);
-        if (!product) {
-            throw new HttpError('Product not found', 404);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const product = await buyNowProductByid(productId, client);
+            if (!product) {
+                throw new HttpError('Product not found', 404);
+            }
+            const price = Number(product.price);
+            const quantity = Number(orderData.quantity);
+            const subtotal = price * quantity;
+            const order = await createOrder(userId, {
+                shippingAddress: orderData.shippingAddress,
+                phone: orderData.phone,
+                email: orderData.email,
+            }, subtotal, client);
+
+            if (!order) {
+                throw new HttpError('Failed To Create Error', 401);
+            }
+
+            await createOrderItem(
+                order.id,
+                product.id,
+                product.productname,
+                product.brand || '',
+                quantity,
+                price,
+                subtotal,
+                product.image_url || '',
+                client
+            )
+
+            await client.query('COMMIT');
+            return this.getOrderById(order.id, userId);
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
         }
-        const price = Number(product.price);
-        const quantity = Number(orderData.quantity);
-        const subtotal = price * quantity;
-        const order = await createOrder(userId, {
-            shippingAddress: orderData.shippingAddress,
-            phone: orderData.phone,
-            email: orderData.email,
-        }, subtotal);
-
-        if (!order) {
-            throw new HttpError('Failed To Create Error', 401);
-        }
-
-        await createOrderItem(
-            order.id,
-            product.id,
-            product.productname,
-            product.brand || '',
-            quantity,
-            price,
-            subtotal,
-            product.image_url || ''
-        )
-
-        return this.getOrderById(order.id, userId);
     }
 
     private static formatOrderResponseService(order: any, items: any[]): OrderResponseDTO {

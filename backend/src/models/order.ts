@@ -83,6 +83,7 @@ export interface OrderListItemDTO {
 }
 
 export interface DirectPurchaseDTO {
+    productId: string;
     quantity: number;
     shippingAddress: ShippingAddressDTO;
     phone: string;
