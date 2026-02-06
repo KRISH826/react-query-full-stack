@@ -8,6 +8,7 @@ import userRouter from "../src/routes/user.route";
 import { errorHandler } from "./middlewares/error.middleware";
 import productRouter from "../src/routes/product.route";
 import cartRouter from "../src/routes/cart.routes";
+import orderRouter from "../src/routes/order.routes";
 
 const app = express();
 
@@ -25,6 +26,7 @@ connectDB();
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/orders", orderRouter);
 // ❗ MUST BE LAST
 app.use(errorHandler);
 app.listen(config.app.port, () => {

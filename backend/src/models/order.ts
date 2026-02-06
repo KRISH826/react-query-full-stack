@@ -82,5 +82,12 @@ export interface OrderListItemDTO {
     created_at: Date;
 }
 
+export interface DirectPurchaseDTO {
+    quantity: number;
+    shippingAddress: ShippingAddressDTO;
+    phone: string;
+    email: string;
+}
+
 
 

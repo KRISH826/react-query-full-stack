@@ -22,7 +22,7 @@ export class ProductService {
         })
 
         if (files?.length) {
-            for (let i = 0; i < files.length; i++) {
+            for (let i = 0; i <= files.length; i++) {
                 const uploaded = await uploadSingleImage(files[i]);
                 await addProductImage({
                     product_id: created.id,

@@ -1,5 +1,6 @@
 import { pool } from "../../db/db";
-import { CreateProductDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
+import { OrderDB, OrderResponseDTO } from "../../models/order";
+import { CreateProductDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
 
 export async function findProductByid(productname: string): Promise<ProductDB | null> {
     const { rows } = await pool.query(
@@ -151,4 +152,5 @@ export async function findProductWithImagesById(id: string): Promise<ProductWith
     `, [id]);
     return rows[0] || null;
 }
+
 

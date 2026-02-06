@@ -1,9 +1,9 @@
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
-import { CreateOrderDTO, OrderDB, OrderItemResponseDTO, OrderResponseDTO, OrderStatus } from "../../models/order";
+import { CreateOrderDTO, DirectPurchaseDTO, OrderDB, OrderItemResponseDTO, OrderResponseDTO, OrderStatus } from "../../models/order";
 import { createCartItem, getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
-import { createOrder, createOrderItem, findOrderById, findOrderItems, findUsersOrders, getOrderWithItems, updateOrderStatus } from "./order.repository";
+import { buyNowProductByid, createOrder, createOrderItem, findOrderById, findOrderItems, findUsersOrders, getOrderWithItems, updateOrderStatus } from "./order.repository";
 
 export class OrderService {
     static async createOrderFromCart(userId: string, orderData: CreateOrderDTO): Promise<OrderResponseDTO> {
@@ -26,18 +26,20 @@ export class OrderService {
                 throw new HttpError('Failed to create order', 500);
             }
 
-            const orderItemsPromises = cartItems.map((cartItem) =>
-                createOrderItem(
+            const orderItemsPromises = cartItems.map((cartItem) => {
+                const price = Number(cartItem.price_at_add);
+                const subtotal = cartItem.quantity * price;
+                return createOrderItem(
                     order.id,
                     cartItem.product_id,
                     cartItem.productname,
                     cartItem.brand,
                     cartItem.quantity,
-                    Number(cartItem.price_at_add),
-                    Number(cartItem.subtotal),
+                    price,
+                    subtotal,
                     cartItem.image_url
                 )
-            );
+            });
 
             await Promise.all(orderItemsPromises);
 
@@ -103,6 +105,38 @@ export class OrderService {
         return this.formatOrderResponseService(updateOrder, items);
 
 
+    }
+
+    static async buyNowService(productId: string, orderData: DirectPurchaseDTO, userId: string): Promise<OrderResponseDTO> {
+        const product = await buyNowProductByid(productId);
+        if (!product) {
+            throw new HttpError('Product not found', 404);
+        }
+        const price = Number(product.price);
+        const quantity = Number(orderData.quantity);
+        const subtotal = price * quantity;
+        const order = await createOrder(userId, {
+            shippingAddress: orderData.shippingAddress,
+            phone: orderData.phone,
+            email: orderData.email,
+        }, subtotal);
+
+        if (!order) {
+            throw new HttpError('Failed To Create Error', 401);
+        }
+
+        await createOrderItem(
+            order.id,
+            product.id,
+            product.productname,
+            product.brand || '',
+            quantity,
+            price,
+            subtotal,
+            product.image_url || ''
+        )
+
+        return this.getOrderById(order.id, userId);
     }
 
     private static formatOrderResponseService(order: any, items: any[]): OrderResponseDTO {

@@ -1,5 +1,6 @@
 import { pool } from "../../db/db";
 import { CreateOrderDTO, OrderDB, OrderItemDB, OrderItemResponseDTO, OrderStatus } from "../../models/order";
+import { ProductWithImagesResponseDTO } from "../../models/product";
 
 export async function createOrder(userId: string, data: CreateOrderDTO, totalamount: number): Promise<OrderDB | null> {
     const { rows } = await pool.query(
@@ -13,7 +14,7 @@ export async function createOrder(userId: string, data: CreateOrderDTO, totalamo
             shipping_postal_code,
             shipping_country,
             phone,
-            email,
+            email
         )
         VALUES ($1, generate_order_number(), $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *
@@ -21,10 +22,10 @@ export async function createOrder(userId: string, data: CreateOrderDTO, totalamo
         [
             userId,
             totalamount,
-            data.shippingAddress.shipping_address,
+            data.shippingAddress.shipping_address || (data.shippingAddress as any).shippingAddress || (data.shippingAddress as any).address,
             data.shippingAddress.city,
             data.shippingAddress.state,
-            data.shippingAddress.postalcode,
+            data.shippingAddress.postalcode || (data.shippingAddress as any).postalCode || (data.shippingAddress as any).zip,
             data.shippingAddress.country,
             data.phone,
             data.email,
@@ -54,9 +55,7 @@ export async function findUsersOrders(user_id: string): Promise<OrderDB[] | null
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderDB | null> {
     const { rows } = await pool.query(
-        `UPDATE orders SET status= $1, $
-        {status === 'delivered' ? 'delivered_at = CURRENT_TIMESTAMP' : ''}
-        {status === 'cancelled' ? 'cancelled_at = CURRENT_TIMESTAMP' : ''}
+        `UPDATE orders SET status= $1 ${status === 'delivered' ? ', delivered_at = CURRENT_TIMESTAMP' : ''} ${status === 'cancelled' ? ', cancelled_at = CURRENT_TIMESTAMP' : ''}
         WHERE id = $2
         RETURNING *
         `,
@@ -119,4 +118,17 @@ export async function getOrderWithItems(orderId: string): Promise<{ order: Order
     const items = order ? await findOrderItems(orderId) : [];
 
     return { order, items };
+}
+
+export async function buyNowProductByid(productId: string): Promise<ProductWithImagesResponseDTO | null> {
+    const { rows } = await pool.query(
+        `
+            SELECT p.id, p.productname, p.price, p.brand, pi.image_url
+            FROM products p
+            LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.isprimary = true
+            WHERE p.id = $1 AND p.deleted_at IS NULL 
+        `,
+        [productId]
+    )
+    return rows[0] || null;
 }
