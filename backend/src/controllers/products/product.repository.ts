@@ -104,8 +104,13 @@ export async function deleteProduct(id: string, db: Pool | PoolClient = pool): P
     return rows[0] || null;
 }
 
-export async function findAllProducts(db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO[] | null> {
-    const { rows } = await db.query(`
+export async function findAllProducts(page: number = 1, limit: number = 10): Promise<{ data: ProductWithImagesDTO[], total: number }> {
+    const offset = (page - 1) * limit;
+    const countResult = await pool.query(
+        `SELECT COUNT(*) FROM products WHERE deleted_at IS NULL`
+    )
+    const total = countResult.rows[0].count;
+    const { rows } = await pool.query(`
         SELECT 
             p.*,
             COALESCE(
@@ -125,8 +130,14 @@ export async function findAllProducts(db: Pool | PoolClient = pool): Promise<Pro
         WHERE p.deleted_at IS NULL
         GROUP BY p.id
         ORDER BY p.created_at DESC
-    `);
-    return rows as ProductWithImagesDTO[] || null;
+        LIMIT $1 OFFSET $2
+    `,
+        [limit, offset]
+    );
+    return {
+        data: rows as ProductWithImagesDTO[],
+        total: total
+    };
 }
 
 
