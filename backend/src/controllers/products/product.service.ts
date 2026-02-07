@@ -101,12 +101,18 @@ export class ProductService {
         return product;
     }
 
-    static async findAllProductsService(): Promise<ProductDB[] | null> {
-        const products = await findAllProducts();
+    static async findAllProductsService(page: number, limit: number): Promise<{ data: ProductWithImagesDTO[], total: number, page?: number, limit?: number, totalPages?: number }> {
+        const products = await findAllProducts(page, limit);
         if (!products) {
             throw new HttpError("Products not found", 404);
         }
-        return products;
+        return {
+            data: products.data,
+            total: products.total,
+            page,
+            limit,
+            totalPages: Math.ceil(products.total / limit),
+        };
     }
 
     static async deleteProductService(id: string): Promise<ProductDB | null> {
