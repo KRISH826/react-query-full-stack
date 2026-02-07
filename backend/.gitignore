@@ -12,8 +12,12 @@ node_modules
 .env.development.local
 .env.test.local
 .env.production.local
+.zip
+/dist.zip
+dist.zip
 /dist
 /build
 .sql
 .zip
 .md
+.txt

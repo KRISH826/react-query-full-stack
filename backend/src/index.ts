@@ -3,13 +3,13 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { connectDB } from "./db/db";
-import { config } from "../src/config/config";
-import userRouter from "../src/routes/user.route";
+import userRouter from "./routes/user.route";
 import { errorHandler } from "./middlewares/error.middleware";
-import productRouter from "../src/routes/product.route";
-import cartRouter from "../src/routes/cart.routes";
-import orderRouter from "../src/routes/order.routes";
-
+import productRouter from "./routes/product.route";
+import cartRouter from "./routes/cart.routes";
+import orderRouter from "./routes/order.routes";
+import { config } from "./config/config";
+import { Request, Response } from "express";
 const app = express();
 
 app.use(express.json());
@@ -29,6 +29,9 @@ app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 // ❗ MUST BE LAST
 app.use(errorHandler);
+app.get("/health", (req: Request, res: Response) => {
+    res.send("Health is OK!")
+})
 app.listen(config.app.port, () => {
     console.log(`Server is running on port ${config.app.port}`);
 });

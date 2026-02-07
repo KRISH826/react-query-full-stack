@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     /* Project structure */
-    "rootDir": "./src",
-    "outDir": "./dist",
+    "rootDir": "src",
+    "outDir": "dist",
     /* Module system */
     "module": "CommonJS",
     "target": "ES2020",
