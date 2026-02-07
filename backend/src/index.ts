@@ -27,11 +27,13 @@ app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
-// ❗ MUST BE LAST
-app.use(errorHandler);
+
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is OK!")
-})
+});
+
+// ❗ MUST BE LAST
+app.use(errorHandler);
 app.listen(config.app.port, () => {
     console.log(`Server is running on port ${config.app.port}`);
 });
