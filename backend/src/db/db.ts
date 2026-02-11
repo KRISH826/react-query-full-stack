@@ -3,9 +3,9 @@ import { config } from "../config/config";
 
 export const pool = new Pool({
     connectionString: config.db.connectionString,
-    ssl: {
+    ssl: config.app.env === 'production' ? {
         rejectUnauthorized: false,
-    },
+    } : undefined,
     max: config.db.max,
     min: config.db.min,
     idleTimeoutMillis: config.db.idleTimeoutMillis,
