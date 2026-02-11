@@ -16,7 +16,9 @@ export const config = {
         min: 1,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
-        connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?sslmode=require&uselibpqcompat=true`,
+        connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+
+        // connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?sslmode=require&uselibpqcompat=true`,
     },
     jwt: {
         secret: process.env.JWT_SECRET,
