@@ -104,65 +104,122 @@ export async function deleteProduct(id: string, db: Pool | PoolClient = pool): P
     return rows[0] || null;
 }
 
+// Update findAllProducts to include categories
 export async function findAllProducts(page: number = 1, limit: number = 10): Promise<{ data: ProductWithImagesDTO[], total: number }> {
     const offset = (page - 1) * limit;
     const countResult = await pool.query(
         `SELECT COUNT(*) FROM products WHERE deleted_at IS NULL`
-    )
+    );
     const total = countResult.rows[0].count;
+
     const { rows } = await pool.query(`
         SELECT 
             p.*,
             COALESCE(
                 json_agg(
-                    json_build_object(
+                    DISTINCT jsonb_build_object(
                         'id', pi.id,
                         'image_url', pi.image_url,
                         'alt_text', pi.alt_text,
                         'isprimary', pi.isprimary
                     )
-                    ORDER BY pi.isprimary DESC, pi.created_at ASC
+                    ORDER BY jsonb_build_object(
+                        'id', pi.id,
+                        'image_url', pi.image_url,
+                        'alt_text', pi.alt_text,
+                        'isprimary', pi.isprimary
+                    )
                 ) FILTER (WHERE pi.id IS NOT NULL),
                 '[]'
-            ) AS images
+            ) AS images,
+            COALESCE(
+                json_agg(
+                    DISTINCT jsonb_build_object(
+                        'id', c.id,
+                        'name', c.name,
+                        'slug', c.slug,
+                        'parent_id', c.parent_id
+                    )
+                    ORDER BY jsonb_build_object(
+                        'id', c.id,
+                        'name', c.name,
+                        'slug', c.slug,
+                        'parent_id', c.parent_id
+                    )
+                ) FILTER (WHERE c.id IS NOT NULL),
+                '[]'
+            ) AS categories
         FROM products p
         LEFT JOIN product_images pi ON pi.product_id = p.id
+        LEFT JOIN product_categories pc ON pc.product_id = p.id
+        LEFT JOIN categories c ON c.id = pc.category_id
         WHERE p.deleted_at IS NULL
         GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT $1 OFFSET $2
-    `,
-        [limit, offset]
-    );
+    `, [limit, offset]);
+
     return {
         data: rows as ProductWithImagesDTO[],
-        total: total
+        total: parseInt(total)
     };
 }
 
-
+// Update findProductWithImagesById to include categories
 export async function findProductWithImagesById(id: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO | null> {
     const { rows } = await db.query(`
         SELECT 
             p.*,
             COALESCE(
                 json_agg(
-                    json_build_object(
+                    DISTINCT jsonb_build_object(
                         'id', pi.id,
                         'image_url', pi.image_url,
                         'alt_text', pi.alt_text,
                         'isprimary', pi.isprimary
                     )
-                    ORDER BY pi.isprimary DESC, pi.created_at ASC
+                    ORDER BY jsonb_build_object(
+                        'id', pi.id,
+                        'image_url', pi.image_url,
+                        'alt_text', pi.alt_text,
+                        'isprimary', pi.isprimary
+                    )
                 ) FILTER (WHERE pi.id IS NOT NULL),
                 '[]'
-            ) AS images
+            ) AS images,
+            COALESCE(
+                json_agg(
+                    DISTINCT jsonb_build_object(
+                        'id', c.id,
+                        'name', c.name,
+                        'slug', c.slug,
+                        'parent_id', c.parent_id
+                    )
+                    ORDER BY jsonb_build_object(
+                        'id', c.id,
+                        'name', c.name,
+                        'slug', c.slug,
+                        'parent_id', c.parent_id
+                    )
+                ) FILTER (WHERE c.id IS NOT NULL),
+                '[]'
+            ) AS categories
         FROM products p
         LEFT JOIN product_images pi ON pi.product_id = p.id
+        LEFT JOIN product_categories pc ON pc.product_id = p.id
+        LEFT JOIN categories c ON c.id = pc.category_id
         WHERE p.deleted_at IS NULL AND p.id = $1
         GROUP BY p.id
     `, [id]);
+
     return rows[0] || null;
 }
 
+// Add helper function to delete all product categories
+export async function deleteProductCategories(productId: string, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(
+        `DELETE FROM product_categories WHERE product_id = $1`,
+        [productId]
+    );
+}
 

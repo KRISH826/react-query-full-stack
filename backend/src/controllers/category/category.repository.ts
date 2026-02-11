@@ -73,3 +73,12 @@ export async function deleteProductCategory(productId: string, categoryId: strin
     return rows[0];
 }
 
+export async function getCategoriesForProduct(productId: string, db: Pool | PoolClient = pool): Promise<CategoryDb[]> {
+    const { rows } = await db.query(
+        `SELECT c.* FROM categories c
+         INNER JOIN product_categories pc ON c.id = pc.category_id
+         WHERE pc.product_id = $1`,
+        [productId]
+    );
+    return rows;
+}

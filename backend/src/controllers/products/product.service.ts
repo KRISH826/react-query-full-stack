@@ -4,11 +4,12 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, createProduct, deleteProduct, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductImage, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductCategory, findCategoryById } from "../category/category.repository";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
-        if (!product.productname || !product.description || !product.price) {
+        if (!product.productname || !product.description || !product.price || !product.category_ids || product.category_ids.length === 0) {
             throw new HttpError("All fields are required", 400);
         }
 
@@ -19,6 +20,14 @@ export class ProductService {
             if (existingProduct) {
                 throw new HttpError("Product already exists", 400);
             }
+            if (product.category_ids && product.category_ids.length > 0) {
+                for (const categoryId of product.category_ids) {
+                    const existingCategory = await findCategoryById(categoryId, client);
+                    if (!existingCategory) {
+                        throw new HttpError(`Category with id ${categoryId} not found`, 404);
+                    }
+                }
+            } 4
 
             const created = await createProduct({
                 ...product,
@@ -35,6 +44,11 @@ export class ProductService {
                         image_url: uploaded.url,
                         isprimary: i === 0,
                     }, client)
+                }
+            }
+            if (product.category_ids && product.category_ids.length > 0) {
+                for (const categoryId of product.category_ids) {
+                    await addProductCategory(created.id, categoryId, client)
                 }
             }
             await client.query('COMMIT');
@@ -64,6 +78,15 @@ export class ProductService {
                 throw new HttpError("Product not found", 404);
             }
 
+            if (product.category_ids && product.category_ids.length > 0) {
+                for (const categoryId of product.category_ids) {
+                    const existingCategory = await findCategoryById(categoryId, client);
+                    if (!existingCategory) {
+                        throw new HttpError(`Category with id ${categoryId} not found`, 404);
+                    }
+                }
+            }
+
             await updateProduct(id, product, client);
             const validFiles = files?.filter((f) => f.size > 0);
             if (validFiles?.length) {
@@ -82,6 +105,12 @@ export class ProductService {
                         image_url: uploaded.url,
                         isprimary: i === 0,
                     }, client);
+                }
+            }
+            if (product.category_ids && product.category_ids.length > 0) {
+                await deleteProductCategories(id, client);
+                for (const categoryId of product.category_ids) {
+                    await addProductCategory(id, categoryId, client)
                 }
             }
             await client.query('COMMIT');
@@ -129,6 +158,7 @@ export class ProductService {
                     await deleteFromS3(key);
                 }
             }
+            await deleteProductCategories(id, client);
             const deleted = await deleteProduct(id, client);
             if (!deleted) {
                 throw new HttpError("Product not deleted", 404);
