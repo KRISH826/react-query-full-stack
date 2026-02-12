@@ -29,7 +29,7 @@ export interface CreateProductDTO {
     is_track_inventory?: boolean;
     created_by?: string;
     status?: ProductStatus; // admin only
-    category_ids?: string[]; // ADD THIS
+    category_names?: string[]; // ADD THIS
 }
 
 export interface UpdateProductDTO {
@@ -40,7 +40,7 @@ export interface UpdateProductDTO {
     stock_quantity?: number;
     is_track_inventory?: boolean;
     status?: ProductStatus;
-    category_ids?: string[]; // ADD THIS
+    category_names?: string[]; // ADD THIS
 }
 
 export interface ProductResponseDTO {

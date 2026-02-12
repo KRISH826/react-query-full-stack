@@ -5,11 +5,11 @@ import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
 import { addProductImage, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
-import { addProductCategory, findCategoryById } from "../category/category.repository";
+import { addProductCategory, findCategoryById, findCategoryByName } from "../category/category.repository";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
-        if (!product.productname || !product.description || !product.price || !product.category_ids || product.category_ids.length === 0) {
+        if (!product.productname || !product.description || !product.price || !product.category_names || product.category_names.length === 0) {
             throw new HttpError("All fields are required", 400);
         }
 
@@ -20,14 +20,16 @@ export class ProductService {
             if (existingProduct) {
                 throw new HttpError("Product already exists", 400);
             }
-            if (product.category_ids && product.category_ids.length > 0) {
-                for (const categoryId of product.category_ids) {
-                    const existingCategory = await findCategoryById(categoryId, client);
+            const categoryIds: string[] = [];
+            if (product.category_names && product.category_names.length > 0) {
+                for (const categoryName of product.category_names) {
+                    const existingCategory = await findCategoryByName(categoryName, client);
                     if (!existingCategory) {
-                        throw new HttpError(`Category with id ${categoryId} not found`, 404);
+                        throw new HttpError(`Category with name ${categoryName} not found`, 404);
                     }
+                    categoryIds.push(existingCategory.id);
                 }
-            } 4
+            }
 
             const created = await createProduct({
                 ...product,
@@ -46,8 +48,8 @@ export class ProductService {
                     }, client)
                 }
             }
-            if (product.category_ids && product.category_ids.length > 0) {
-                for (const categoryId of product.category_ids) {
+            if (categoryIds.length > 0) {
+                for (const categoryId of categoryIds) {
                     await addProductCategory(created.id, categoryId, client)
                 }
             }
@@ -78,16 +80,26 @@ export class ProductService {
                 throw new HttpError("Product not found", 404);
             }
 
-            if (product.category_ids && product.category_ids.length > 0) {
-                for (const categoryId of product.category_ids) {
-                    const existingCategory = await findCategoryById(categoryId, client);
+            const categoryIds: string[] = [];
+            if (product.category_names && product.category_names.length > 0) {
+                for (const categoryName of product.category_names) {
+                    const existingCategory = await findCategoryByName(categoryName, client);
                     if (!existingCategory) {
-                        throw new HttpError(`Category with id ${categoryId} not found`, 404);
+                        throw new HttpError(`Category with name ${categoryName} not found`, 404);
                     }
+                    categoryIds.push(existingCategory.id);
                 }
             }
 
-            await updateProduct(id, product, client);
+            await updateProduct(id, {
+                productname: product.productname ?? existingProduct.productname,
+                description: product.description ?? existingProduct.description,
+                price: product.price ?? existingProduct.price,
+                brand: (product.brand ?? existingProduct.brand) || undefined,
+                stock_quantity: product.stock_quantity ?? existingProduct.stock_quantity,
+                is_track_inventory: product.is_track_inventory ?? existingProduct.is_track_inventory,
+                status: product.status ?? existingProduct.status,
+            }, client);
             const validFiles = files?.filter((f) => f.size > 0);
             if (validFiles?.length) {
                 if (existingProduct.images?.length) {
@@ -107,9 +119,9 @@ export class ProductService {
                     }, client);
                 }
             }
-            if (product.category_ids && product.category_ids.length > 0) {
+            if (categoryIds.length > 0) {
                 await deleteProductCategories(id, client);
-                for (const categoryId of product.category_ids) {
+                for (const categoryId of categoryIds) {
                     await addProductCategory(id, categoryId, client)
                 }
             }
