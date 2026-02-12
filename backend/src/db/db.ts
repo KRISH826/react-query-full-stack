@@ -3,14 +3,13 @@ import { config } from "../config/config";
 
 export const pool = new Pool({
     connectionString: config.db.connectionString,
-    ssl: config.app.env === 'production' ? {
-        rejectUnauthorized: false,
-    } : undefined,
+    ssl: false,
     max: config.db.max,
     min: config.db.min,
     idleTimeoutMillis: config.db.idleTimeoutMillis,
     connectionTimeoutMillis: config.db.connectionTimeoutMillis,
-})
+});
+
 
 export const connectDB = async () => {
     try {

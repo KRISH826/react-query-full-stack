@@ -4,11 +4,12 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, createProduct, deleteProduct, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductImage, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductCategory, findCategoryById, findCategoryByName } from "../category/category.repository";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
-        if (!product.productname || !product.description || !product.price) {
+        if (!product.productname || !product.description || !product.price || !product.category_names || product.category_names.length === 0) {
             throw new HttpError("All fields are required", 400);
         }
 
@@ -18,6 +19,16 @@ export class ProductService {
             const existingProduct = await findProductByid(product.productname, client);
             if (existingProduct) {
                 throw new HttpError("Product already exists", 400);
+            }
+            const categoryIds: string[] = [];
+            if (product.category_names && product.category_names.length > 0) {
+                for (const categoryName of product.category_names) {
+                    const existingCategory = await findCategoryByName(categoryName, client);
+                    if (!existingCategory) {
+                        throw new HttpError(`Category with name ${categoryName} not found`, 404);
+                    }
+                    categoryIds.push(existingCategory.id);
+                }
             }
 
             const created = await createProduct({
@@ -35,6 +46,11 @@ export class ProductService {
                         image_url: uploaded.url,
                         isprimary: i === 0,
                     }, client)
+                }
+            }
+            if (categoryIds.length > 0) {
+                for (const categoryId of categoryIds) {
+                    await addProductCategory(created.id, categoryId, client)
                 }
             }
             await client.query('COMMIT');
@@ -64,7 +80,26 @@ export class ProductService {
                 throw new HttpError("Product not found", 404);
             }
 
-            await updateProduct(id, product, client);
+            const categoryIds: string[] = [];
+            if (product.category_names && product.category_names.length > 0) {
+                for (const categoryName of product.category_names) {
+                    const existingCategory = await findCategoryByName(categoryName, client);
+                    if (!existingCategory) {
+                        throw new HttpError(`Category with name ${categoryName} not found`, 404);
+                    }
+                    categoryIds.push(existingCategory.id);
+                }
+            }
+
+            await updateProduct(id, {
+                productname: product.productname ?? existingProduct.productname,
+                description: product.description ?? existingProduct.description,
+                price: product.price ?? existingProduct.price,
+                brand: (product.brand ?? existingProduct.brand) || undefined,
+                stock_quantity: product.stock_quantity ?? existingProduct.stock_quantity,
+                is_track_inventory: product.is_track_inventory ?? existingProduct.is_track_inventory,
+                status: product.status ?? existingProduct.status,
+            }, client);
             const validFiles = files?.filter((f) => f.size > 0);
             if (validFiles?.length) {
                 if (existingProduct.images?.length) {
@@ -82,6 +117,12 @@ export class ProductService {
                         image_url: uploaded.url,
                         isprimary: i === 0,
                     }, client);
+                }
+            }
+            if (categoryIds.length > 0) {
+                await deleteProductCategories(id, client);
+                for (const categoryId of categoryIds) {
+                    await addProductCategory(id, categoryId, client)
                 }
             }
             await client.query('COMMIT');
@@ -129,6 +170,7 @@ export class ProductService {
                     await deleteFromS3(key);
                 }
             }
+            await deleteProductCategories(id, client);
             const deleted = await deleteProduct(id, client);
             if (!deleted) {
                 throw new HttpError("Product not deleted", 404);

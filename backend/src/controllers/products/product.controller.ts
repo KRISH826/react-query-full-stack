@@ -1,10 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductService } from "./product.service";
+import { toArray } from "../../utils/helpers";
 
 export class ProductController {
     static async createProductController(req: Request, res: Response, next: NextFunction) {
         try {
             const files = req.files as Express.Multer.File[] | undefined;
+            req.body.category_names = toArray(req.body.category_names);
             const product = await ProductService.createProductService(req.body, files);
             return res.status(201).json({
                 product,
@@ -58,6 +60,7 @@ export class ProductController {
         try {
             const id = req.params.id as string;
             const files = req.files as Express.Multer.File[] | undefined;
+            req.body.category_names = toArray(req.body.category_names);
             const product = await ProductService.updateProductService(id, req.body, files);
             return res.status(200).json({
                 product,
