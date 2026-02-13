@@ -1,0 +1,27 @@
+import { Pool, PoolClient } from "pg";
+import { pool } from "../../db/db";
+
+export async function createPayment(orderId: string, amount: number, razorpayOrderId: string, db: Pool | PoolClient = pool) {
+    const { rows } = await db.query(
+        `INSERT INTO payments (order_id, amount, razorpay_order_id) VALUES ($1, $2, $3) RETURNING *`,
+        [orderId, amount, razorpayOrderId]
+    )
+    return rows[0];
+}
+
+export async function markPaymentSuccess(orderId: string, razorpay_payment_id: string, signature: string, db: Pool | PoolClient = pool) {
+    const { rows } = await db.query(
+        `UPDATE payments SET razorpay_payment_id=$1,
+     signature=$2, status='success' WHERE order_id=$3 RETURNING *`,
+        [razorpay_payment_id, signature, orderId]
+    )
+    return rows[0];
+}
+
+export async function markPaymentFailed(orderId: string, db: Pool | PoolClient = pool) {
+    const { rows } = await db.query(
+        `UPDATE payments SET status='failed' WHERE order_id=$1 RETURNING *`,
+        [orderId]
+    )
+    return rows[0];
+}
