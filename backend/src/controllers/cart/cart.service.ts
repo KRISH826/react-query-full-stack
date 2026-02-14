@@ -3,6 +3,7 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
+import { cache } from "../../utils/cache";
 
 
 
@@ -24,35 +25,41 @@ export class CartService {
     }
 
     static async getUserCart(userId: string): Promise<CartResponseDTO> {
-        const cart = await this.getOrCreateCart(userId);
-        const items = await getCartItems(cart.id);
+        const cacheKey = `cart:${userId}`;
+        return cache.getOrSet(
+            cacheKey,
+            async () => {
+                const cart = await this.getOrCreateCart(userId);
+                const items = await getCartItems(cart.id);
 
-        const formattedItems = items.map(
-            (item: CartItemWithDetailsDB) => {
-                const subtotal = item.quantity * Number(item.price_at_add);
+                const formattedItems = items.map(
+                    (item: CartItemWithDetailsDB) => {
+                        const subtotal = item.quantity * Number(item.price_at_add);
+
+                        return {
+                            productId: item.product_id,
+                            productName: item.productname,
+                            brand: item.brand,
+                            imageUrl: item.image_url ?? undefined,
+                            quantity: item.quantity,
+                            price: Number(item.price_at_add),
+                            subtotal
+                        }
+                    }
+                )
+
+                const total = formattedItems.reduce(
+                    (sum, item) => sum + item.subtotal, 0
+                )
 
                 return {
-                    productId: item.product_id,
-                    productName: item.productname,
-                    brand: item.brand,
-                    imageUrl: item.image_url ?? undefined,
-                    quantity: item.quantity,
-                    price: Number(item.price_at_add),
-                    subtotal
+                    cartId: cart.id,
+                    items: formattedItems,
+                    total,
+                    updatedAt: cart.updated_at
                 }
             }
         )
-
-        const total = formattedItems.reduce(
-            (sum, item) => sum + item.subtotal, 0
-        )
-
-        return {
-            cartId: cart.id,
-            items: formattedItems,
-            total,
-            updatedAt: cart.updated_at
-        }
     }
 
     static async addToCart(userId: string, data: AddToCartDTO): Promise<CartResponseDTO> {
@@ -83,6 +90,10 @@ export class CartService {
                 }, client)
             }
             await client.query('COMMIT');
+
+            // Invalidate cart cache
+            await cache.delete(`cart:${userId}`);
+
             return this.getUserCart(userId);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -113,6 +124,10 @@ export class CartService {
                 }, client)
             }
             await client.query('COMMIT');
+
+            // Invalidate cart cache
+            await cache.delete(`cart:${userId}`);
+
             return this.getUserCart(userId);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -135,6 +150,10 @@ export class CartService {
 
             await deleteCartItem(cart.id, productId, client);
             await client.query('COMMIT');
+
+            // Invalidate cart cache
+            await cache.delete(`cart:${userId}`);
+
             return this.getUserCart(userId);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -157,6 +176,9 @@ export class CartService {
                 )
             )
             await client.query('COMMIT');
+
+            // Invalidate cart cache
+            await cache.delete(`cart:${userId}`);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
