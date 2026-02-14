@@ -4,12 +4,6 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
 import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
 
-interface CartItemResponseDTO {
-    productId: string;
-    quantity: number;
-    price: number;
-    subtotal: number;
-}
 
 
 export class CartService {

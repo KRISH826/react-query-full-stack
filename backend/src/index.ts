@@ -11,6 +11,7 @@ import orderRouter from "./routes/order.routes";
 import { config } from "./config/config";
 import { Request, Response } from "express";
 import categoryRouter from "./routes/category.route";
+import paymentRouter from "./routes/payment.route";
 
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/orders", orderRouter);
 app.use("/api/categories", categoryRouter);
+app.use("/api/payments", paymentRouter);
 
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is OK!")
