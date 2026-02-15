@@ -1,11 +1,10 @@
-import { PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
-import { NextFunction, Request, Response } from "express";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
 import { addProductImage, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryById, findCategoryByName } from "../category/category.repository";
+import { cache } from "../../utils/cache";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
@@ -54,6 +53,7 @@ export class ProductService {
                 }
             }
             await client.query('COMMIT');
+            await cache.delPattern(`product:*`);
             return await findProductWithImagesById(created.id);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -126,6 +126,8 @@ export class ProductService {
                 }
             }
             await client.query('COMMIT');
+            await cache.delPattern(`product:${id}:*`);
+            await cache.delPattern(`products:*`);
             return await findProductWithImagesById(id);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -135,14 +137,37 @@ export class ProductService {
         }
     }
     static async getById(id: string): Promise<ProductWithImagesDTO> {
-        const product = await findProductWithImagesById(id);
-        if (!product) {
-            throw new HttpError("Product not found", 404);
-        }
-        return product;
+        const cacheKey = `product:${id}`
+        return cache.getOrSet(
+            cacheKey,
+            async () => {
+                const product = await findProductWithImagesById(id);
+                if (!product) {
+                    throw new HttpError("Product not found", 404);
+                }
+                return product;
+            }
+        )
     }
 
     static async findAllProductsService(page: number, limit: number): Promise<{ data: ProductWithImagesDTO[], total: number, page?: number, limit?: number, totalPages?: number }> {
+        const cacheKey = `products:page:${page}:limit:${limit}`
+        return cache.getOrSet(
+            cacheKey,
+            async () => {
+                const products = await findAllProducts(page, limit);
+                if (!products) {
+                    throw new HttpError("Products not found", 404);
+                }
+                return {
+                    data: products.data,
+                    total: products.total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(products.total / limit),
+                };
+            }
+        )
         const products = await findAllProducts(page, limit);
         if (!products) {
             throw new HttpError("Products not found", 404);
@@ -176,6 +201,8 @@ export class ProductService {
                 throw new HttpError("Product not deleted", 404);
             }
             await client.query('COMMIT');
+            await cache.delPattern(`product:${id}:*`);
+            await cache.delPattern(`products:*`);
             return deleted;
         } catch (error) {
             await client.query('ROLLBACK');
