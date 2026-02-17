@@ -1,6 +1,9 @@
+"use client";
+
 import { Product } from "@/types/product";
 import { Heart } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 type Props = {
@@ -8,6 +11,7 @@ type Props = {
 };
 
 const ProductCard = ({ product }: Props) => {
+    const router = useRouter();
     const image =
         product.images?.find((img) => img.isprimary)?.image_url ||
         "/placeholder.png";
@@ -15,17 +19,22 @@ const ProductCard = ({ product }: Props) => {
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
 
+    const handlerProductDetails = (id: string, productName: string, brand: string) => {
+        router.push(`/product/${id}-${productName}-${brand}`);
+    };
+
     return (
         <div className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-lg">
 
             {/* Image */}
             <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
                 <Image
+                    onClick={() => handlerProductDetails(product.id, product.productname, product.brand || "")}
                     src={image}
                     alt={product.productname}
                     fill
                     sizes="(max-width:768px) 50vw, (max-width:1200px) 33vw, 20vw"
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover cursor-pointer transition-transform duration-300 group-hover:scale-105"
                 />
 
                 {/* Status Badge */}
