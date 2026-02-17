@@ -35,8 +35,6 @@ const Header = () => {
                             ShopNova
                         </span>
                     </Link>
-
-                    {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
                         {["Home", "Product", "Categories", "About"].map((item) => (
                             <Link
