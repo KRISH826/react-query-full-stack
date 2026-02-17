@@ -1,6 +1,7 @@
 import { Product } from "@/types/product";
 import { Heart } from "lucide-react";
 import Image from "next/image";
+import React from "react";
 
 type Props = {
     product: Product;
@@ -8,7 +9,8 @@ type Props = {
 
 const ProductCard = ({ product }: Props) => {
     const image =
-        product.images?.[0]?.image_url || "/placeholder.png";
+        product.images?.find((img) => img.isprimary)?.image_url ||
+        "/placeholder.png";
 
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
@@ -75,4 +77,4 @@ const ProductCard = ({ product }: Props) => {
     );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard);
