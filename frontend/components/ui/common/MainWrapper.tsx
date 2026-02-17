@@ -6,7 +6,7 @@ const MainWrapper = ({ children }: { children: React.ReactNode }) => {
     return (
         <div className='min-h-screen flex flex-col'>
             <Header />
-            <main className='flex-1 lg:py-10 sm:py-7 py-5'>
+            <main className='flex-1 bg-white'>
                 {children}
             </main>
             <Footer />

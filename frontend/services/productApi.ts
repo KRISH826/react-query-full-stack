@@ -8,7 +8,7 @@ interface ApiResponse<T> {
 export const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query<Product[], void>({
-            query: () => "products",
+            query: () => "products/?limit=20&page=1",
             transformResponse: (response: ApiResponse<Product[]>) => response.data,
             providesTags: (result) =>
                 result
