@@ -1,5 +1,5 @@
 import React from 'react'
-import MainWrapper from '@/components/common/MainWrapper'
+import MainWrapper from '@/components/ui/common/MainWrapper'
 
 const layout = ({ children }: { children: React.ReactNode }) => {
     return (

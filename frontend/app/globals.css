@@ -47,6 +47,7 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+
 :root {
   --radius: 0.75rem;
 
@@ -152,4 +153,40 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 0 20px;
+}
+
+@media (max-width: 1440px) {
+  .container {
+    max-width: 1140px;
+  }
+}
+
+@media (max-width: 1250px) {
+  .container {
+    max-width: 1000px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (max-width: 830px) {
+  .container {
+    max-width: 600px;
+  }
+}
+
+@media(max-width: 640px) {
+    .container {
+      max-width: 100%;
+    }
 }

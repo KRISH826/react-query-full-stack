@@ -23,7 +23,7 @@ import {
 const Header = () => {
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
-            <div className="mx-auto max-w-7xl px-4 md:px-6">
+            <div className="container">
                 <div className="flex h-16 items-center justify-between gap-4">
 
                     {/* Logo */}
@@ -55,7 +55,7 @@ const Header = () => {
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search products..."
-                                className="pl-9 bg-muted/40 border-none focus-visible:ring-1"
+                                className="pl-9 bg-muted/40 border-primary/40 focus-visible:ring-primary/40!"
                             />
                         </div>
                     </div>

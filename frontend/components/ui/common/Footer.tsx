@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 
 const Footer = () => {
     return (
-        <footer className="border-t bg-secondary/30">
-            <div className="mx-auto max-w-7xl px-4 md:px-6 py-14 lg:py-20">
-
+        <footer className="border-t md:py-10 py-6 bg-secondary/30">
+            <div className="container">
                 {/* Top Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
