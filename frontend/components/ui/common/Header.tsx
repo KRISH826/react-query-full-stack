@@ -25,8 +25,6 @@ const Header = () => {
         <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
             <div className="container">
                 <div className="flex h-16 items-center justify-between gap-4">
-
-                    {/* Logo */}
                     <Link href="/" className="flex items-center gap-2 group">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
                             <ShoppingBag className="h-5 w-5" />
@@ -35,10 +33,8 @@ const Header = () => {
                             ShopNova
                         </span>
                     </Link>
-
-                    {/* Desktop Nav */}
                     <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-                        {["Home", "Products", "Categories", "About"].map((item) => (
+                        {["Home", "Product", "Categories", "About"].map((item) => (
                             <Link
                                 key={item}
                                 href={`/${item.toLowerCase() === "home" ? "" : item.toLowerCase()}`}
@@ -48,8 +44,6 @@ const Header = () => {
                             </Link>
                         ))}
                     </nav>
-
-                    {/* Search */}
                     <div className="hidden md:flex flex-1 max-w-sm">
                         <div className="relative w-full">
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -86,8 +80,10 @@ const Header = () => {
                         </Button>
 
                         {/* Account */}
-                        <Button variant="ghost" size="icon">
-                            <User className="h-5 w-5" />
+                        <Button asChild variant="ghost" size="icon">
+                            <Link href="/login">
+                                <User className="h-5 w-5" />
+                            </Link>
                         </Button>
 
                         {/* Mobile Menu */}
