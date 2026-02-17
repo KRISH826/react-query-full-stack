@@ -3,7 +3,9 @@ import ProductDetailsPage from './_components/ProductDetailsPage'
 
 const page = () => {
     return (
-        <ProductDetailsPage />
+        <section className='py-10'>
+            <ProductDetailsPage />
+        </section>
     )
 }
 

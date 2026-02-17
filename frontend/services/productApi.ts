@@ -1,15 +1,19 @@
 import { Product } from "@/types/product";
 import { baseApi } from "./baseQuery";
 
-interface ApiResponse<T> {
-    data: T;
+interface ProductsResponse {
+    data: Product[];
+}
+
+interface ProductResponse {
+    product: Product;
 }
 
 export const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query<Product[], void>({
             query: () => "products/?limit=20&page=1",
-            transformResponse: (response: ApiResponse<Product[]>) => response.data,
+            transformResponse: (response: ProductsResponse) => response.data,
             providesTags: (result) =>
                 result
                     ? [
@@ -23,9 +27,9 @@ export const productApi = baseApi.injectEndpoints({
 
             keepUnusedDataFor: 300,
         }),
-        getProductById: builder.query<Product, number>({
-            query: (id: number) => `products/${id}`,
-            transformResponse: (response: ApiResponse<Product>) => response.data,
+        getProductById: builder.query<Product, string>({
+            query: (id: string) => `products/${id}`,
+            transformResponse: (response: ProductResponse) => response.product,
             providesTags: (result, error, id) => [{ type: "Product", id }],
             keepUnusedDataFor: 300,
         }),

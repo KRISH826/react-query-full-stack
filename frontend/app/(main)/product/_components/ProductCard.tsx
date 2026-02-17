@@ -19,8 +19,8 @@ const ProductCard = ({ product }: Props) => {
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
 
-    const handlerProductDetails = (id: string, productName: string, brand: string) => {
-        router.push(`/product/${id}-${productName}-${brand}`);
+    const handlerProductDetails = (id: string) => {
+        router.push(`/product/${id}`);
     };
 
     return (
@@ -29,7 +29,7 @@ const ProductCard = ({ product }: Props) => {
             {/* Image */}
             <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
                 <Image
-                    onClick={() => handlerProductDetails(product.id, product.productname, product.brand || "")}
+                    onClick={() => handlerProductDetails(product.id)}
                     src={image}
                     alt={product.productname}
                     fill
