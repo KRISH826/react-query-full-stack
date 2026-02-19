@@ -1,31 +1,32 @@
+export type UserRole = "customer" | "admin";
+
 export interface User {
-    id: number;
-    firstName: string;
-    lastName: string;
-    maidenName: string;
-    age: number;
-    gender: "Male" | "Female" | "Other";
-    email: string;
-    phone: string;
-    username: string;
-    password: string;
-    ssn: string;
-    dateOfBirth: string; // ISO date string
-    address: Address;
-    company: Company;
-}
-
-export interface Address {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    zipcode: string;
-    latitude: number;
-    longitude: number;
-}
-
-export interface Company {
+    id: string;
     name: string;
-    jobTitle: string;
+    email: string;
+    role: UserRole;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface RegisterRequest {
+    name: string;
+    email: string;
+    password: string;
+    role?: UserRole;
+}
+
+export interface LoginRequest {
+    email: string;
+    password: string;
+}
+
+export interface AuthResponse {
+    user: User | null;
+    accessToken: string;
+    refreshToken: string;
+}
+
+export interface ProfileResponse {
+    user: User;
 }

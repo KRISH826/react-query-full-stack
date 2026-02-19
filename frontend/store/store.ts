@@ -1,13 +1,13 @@
-import { productApi } from "@/services/productApi";
+import { baseApi } from "@/services/baseQuery";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const makeStore = () =>
     configureStore({
         reducer: {
-            [productApi.reducerPath]: productApi.reducer,
+            [baseApi.reducerPath]: baseApi.reducer,
         },
         middleware: (gdm) =>
-            gdm({ serializableCheck: false }).concat(productApi.middleware),
+            gdm({ serializableCheck: false }).concat(baseApi.middleware),
     });
 
 export type AppStore = ReturnType<typeof makeStore>;

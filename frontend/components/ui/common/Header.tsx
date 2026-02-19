@@ -19,6 +19,10 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
+import Favourites from "./header/Favourites";
+import Cart from "./header/Cart";
+import Profile from "./header/Profile";
+import SearchInput from "./header/SearchInput";
 
 const Header = () => {
     return (
@@ -44,47 +48,17 @@ const Header = () => {
                             </Link>
                         ))}
                     </nav>
-                    <div className="hidden md:flex flex-1 max-w-sm">
-                        <div className="relative w-full">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search products..."
-                                className="pl-9 bg-muted/40 border-primary/40 focus-visible:ring-primary/40!"
-                            />
-                        </div>
-                    </div>
-
+                    <SearchInput />
                     {/* Actions */}
                     <div className="flex items-center gap-1 md:gap-2">
-
                         {/* Wishlist */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="hidden md:flex relative"
-                        >
-                            <Heart className="h-5 w-5" />
-                        </Button>
+                        <Favourites />
 
                         {/* Cart */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="relative"
-                        >
-                            <ShoppingBag className="h-5 w-5" />
+                        <Cart />
 
-                            <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
-                                3
-                            </span>
-                        </Button>
-
-                        {/* Account */}
-                        <Button asChild variant="ghost" size="icon">
-                            <Link href="/login">
-                                <User className="h-5 w-5" />
-                            </Link>
-                        </Button>
+                        {/* Profile */}
+                        <Profile />
 
                         {/* Mobile Menu */}
                         <Sheet>
@@ -93,8 +67,7 @@ const Header = () => {
                                     <Menu className="h-5 w-5" />
                                 </Button>
                             </SheetTrigger>
-
-                            <SheetContent side="left" className="w-[280px]">
+                            <SheetContent side="left" className="w-[280px] px-4">
                                 <SheetHeader>
                                     <SheetTitle className="flex items-center gap-2">
                                         <ShoppingBag className="h-5 w-5" />
@@ -127,7 +100,6 @@ const Header = () => {
                                             )
                                         )}
                                     </nav>
-
                                     {/* Mobile Actions */}
                                     <div className="flex flex-col gap-2 pt-4 border-t">
                                         <Button variant="outline" className="justify-start gap-2">
