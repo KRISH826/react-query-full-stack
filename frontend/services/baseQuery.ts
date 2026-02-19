@@ -22,6 +22,6 @@ const baseQuery = retry(raqBaseQuery, {
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: baseQuery,
-    tagTypes: ["Product", "User"],
+    tagTypes: ["Product", "User", "Cart"],
     endpoints: () => ({}),
 });
