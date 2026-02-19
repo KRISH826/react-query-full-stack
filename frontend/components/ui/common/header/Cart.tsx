@@ -1,21 +1,32 @@
-import React from 'react'
+"use client"
 import { Button } from '../../button'
 import { ShoppingBag } from 'lucide-react'
+import { useGetCartQuery } from '@/services/cartApi'
+import { useRouter } from 'next/navigation';
 
 const Cart = () => {
+    const { data } = useGetCartQuery();
+    const router = useRouter();
+    const handleCart = () => {
+        router.push('/carts')
+    }
     return (
         <>
             {/* Cart */}
             <Button
                 variant="ghost"
+                onClick={handleCart}
                 size="icon"
                 className="relative"
             >
                 <ShoppingBag className="h-5 w-5" />
-
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
-                    3
-                </span>
+                {
+                    (data?.items?.length ?? 0) > 0 && (
+                        <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground">
+                            {data?.items?.length}
+                        </span>
+                    )
+                }
             </Button>
         </>
     )

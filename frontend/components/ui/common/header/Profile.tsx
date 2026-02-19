@@ -1,5 +1,8 @@
 "use client"
+import { toast } from 'sonner'
 import { useGetProfileQuery, useLogoutMutation } from '@/services/userApi'
+import { useDispatch } from 'react-redux'
+import { baseApi } from '@/services/baseQuery'
 import { Button } from '../../button'
 import { User } from 'lucide-react'
 import Link from 'next/link'
@@ -10,14 +13,25 @@ const Profile = () => {
     const { data: user, isLoading } = useGetProfileQuery();
     const [logout] = useLogoutMutation();
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const handleLogout = async () => {
         try {
             await logout().unwrap();
+            toast.success("Logout successful");
+            router.replace("/login");
+
+            // Reset API state after navigation to avoid flash of empty content
+            setTimeout(() => {
+                dispatch(baseApi.util.resetApiState());
+            }, 100);
         } catch {
-            // Even if the API call fails, localStorage is already cleared
-        } finally {
-            router.push("/login");
+            // Fallback if API fails
+            toast.error("Logout failed, but session cleared");
+            router.replace("/login");
+            setTimeout(() => {
+                dispatch(baseApi.util.resetApiState());
+            }, 100);
         }
     };
 

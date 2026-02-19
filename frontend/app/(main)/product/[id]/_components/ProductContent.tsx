@@ -1,11 +1,30 @@
 "use client";
 
+import { Spinner } from "@/components/ui/spinner";
+import { useAddToCartMutation } from "@/services/cartApi";
 import { Product } from "@/types/product";
 import { Heart, ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const ProductContent = ({ product }: { product: Product }) => {
+    const [quantity, setQuantity] = useState<number>(1);
+    const [addToCart, { isLoading }] = useAddToCartMutation();
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
+
+    const handleAddToCart = async () => {
+        try {
+            await addToCart({
+                product_id: product.id,
+                quantity
+            }).unwrap();
+            toast.success("Item added to cart");
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to add item to cart");
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -59,7 +78,6 @@ const ProductContent = ({ product }: { product: Product }) => {
                     Available Quantity: {product.stock_quantity}
                 </p>
             )}
-
             {/* Quantity */}
             <div className="flex items-center gap-4">
                 <span className="text-sm font-medium text-gray-700">
@@ -67,30 +85,17 @@ const ProductContent = ({ product }: { product: Product }) => {
                 </span>
 
                 <div className="flex items-center overflow-hidden rounded-lg border">
-                    <button
-                        className="
-          flex h-10 w-10 items-center justify-center
-          text-lg font-medium transition hover:bg-gray-100
-        "
-                    >
+                    <button onClick={() => setQuantity(quantity - 1)} disabled={quantity === 1} className="flex h-10 w-10 items-center justify-center text-lg font-medium transition hover:bg-gray-100">
                         −
                     </button>
-
                     <div className="flex h-10 w-12 items-center justify-center text-sm font-medium">
-                        1
+                        {quantity}
                     </div>
-
-                    <button
-                        className="
-          flex h-10 w-10 items-center justify-center
-          text-lg font-medium transition hover:bg-gray-100
-        "
-                    >
+                    <button onClick={() => setQuantity(quantity + 1)} className="flex h-10 w-10 items-center justify-center text-lg font-medium transition hover:bg-gray-100">
                         +
                     </button>
                 </div>
             </div>
-
             {/* Description */}
             <div>
                 <h2 className="mb-2 text-lg font-semibold">Description</h2>
@@ -102,6 +107,7 @@ const ProductContent = ({ product }: { product: Product }) => {
             {/* Actions */}
             <div className="flex gap-3 pt-4">
                 <button
+                    onClick={handleAddToCart}
                     disabled={isOutOfStock}
                     className="
              rounded-lg bg-primary flex-1 flex items-center justify-center px-6 py-3 text-sm font-medium text-white
@@ -109,7 +115,11 @@ const ProductContent = ({ product }: { product: Product }) => {
             disabled:cursor-not-allowed disabled:opacity-50
           "
                 >
-                    <Heart className="size-5! mr-1" />  Add to Cart
+                    {
+                        isLoading ? <Spinner className='size-5' /> : <>
+                            <Heart className="size-5! mr-1" />  Add to Cart
+                        </>
+                    }
                 </button>
 
                 <button className="flex items-center gap-2 justify-center rounded-lg bg-secondary border-secondary border-solid transition-all cursor-pointer duration-300 ease-in-out flex-1 border px-6 py-3 text-sm font-medium">
