@@ -1,4 +1,5 @@
 "use client"
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -33,14 +34,12 @@ const UserAuthForm = ({
     const onSubmit = async (data: RegisterValues) => {
         try {
             await registerUser(data).unwrap();
+            toast.success("Account created successfully");
             reset();
             router.replace("/login");
-        } catch (error) {
-            if (error instanceof Error) {
-                console.log(error.message);
-            } else {
-                console.log(error);
-            }
+        } catch (error: any) {
+            const errorMessage = error?.data?.message || "Registration failed";
+            toast.error(errorMessage);
         }
     }
 

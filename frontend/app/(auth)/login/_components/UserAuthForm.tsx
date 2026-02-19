@@ -1,4 +1,5 @@
 "use client";
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,14 +31,12 @@ const UserAuthForm = ({
     const onSubmit = async (data: LoginValues) => {
         try {
             await login(data).unwrap();
+            toast.success("Login successful");
             reset();
             router.replace("/product");
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                console.log(error.message);
-            } else {
-                console.log(error);
-            }
+        } catch (error: any) {
+            const errorMessage = error?.data?.message || "Login failed";
+            toast.error(errorMessage);
         }
     }
     return (

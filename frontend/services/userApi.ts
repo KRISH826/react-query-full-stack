@@ -52,14 +52,16 @@ export const userApi = baseApi.injectEndpoints({
         }),
 
         logout: builder.mutation<void, void>({
-            query: () => "users/logout",
-            async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+            query: () => ({
+                url: "users/logout",
+                method: "POST",
+            }),
+            async onQueryStarted(arg, { queryFulfilled }) {
                 try {
                     await queryFulfilled;
                 } finally {
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
-                    dispatch(baseApi.util.resetApiState());
                 }
             },
         }),

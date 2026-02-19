@@ -16,7 +16,7 @@ const raqBaseQuery = fetchBaseQuery({
 })
 
 const baseQuery = retry(raqBaseQuery, {
-    maxRetries: 3,
+    maxRetries: 0,
 })
 
 export const baseApi = createApi({
