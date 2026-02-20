@@ -4,6 +4,7 @@ import { createPayment, markPaymentFailed, markPaymentSuccess, updateStatusConfi
 import crypto from "crypto";
 import { config } from "../../config/config";
 import { pool } from "../../db/db";
+import { markOrderFailed } from "../orders/order.repository";
 
 export class PaymentService {
     static async createPaymentService(orderId: string, amount: string): Promise<PaymentDB> {
@@ -41,6 +42,7 @@ export class PaymentService {
 
             if (expectedSignature !== data.razorpay_signature) {
                 await markPaymentFailed(data.order_id, client);
+                await markOrderFailed(data.order_id, client);
                 await client.query("ROLLBACK");
                 throw new Error("Invalid payment signature");
             }

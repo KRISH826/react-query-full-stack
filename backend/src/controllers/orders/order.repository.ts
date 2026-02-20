@@ -196,3 +196,10 @@ export async function buyNowProductByid(
     );
     return rows[0] || null;
 }
+
+export async function markOrderFailed(orderId: string, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(
+        `UPDATE orders SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [orderId]
+    );
+}
