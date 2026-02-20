@@ -15,10 +15,11 @@ export interface OrderDB {
     email: string;
     created_at: Date;
     updated_at: Date;
-    delivered_at?: Date;
-    cancelled_at?: Date;
+    delivered_at?: Date | null;
+    cancelled_at?: Date | null;
 }
 
+// ✅ image_url added
 export interface OrderItemDB {
     id: string;
     order_id: string;
@@ -28,10 +29,9 @@ export interface OrderItemDB {
     quantity: number;
     price_at_purchase: number;
     subtotal: number;
+    image_url?: string | null;
     created_at: Date;
 }
-
-// DTO
 
 export interface ShippingAddressDTO {
     shipping_address: string;
@@ -47,12 +47,13 @@ export interface CreateOrderDTO {
     email: string;
 }
 
+// ✅ clean — no ordernumber/status here, those live on OrderResponseDTO
 export interface OrderItemResponseDTO {
     order_id: string;
     product_id: string;
     productname: string;
     product_brand: string;
-    image_url?: string;
+    image_url?: string | null;
     quantity: number;
     price: number;
     subtotal: number;
@@ -62,24 +63,15 @@ export interface OrderResponseDTO {
     id: string;
     ordernumber: string;
     status: OrderStatus;
-    totalamount: string;
+    totalamount: number;
     items: OrderItemResponseDTO[];
     shippingaddress: ShippingAddressDTO;
     phone: string;
     email: string;
     created_at: Date;
     updated_at: Date;
-    delivered_at?: Date;
-    cancelled_at?: Date;
-}
-
-export interface OrderListItemDTO {
-    id: string;
-    ordernumber: string;
-    status: OrderStatus;
-    totalamount: string;
-    totalquantity: number;
-    created_at: Date;
+    delivered_at?: Date | null;
+    cancelled_at?: Date | null;
 }
 
 export interface DirectPurchaseDTO {
@@ -90,5 +82,11 @@ export interface DirectPurchaseDTO {
     email: string;
 }
 
-
-
+export interface OrderListItemDTO {
+    id: string;
+    ordernumber: string;
+    status: OrderStatus;
+    totalamount: string;
+    totalquantity: number;
+    created_at: Date;
+}
