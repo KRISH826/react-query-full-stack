@@ -1,5 +1,6 @@
 import { CreateOrderRequest, OrderResponseDTO } from "@/types/order";
 import { baseApi } from "./baseQuery";
+import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } from "@/types/payment";
 
 interface OrdersFullResponse {
     orders: OrderResponseDTO[];
@@ -50,6 +51,16 @@ export const orderApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Order", id: "LIST" }],
         }),
+        createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
+            query: (body) => ({ url: "payments/create-payment", method: "POST", body }),
+        }),
+        verifyPayment: builder.mutation<{ message: string; payment: boolean }, VerifyPaymentRequest>({
+            query: (body) => ({ url: "payments/verify-payment", method: "POST", body }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
     }),
 });
 
@@ -59,4 +70,6 @@ export const {
     useGetOrderByIdQuery,
     useCancelOrderMutation,
     useBuyNowOrderMutation,
+    useCreatePaymentMutation,
+    useVerifyPaymentMutation,
 } = orderApi;

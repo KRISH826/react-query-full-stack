@@ -25,13 +25,11 @@ export const productApi = baseApi.injectEndpoints({
                     ]
                     : [{ type: "Product", id: "LIST" }],
 
-            keepUnusedDataFor: 300,
         }),
         getProductById: builder.query<Product, string>({
             query: (id: string) => `products/${id}`,
             transformResponse: (response: ProductResponse) => response.product,
             providesTags: (result, error, id) => [{ type: "Product", id }],
-            keepUnusedDataFor: 300,
         }),
     })
 })
