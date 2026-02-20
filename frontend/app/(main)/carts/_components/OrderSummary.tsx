@@ -1,8 +1,14 @@
+"use client";
 import { useGetCartQuery } from '@/services/cartApi'
+import { usePathname, useRouter } from 'next/navigation';
 import React from 'react'
 
 const OrderSummary = () => {
     const { data } = useGetCartQuery();
+    const router = useRouter();
+    const pathname = usePathname();
+    const isCheckoutPage = pathname === "/checkout";
+
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">
             <h2 className="text-lg font-medium text-gray-900 mb-6">
@@ -26,9 +32,24 @@ const OrderSummary = () => {
                     <span>₹{data?.total}</span>
                 </div>
             </div>
-            <button className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90">
-                Proceed to Checkout
-            </button>
+
+            {isCheckoutPage ? (
+                <button
+                    type="submit"
+                    form="checkout-form"
+                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90"
+                >
+                    Place Order
+                </button>
+            ) : (
+                <button
+                    onClick={() => router.push("/checkout")}
+                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90"
+                >
+                    Proceed to Checkout
+                </button>
+            )}
+
             <p className="text-sm text-gray-500 mt-4 text-center">
                 Taxes calculated at checkout.
             </p>

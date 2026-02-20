@@ -60,6 +60,9 @@ const Profile = () => {
                     <DropdownMenuItem asChild>
                         <Link href="/profile">My Profile</Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/orders">My Orders</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout}>
                         Logout
                     </DropdownMenuItem>
