@@ -8,12 +8,14 @@ export type PaymentStatus =
 
 export interface CreatePaymentResponse {
     message: string;
-    id: string;
-    order_id: string;
-    razorpay_order_id: string;
-    amount: number;
-    status: PaymentStatus;
-    created_at: string;
+    payment: {
+        id: string;
+        order_id: string;
+        razorpay_order_id: string;
+        amount: number;
+        status: PaymentStatus;
+        created_at: string;
+    }
 }
 
 export interface VerifyPaymentRequest {

@@ -11,7 +11,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Phone, Mail, CreditCard } from "lucide-react"
 
 const CheckOutInfo = () => {
-    const [checkout, { isLoading }] = useCheckOutMutation()
+    const [checkout] = useCheckOutMutation()
 
     const {
         register,
@@ -35,10 +35,20 @@ const CheckOutInfo = () => {
     const onSubmit = async (data: CheckOutSchema) => {
         try {
             const response = await checkout(data).unwrap()
-            toast.success(response.message || "Order placed successfully!")
-            // You can redirect to a success page or clear the cart here
-        } catch (error: any) {
-            const errorMessage = error?.data?.message || "Failed to place order. Please try again."
+            // Dispatch custom event to trigger Razorpay in OrderSummary
+            const event = new CustomEvent("ORDER_CREATED", {
+                detail: {
+                    order: response.order,
+                    userData: {
+                        name: data.shippingAddress.shipping_address.split(',')[0], // Extract a name if possible or just use address
+                        email: data.email,
+                        phone: data.phone
+                    }
+                }
+            })
+            window.dispatchEvent(event)
+        } catch (error: unknown) {
+            const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to place order. Please try again."
             toast.error(errorMessage)
         }
     }
