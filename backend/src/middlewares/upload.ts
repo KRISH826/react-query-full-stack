@@ -2,7 +2,7 @@ import multer from "multer";
 import crypto from "crypto";
 import { s3Client } from "../utils/s3";
 import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { config } from "../config/config";
+import sharp from "sharp";
 
 
 export const upload = multer({
@@ -18,20 +18,39 @@ export const upload = multer({
     },
 })
 
+export const compressImage = async (file: Express.Multer.File) => {
+    try {
+        console.log('🖼️ Original image size:', Math.round(file.size / 1024), 'KB');
+        const compressedBuffer = await sharp(file.buffer)
+            .resize(1920, 1080, { // Max dimensions
+                fit: 'inside',
+                withoutEnlargement: true // Don't enlarge small images
+            })
+            .webp({ quality: 80 }) // Convert to WebP with 80% quality
+            .toBuffer();
+        console.log('🖼️ Compressed image size:', Math.round(compressedBuffer.length / 1024), 'KB');
+        return compressedBuffer;
+    } catch (error) {
+        console.error('❌ Image compression failed:', error);
+        throw new Error('Failed to compress image');
+    }
+}
+
 export const uploadSingleImage = async (file: Express.Multer.File): Promise<{ url: string, key: string }> => {
     try {
         const key = `products/${crypto.randomUUID()}`;
+        const compressedBuffer = await compressImage(file);
         await s3Client.send(
             new PutObjectCommand({
                 Bucket: process.env.AWS_BUCKET_NAME,
                 Key: key,
-                Body: file.buffer,
+                Body: compressedBuffer,
                 ContentType: file.mimetype
             })
         )
         return {
             key,
-            url: `https://${process.env.AWS_BUCKET_NAME}.s3.ap-southeast-2.amazonaws.com/${key}`,
+            url: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
         };
     } catch (error) {
         throw error;

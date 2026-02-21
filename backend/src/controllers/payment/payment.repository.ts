@@ -13,7 +13,7 @@ export async function createPayment(orderId: string, amount: number, razorpayOrd
 export async function markPaymentSuccess(orderId: string, razorpay_payment_id: string, signature: string, db: Pool | PoolClient = pool): Promise<PaymentDB> {
     const { rows } = await db.query(
         `UPDATE payments SET razorpay_payment_id=$1,
-     signature=$2, status='success' WHERE order_id=$3 RETURNING *`,
+     razorpay_signature=$2, status='success' WHERE order_id=$3 RETURNING *`,
         [razorpay_payment_id, signature, orderId]
     )
     return rows[0];
@@ -27,10 +27,9 @@ export async function markPaymentFailed(orderId: string, db: Pool | PoolClient =
     return rows[0];
 }
 
-export async function updateStatusConfirmedByOrderId(orderId: string, db: Pool | PoolClient = pool): Promise<PaymentDB> {
-    const { rows } = await db.query(
-        `UPDATE payments SET status='confirmed' WHERE order_id=$1 RETURNING *`,
+export async function updateStatusConfirmedByOrderId(orderId: string, db: Pool | PoolClient = pool) {
+    await db.query(
+        `UPDATE orders SET status='confirmed', updated_at=CURRENT_TIMESTAMP WHERE id=$1`,
         [orderId]
     )
-    return rows[0];
 }

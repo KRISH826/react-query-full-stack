@@ -19,7 +19,7 @@ export interface PaymentDB {
 }
 
 export interface CreatePaymentDto {
-    order_id: String;
+    order_id: string;
     amount: number;
 }
 

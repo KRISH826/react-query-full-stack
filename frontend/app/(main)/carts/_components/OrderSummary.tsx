@@ -1,13 +1,44 @@
 "use client";
 import { useGetCartQuery } from '@/services/cartApi'
 import { usePathname, useRouter } from 'next/navigation';
-import React from 'react'
+import React, { useEffect } from 'react'
+import { useRazorpay } from '@/hooks/useRazorpay';
+import { PaymentSuccessDialog } from '@/components/payment/PaymentSuccessDialog';
+import { OrderResponseDTO } from '@/types/order';
 
 const OrderSummary = () => {
     const { data } = useGetCartQuery();
     const router = useRouter();
     const pathname = usePathname();
     const isCheckoutPage = pathname === "/checkout";
+
+    const {
+        initiatePayment,
+        isLoading: isPaymentLoading,
+        isSuccessOpen,
+        successData,
+        closeSuccess
+    } = useRazorpay();
+
+    useEffect(() => {
+        const handleOrderCreated = (event: Event) => {
+            const customEvent = event as CustomEvent<{
+                order: OrderResponseDTO;
+                userData: { name: string; email: string; phone: string };
+            }>;
+            const { order, userData } = customEvent.detail;
+            initiatePayment({
+                orderId: order.id,
+                amount: order.totalamount,
+                userName: userData.name || "Customer",
+                userEmail: userData.email,
+                userPhone: userData.phone
+            });
+        };
+
+        window.addEventListener('ORDER_CREATED', handleOrderCreated as EventListener);
+        return () => window.removeEventListener('ORDER_CREATED', handleOrderCreated as EventListener);
+    }, [initiatePayment]);
 
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">
@@ -37,9 +68,10 @@ const OrderSummary = () => {
                 <button
                     type="submit"
                     form="checkout-form"
-                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90"
+                    disabled={isPaymentLoading}
+                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Place Order
+                    {isPaymentLoading ? "Processing..." : "Place Order"}
                 </button>
             ) : (
                 <button
@@ -53,6 +85,16 @@ const OrderSummary = () => {
             <p className="text-sm text-gray-500 mt-4 text-center">
                 Taxes calculated at checkout.
             </p>
+
+            {/* Success Dialog */}
+            {successData && (
+                <PaymentSuccessDialog
+                    isOpen={isSuccessOpen}
+                    onClose={closeSuccess}
+                    orderId={successData.orderId}
+                    amount={successData.amount}
+                />
+            )}
         </div>
     )
 }

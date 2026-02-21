@@ -15,10 +15,10 @@ export const config = {
         max: 10,
         min: 1,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
-        connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+        connectionTimeoutMillis: 10000,
+        // connectionString: "postgresql://neondb_owner:npg_lSpAkoNV28QT@ep-billowing-tree-ahpjft4u-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
 
-        // connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}?sslmode=require&uselibpqcompat=true`,
+        connectionString: `postgresql://${process.env.RDS_DB_USER}:${process.env.RDS_DB_PASSWORD}@${process.env.RDS_HOST}:${process.env.RDS_DB_PORT}/${process.env.RDS_DB_NAME}?sslmode=require&uselibpqcompat=true`
     },
     jwt: {
         secret: process.env.JWT_SECRET,
