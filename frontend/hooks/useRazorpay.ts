@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useCreatePaymentMutation, useVerifyPaymentMutation } from "@/services/orderApi"
+import { useCancelOrderMutation, useCreatePaymentMutation, useVerifyPaymentMutation } from "@/services/orderApi"
 import { toast } from "sonner"
 
 declare global {
@@ -39,6 +39,7 @@ interface RazorpayErrorResponse {
 export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
     const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation()
+    const [cancelOrder] = useCancelOrderMutation()
 
     // ✅ Modal state hook ke andar
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
@@ -105,17 +106,20 @@ export const useRazorpay = () => {
                     color: "#111827",
                 },
                 modal: {
-                    ondismiss: () => {
-                        toast.warning("Payment cancelled.")
+                    ondismiss: async () => {
+                        await cancelOrder(orderId).unwrap()
+                        toast.warning("Payment cancelled. Order has been cancelled.")
                     },
                 },
             }
 
             const rzp = new window.Razorpay(options)
 
-            rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-                toast.error(`Payment failed: ${response.error.description}`)
+            rzp.on("payment.failed", async (response: RazorpayErrorResponse) => {
+                await cancelOrder(orderId).unwrap()
+                toast.error(`Payment failed: ${response.error.description}. Order has been cancelled.`)
             })
+
 
             rzp.open()
 

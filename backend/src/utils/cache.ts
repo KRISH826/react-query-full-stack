@@ -28,21 +28,36 @@ export const cache = {
     },
     async delPattern(pattern: string): Promise<void> {
         try {
-            const stream = redis.scanStream({
-                match: pattern,
-                count: 100,
-            })
-            const pipeline = redis.pipeline();
-            stream.on('data', (keys: string[]) => {
-                if (keys.length) {
-                    for (const key of keys) {
-                        pipeline.del(key);
+            // ✅ Promise mein wrap karo taaki stream complete hone ka wait ho
+            await new Promise<void>((resolve, reject) => {
+                const stream = redis.scanStream({
+                    match: pattern,
+                    count: 100,
+                });
+
+                const pipeline = redis.pipeline();
+
+                stream.on('data', (keys: string[]) => {
+                    if (keys.length) {
+                        for (const key of keys) {
+                            pipeline.del(key);
+                        }
                     }
-                }
-            })
-            stream.on('end', async () => {
-                await pipeline.exec();
-            })
+                });
+
+                stream.on('end', async () => {
+                    try {
+                        await pipeline.exec(); // ✅ ab properly awaited hai
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+
+                stream.on('error', (err) => {
+                    reject(err);
+                });
+            });
         } catch (error) {
             console.error("Redis DEL PATTERN Error:", error);
         }

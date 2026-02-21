@@ -54,6 +54,7 @@ export class ProductService {
             }
             await client.query('COMMIT');
             await cache.delPattern(`product:*`);
+            await cache.delPattern(`products:*`);
             return await findProductWithImagesById(created.id);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -156,9 +157,11 @@ export class ProductService {
             cacheKey,
             async () => {
                 const products = await findAllProducts(page, limit);
-                if (!products) {
-                    throw new HttpError("Products not found", 404);
-                }
+                // The check for !products and throwing an error here is redundant
+                // because findAllProducts is expected to return an object with data and total,
+                // even if data is an empty array. If it truly returns null/undefined,
+                // the repository should handle it or return an empty array.
+                // For now, removing the explicit throw as per common pattern for list fetches.
                 return {
                     data: products.data,
                     total: products.total,
@@ -168,17 +171,6 @@ export class ProductService {
                 };
             }
         )
-        const products = await findAllProducts(page, limit);
-        if (!products) {
-            throw new HttpError("Products not found", 404);
-        }
-        return {
-            data: products.data,
-            total: products.total,
-            page,
-            limit,
-            totalPages: Math.ceil(products.total / limit),
-        };
     }
 
     static async deleteProductService(id: string): Promise<ProductDB | null> {
