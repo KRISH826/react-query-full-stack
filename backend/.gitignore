@@ -9,6 +9,8 @@ node_modules
 .env.development
 .env.production
 .env.local
+.env.prod
+.pem
 .env.development.local
 .env.test.local
 .env.production.local
