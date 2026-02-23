@@ -5,8 +5,10 @@ const redis = new Redis({
     port: parseInt(process.env.REDIS_PORT || '6379'),
     tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
     password: process.env.REDIS_PASSWORD,
-    maxRetriesPerRequest: 3,
-    retryStrategy: (times) => Math.min(times * 50, 2000),
+    maxRetriesPerRequest: 1,
+    enableReadyCheck: false,
+    lazyConnect: false,
+    keepAlive: 10000,
 })
 
 redis.on('error', (err) => {
