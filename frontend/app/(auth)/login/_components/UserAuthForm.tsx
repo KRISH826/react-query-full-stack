@@ -10,7 +10,7 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { useLoginMutation } from '@/services/userApi'
 import { Spinner } from '@/components/ui/spinner';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const UserAuthForm = ({
     className,
@@ -18,6 +18,8 @@ const UserAuthForm = ({
 }: React.HTMLAttributes<HTMLDivElement>) => {
     const [login, { isLoading }] = useLoginMutation();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const callBackUrl = searchParams.get("callbackUrl") || "/product";
 
     const {
         register,
@@ -33,7 +35,7 @@ const UserAuthForm = ({
             await login(data).unwrap();
             toast.success("Login successful");
             reset();
-            router.replace("/product");
+            router.push(callBackUrl);
         } catch (error: any) {
             const errorMessage = error?.data?.message || "Login failed";
             toast.error(errorMessage);
