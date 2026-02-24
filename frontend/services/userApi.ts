@@ -15,6 +15,8 @@ export const userApi = baseApi.injectEndpoints({
                     if (data.accessToken) {
                         localStorage.setItem("token", data.accessToken);
                         localStorage.setItem("user", JSON.stringify(data.user));
+
+                        document.cookie = `token=${data.accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
                     }
 
                 } catch (error) {
@@ -36,6 +38,8 @@ export const userApi = baseApi.injectEndpoints({
                     if (data.accessToken) {
                         localStorage.setItem("token", data.accessToken);
                         localStorage.setItem("user", JSON.stringify(data.user));
+
+                        document.cookie = `token=${data.accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
                     }
 
                 } catch (error) {
@@ -59,6 +63,7 @@ export const userApi = baseApi.injectEndpoints({
             async onQueryStarted(arg, { queryFulfilled }) {
                 try {
                     await queryFulfilled;
+                    document.cookie = "token=; path=/; max-age=0"
                 } finally {
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
