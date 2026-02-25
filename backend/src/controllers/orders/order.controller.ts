@@ -58,19 +58,19 @@ export class OrderController {
             if (!userId) {
                 throw new HttpError('Unauthorized', 401)
             }
-            const { productId, shippingAddress, phone, email } = req.body;
+            const { productId, shippingAddress, phone, email, variant_id } = req.body;
 
-            if (!productId || !shippingAddress || !phone || !email) {
+            if (!productId || !shippingAddress || !phone || !email || !variant_id) {
                 throw new HttpError('All fields are required', 400)
             }
 
             const order = await OrderService.buyNowService(productId, {
-                productId,
+                variant_id,
                 quantity: 1,
                 shippingAddress,
                 phone,
-                email,
-            }, userId);
+                    email,
+                }, userId);
             return res.status(201).json({ message: 'Order created successfully', order })
         } catch (error) {
             next(error)

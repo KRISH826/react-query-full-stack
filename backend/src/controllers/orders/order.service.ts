@@ -52,11 +52,14 @@ export class OrderService {
                     return createOrderItem(
                         order.id,
                         cartItem.product_id,
+                        cartItem.variant_id,
                         cartItem.productname,
                         cartItem.brand,
                         cartItem.quantity,
                         price,
                         subtotal,
+                        cartItem.size,
+                        cartItem.color,
                         cartItem.image_url,
                         client
                     );
@@ -143,7 +146,7 @@ export class OrderService {
         try {
             await client.query("BEGIN");
 
-            const product = await buyNowProductByid(productId, client);
+            const product = await buyNowProductByid(productId, orderData.variant_id, client);
             if (!product) throw new HttpError("Product not found", 404);
 
             const price = Number(product.price);
@@ -165,11 +168,14 @@ export class OrderService {
             await createOrderItem(
                 order.id,
                 product.id,
+                product.variant_id,   
                 product.productname,
                 product.brand || "",
                 quantity,
                 price,
                 subtotal,
+                product.size || null,
+                product.color || null,
                 product.image_url || "",
                 client
             );
@@ -191,11 +197,14 @@ export class OrderService {
         const formattedItems: OrderItemResponseDTO[] = items.map((item) => ({
             order_id: order.id,
             product_id: item.product_id,
+            variant_id: item.variant_id,
             productname: item.product_name,
             product_brand: item.product_brand ?? "",
             quantity: item.quantity,
             price: item.price_at_purchase,
             subtotal: item.subtotal,
+            size: item.size ?? null,
+            color: item.color ?? null,
             image_url: item.image_url ?? null,
         }));
 
