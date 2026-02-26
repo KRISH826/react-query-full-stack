@@ -150,7 +150,7 @@ export interface CreateVariantDTO {
     color?: string;
     price_override?: number;
     offer_price_override?: number | null;
-    stock_quantity: number | null;
+    stock_quantity: number;
     sku?: string | null;
 }
 

@@ -30,11 +30,11 @@ export class ProductService {
                 }
             }
 
-            // for (const variant of product.variants) {
-            //     if (variant.stock_quantity === undefined || variant.stock_quantity === null) {
-            //         throw new HttpError("Stock quantity is required for each variant", 400);
-            //     }
-            // }
+            for (const variant of product.variants) {
+                if (variant.stock_quantity === undefined || variant.stock_quantity === null) {
+                    throw new HttpError("Stock quantity is required for each variant", 400);
+                }
+            }
 
             const created = await createProduct({
                 ...product,
@@ -147,13 +147,13 @@ export class ProductService {
                 }
             }
 
-            // if (product.variants && product.variants.length > 0) {
-            //     for (const variant of product.variants) {
-            //         if (variant.stock_quantity === null) {
-            //             throw new HttpError("Stock quantity is required for each variant", 400);
-            //         }
-            //     }
-            // }
+            if (product.variants && product.variants.length > 0) {
+                for (const variant of product.variants) {
+                    if (variant.stock_quantity === null) {
+                        throw new HttpError("Stock quantity is required for each variant", 400);
+                    }
+                }
+            }
 
             if (product.variants) {
                 await deleteProductVariants(id, client);
