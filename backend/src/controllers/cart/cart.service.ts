@@ -113,14 +113,14 @@ export class CartService {
         try {
             await client.query('BEGIN');
             const cart = await this.getOrCreateCart(userId, client);
-            const item = await findCartItem(cart.id, data.product_id, client);
+            const item = await findCartItem(cart.id, data.variant_id, client);
 
             if (!item) {
                 throw new HttpError('Cart Items Not Found', 404);
             }
 
             if (data.quantity <= 0) {
-                await deleteCartItem(cart.id, data.product_id, client)
+                await deleteCartItem(cart.id, data.variant_id, client)
             } else {
                 await updateCartItem({
                     cart_id: cart.id,   // ✅ internal only
