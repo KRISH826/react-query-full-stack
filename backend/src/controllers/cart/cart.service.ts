@@ -43,7 +43,6 @@ export class CartService {
                             brand: item.brand,
                             imageUrl: item.image_url ?? undefined,
                             size: item.size ?? undefined,
-                            color: item.color ?? undefined,
                             quantity: item.quantity,
                             price: Number(item.price_at_add),
                             subtotal

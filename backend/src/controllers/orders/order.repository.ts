@@ -113,7 +113,6 @@ export async function createOrderItem(
     price: number,
     subtotal: number,
     size: string | null,
-    color: string | null,
     image_url: string | null,
     db: Pool | PoolClient = pool
 ): Promise<OrderItemDB | null> {
@@ -128,12 +127,11 @@ export async function createOrderItem(
             price_at_purchase,
             subtotal,
             size,
-            color,
             image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *`,
-        [orderId, productId, variantId, productName, productBrand, quantity, price, subtotal, size, color, image_url]
+        [orderId, productId, variantId, productName, productBrand, quantity, price, subtotal, size, image_url]
     );
     return rows[0] || null;
 }
@@ -205,7 +203,6 @@ export async function buyNowProductByid(
             pi.image_url,
             v.id                                    AS variant_id,
             v.size,
-            v.color,
             COALESCE(v.price_override, p.price)     AS final_price
          FROM products p
          JOIN product_variants v ON v.id = $2 AND v.product_id = $1

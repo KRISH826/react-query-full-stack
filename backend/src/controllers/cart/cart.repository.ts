@@ -88,8 +88,7 @@ export async function getCartItems(cartId: string, db: Pool | PoolClient = pool)
     p.productname,
     p.brand,
     pi.image_url,
-    v.size,
-    v.color
+    v.size
 FROM cart_items ci
 JOIN products p ON ci.product_id = p.id
 JOIN product_variants v ON ci.variant_id = v.id

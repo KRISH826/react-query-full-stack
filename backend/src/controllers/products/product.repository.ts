@@ -170,7 +170,6 @@ export async function findAllProducts(
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
-                    'color', v.color,
                     'price_override', v.price_override,
                     'offer_price_override', v.offer_price_override,
                     'stock_quantity', v.stock_quantity,
@@ -234,7 +233,6 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
-                    'color', v.color,
                     'price_override', v.price_override,
                     'offer_price_override', v.offer_price_override,
                     'stock_quantity', v.stock_quantity,
@@ -265,12 +263,11 @@ export async function deleteProductCategories(productId: string, db: Pool | Pool
 
 export async function addProductVariant(variant: CreateVariantDTO, db: Pool | PoolClient = pool): Promise<void> {
     const { rows } = await db.query(`
-        INSERT INTO product_variants (product_id, size, color, price_override, offer_price_override, stock_quantity, sku)
-        VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *
+        INSERT INTO product_variants (product_id, size, price_override, offer_price_override, stock_quantity, sku)
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *
     `, [
         variant.product_id,
         variant.size,
-        variant.color,
         variant.price_override,
         variant.offer_price_override,
         variant.stock_quantity,

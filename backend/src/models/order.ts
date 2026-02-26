@@ -31,7 +31,6 @@ export interface OrderItemDB {
     subtotal: number;
     image_url?: string | null;
     size: string | null;            // ✅
-    color: string | null;           // ✅
     created_at: Date;
 }
 
@@ -50,7 +49,7 @@ export interface CreateOrderDTO {
 }
 
 export interface DirectPurchaseDTO {
-    variant_id: string;             // ✅ required — determines size/color/price
+    variant_id: string;             // ✅ required — determines size/price
     quantity: number;
     shippingAddress: ShippingAddressDTO;
     phone: string;
@@ -65,7 +64,6 @@ export interface OrderItemResponseDTO {
     product_brand: string;
     image_url?: string | null;
     size: string | null;            // ✅
-    color: string | null;           // ✅
     quantity: number;
     price: number;
     subtotal: number;

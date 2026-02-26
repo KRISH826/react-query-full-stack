@@ -47,7 +47,6 @@ export class ProductService {
                 await addProductVariant({
                     product_id: created.id,
                     size: variant.size,
-                    color: variant.color,
                     price_override: variant.price_override,
                     offer_price_override: variant.offer_price_override,
                     stock_quantity: variant.stock_quantity,
@@ -162,7 +161,6 @@ export class ProductService {
                     await addProductVariant({
                         product_id: id,
                         size: variant.size,
-                        color: variant.color,
                         price_override: variant.price_override,
                         offer_price_override: variant.offer_price_override,
                         stock_quantity: variant.stock_quantity,

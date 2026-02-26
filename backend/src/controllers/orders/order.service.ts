@@ -59,7 +59,6 @@ export class OrderService {
                         price,
                         subtotal,
                         cartItem.size,
-                        cartItem.color,
                         cartItem.image_url,
                         client
                     );
@@ -175,7 +174,6 @@ export class OrderService {
                 price,
                 subtotal,
                 product.size || null,
-                product.color || null,
                 product.image_url || "",
                 client
             );
@@ -204,7 +202,6 @@ export class OrderService {
             price: item.price_at_purchase,
             subtotal: item.subtotal,
             size: item.size ?? null,
-            color: item.color ?? null,
             image_url: item.image_url ?? null,
         }));
 

@@ -55,7 +55,6 @@ export interface CartItemWithDetailsDB {
     brand: string;
     image_url: string | null;
     size: string | null;
-    color: string | null;
 }
 
 export interface CartItemResponseDTO {
@@ -63,7 +62,6 @@ export interface CartItemResponseDTO {
     variantId: string;
     productName?: string;
     size?: string;
-    color?: string;
     brand?: string;
     imageUrl?: string;
     quantity: number;

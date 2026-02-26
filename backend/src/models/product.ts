@@ -135,7 +135,6 @@ export interface ProductVariantDB {
     id: string;
     product_id: string;
     size: string | null;
-    color?: string | null;
     price_override?: number | null;
     office_price_override: number | null;
     sku: string | null;
@@ -147,7 +146,6 @@ export interface ProductVariantDB {
 export interface CreateVariantDTO {
     product_id: string;
     size?: string;
-    color?: string;
     price_override?: number;
     offer_price_override?: number | null;
     stock_quantity: number;
