@@ -70,6 +70,14 @@ export class ProductController {
             const id = req.params.id as string;
             const files = req.files as Express.Multer.File[] | undefined;
             req.body.category_names = toArray(req.body.category_names);
+                // ✅ variants comes as JSON string from form-data — parse it
+            if (typeof req.body.variants === 'string') {
+                try {
+                    req.body.variants = JSON.parse(req.body.variants);
+                } catch (e) {
+                    req.body.variants = [];
+                }
+            }
             const product = await ProductService.updateProductService(id, req.body, files);
             return res.status(200).json({
                 product,

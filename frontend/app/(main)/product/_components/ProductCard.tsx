@@ -67,7 +67,13 @@ const ProductCard = ({ product }: Props) => {
                 {/* Footer */}
                 <div className="mt-4 flex items-center justify-between">
                     <span className="text-lg font-bold text-gray-900">
-                        ₹{product.price.toLocaleString()}
+                        {
+                            product.offer_price ? <>
+                                ₹{product.offer_price.toLocaleString()} <span className="text-gray-400 line-through">₹{product.price.toLocaleString()}</span>
+                            </> : <>
+                                ₹{product.price.toLocaleString()}
+                            </>
+                        }
                     </span>
                 </div>
                 <button

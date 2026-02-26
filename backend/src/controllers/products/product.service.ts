@@ -115,7 +115,7 @@ export class ProductService {
                 productname: product.productname ?? existingProduct.productname,
                 description: product.description ?? existingProduct.description,
                 price: product.price ?? existingProduct.price,
-                offer_price: product.offer_price !== undefined ? product.offer_price : existingProduct.offer_price,
+                offer_price: product.offer_price !== undefined ? product.offer_price : existingProduct.offer_price, // ✅
                 brand: (product.brand ?? existingProduct.brand) || undefined,
                 stock_quantity: product.stock_quantity ?? existingProduct.stock_quantity,
                 is_track_inventory: product.is_track_inventory ?? existingProduct.is_track_inventory,

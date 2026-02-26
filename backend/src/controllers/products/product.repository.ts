@@ -54,11 +54,12 @@ export async function addProductImage(image: ProductImageDTO, db: Pool | PoolCli
 
 export async function updateProduct(id: string, product: UpdateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
-        `UPDATE products SET productname=$1, description=$2, price=$3, brand=$4, stock_quantity=$5, is_track_inventory=$6, status=$7 WHERE id=$8 RETURNING *`,
+        `UPDATE products SET productname=$1, description=$2, price=$3, offer_price=$4, brand=$5, stock_quantity=$6, is_track_inventory=$7, status=$8 WHERE id=$9 RETURNING *`,
         [
             product.productname,
             product.description,
             product.price,
+            product.offer_price,
             product.brand,
             product.stock_quantity,
             product.is_track_inventory,

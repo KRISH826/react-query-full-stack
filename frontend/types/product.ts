@@ -6,11 +6,35 @@ export enum ProductStatus {
     ARCHIVED = "archived",
 }
 
+export interface ProductVariant {
+    id: string;
+    product_id: string;
+    size: string | null;
+    color?: string | null;
+    price_override?: number | null;
+    offer_price_override?: number | null;
+    sku: string | null;
+    stock_quantity: number | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface CreateVariantPayload {
+    product_id?: string;
+    size?: string;
+    color?: string;
+    price_override?: number;
+    offer_price_override?: number | null;
+    stock_quantity: number;
+    sku?: string | null;
+}
+
 export interface Product {
     id: string;
     productname: string;
     description: string;
     price: number;
+    offer_price?: number | null;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -19,8 +43,9 @@ export interface Product {
     created_at: string;
     updated_at: string;
     deleted_at?: string | null;
-    images?: ProductImage[]; // Optional on list view, required on detail view? Probably optional generally.
+    images?: ProductImage[];
     categories?: Category[];
+    variants?: ProductVariant[];
 }
 
 export interface ProductPayload {
@@ -28,10 +53,11 @@ export interface ProductPayload {
     description: string;
     price: number;
     brand?: string;
-    stock_quantity?: number; // Optional in create?
-    is_track_inventory?: boolean; // Optional in create?
+    stock_quantity?: number;
+    is_track_inventory?: boolean;
     status?: ProductStatus;
     category_names?: string[];
+    variants?: CreateVariantPayload[];
 }
 
 export interface ProductImage {
