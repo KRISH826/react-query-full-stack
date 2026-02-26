@@ -3,7 +3,6 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderService } from "./order.service";
 import { OrderStatus } from "../../models/order";
-import { ProductService } from "../products/product.service";
 
 export class OrderController {
     static async createOrderController(

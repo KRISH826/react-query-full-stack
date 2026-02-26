@@ -30,11 +30,11 @@ export class ProductService {
                 }
             }
 
-            for (const variant of product.variants) {
-                if(!variant.stock_quantity) {
-                    throw new HttpError("Stock quantity is required for each variant", 400);
-                }
-            }
+            // for (const variant of product.variants) {
+            //     if (variant.stock_quantity === undefined || variant.stock_quantity === null) {
+            //         throw new HttpError("Stock quantity is required for each variant", 400);
+            //     }
+            // }
 
             const created = await createProduct({
                 ...product,
@@ -43,7 +43,7 @@ export class ProductService {
                 stock_quantity: product.stock_quantity || 0,
             }, client)
 
-            for(const variant of product.variants) {
+            for (const variant of product.variants) {
                 await addProductVariant({
                     product_id: created.id,
                     size: variant.size,
@@ -54,7 +54,7 @@ export class ProductService {
                     sku: variant.sku || null,
                 }, client);
             }
-            
+
 
             if (files?.length) {
                 for (let i = 0; i < files.length; i++) {
@@ -74,7 +74,7 @@ export class ProductService {
             await client.query('COMMIT');
             await cache.delPattern(`product:*`);
             await cache.delPattern(`products:*`);
-            return await findProductWithImagesById(created.id , client);
+            return await findProductWithImagesById(created.id, client);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -147,25 +147,28 @@ export class ProductService {
                 }
             }
 
-            if(product.variants && product.variants.length > 0) {
-                for(const variant of product.variants) {
-                    if(variant.stock_quantity === null) {
-                        throw new HttpError("Stock quantity is required for each variant", 400);
-                    }
-                }
-            }
+            // if (product.variants && product.variants.length > 0) {
+            //     for (const variant of product.variants) {
+            //         if (variant.stock_quantity === null) {
+            //             throw new HttpError("Stock quantity is required for each variant", 400);
+            //         }
+            //     }
+            // }
 
-            await deleteProductVariants(id, client);
-            for(const variant of product.variants || []) {
-                await addProductVariant({
-                    product_id: id,
-                    size: variant.size,
-                    color: variant.color,
-                    price_override: variant.price_override,
-                    offer_price_override: variant.offer_price_override,
-                    stock_quantity: variant.stock_quantity,
-                    sku: variant.sku || null,
-                }, client);
+            if (product.variants) {
+                await deleteProductVariants(id, client);
+
+                for (const variant of product.variants) {
+                    await addProductVariant({
+                        product_id: id,
+                        size: variant.size,
+                        color: variant.color,
+                        price_override: variant.price_override,
+                        offer_price_override: variant.offer_price_override,
+                        stock_quantity: variant.stock_quantity,
+                        sku: variant.sku || null,
+                    }, client);
+                }
             }
 
             await client.query('COMMIT');

@@ -7,6 +7,7 @@ export class ProductController {
         try {
             const files = req.files as Express.Multer.File[] | undefined;
             req.body.category_names = toArray(req.body.category_names);
+            req.body.variants = toArray(req.body.variants);
             const product = await ProductService.createProductService(req.body, files);
             return res.status(201).json({
                 product,
