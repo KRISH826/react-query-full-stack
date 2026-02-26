@@ -10,6 +10,7 @@ export interface ProductDB {
     productname: string;
     description: string;
     price: number;
+    offer_price?: number | null;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -24,23 +25,28 @@ export interface CreateProductDTO {
     productname: string;
     description: string;
     price: number;
+    offer_price?: number | null;
     brand?: string;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     created_by?: string;
     status?: ProductStatus; // admin only
     category_names?: string[]; // ADD THIS
+    variants?: CreateVariantDTO[]; // ADD THIS
+
 }
 
 export interface UpdateProductDTO {
     productname?: string;
     description?: string;
     price?: number;
+    offer_price?: number | null;
     brand?: string;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     status?: ProductStatus;
     category_names?: string[]; // ADD THIS
+    variants?: CreateVariantDTO[];
 }
 
 export interface ProductResponseDTO {
@@ -48,6 +54,7 @@ export interface ProductResponseDTO {
     productname: string;
     description: string;
     price: number;
+    offer_price?: number | null;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -114,9 +121,36 @@ export interface ProductQueryDTO {
 // 
 export interface ProductWithImagesDTO extends ProductDB {
     images: ProductImageDB[];
+    categories: CategoryDB[];
+    variants: ProductVariantDB[];
 }
 
 export interface ProductWithImagesResponseDTO extends ProductResponseDTO {
     image_url: string;
     categories: CategoryDTO[];
+    variants: ProductVariantDB[];
 }
+
+export interface ProductVariantDB {
+    id: string;
+    product_id: string;
+    size: string | null;
+    color?: string | null;
+    price_override?: number | null;
+    office_price_override: number | null;
+    sku: string | null;
+    stock_quantity: number | null;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export interface CreateVariantDTO {
+    product_id: string;
+    size?: string;
+    color?: string;
+    price_override?: number;
+    offer_price_override?: number | null;
+    stock_quantity: number | null;
+    sku?: string | null;
+}
+

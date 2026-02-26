@@ -1,8 +1,8 @@
 import { PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
-import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
-import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, updateCartItem } from "./cart.repository";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO, UpdateCartItemDB } from "../../models/cart";
+import { createCart, createCartItem, deleteCartItem, findCartByUserId, findCartItem, getCartItems, getProductPrice, getVariantPrice, updateCartItem } from "./cart.repository";
 import { cache } from "../../utils/cache";
 
 
@@ -38,9 +38,12 @@ export class CartService {
 
                         return {
                             productId: item.product_id,
+                            variantId: item.variant_id,
                             productName: item.productname,
                             brand: item.brand,
                             imageUrl: item.image_url ?? undefined,
+                            size: item.size ?? undefined,
+                            color: item.color ?? undefined,
                             quantity: item.quantity,
                             price: Number(item.price_at_add),
                             subtotal
@@ -67,7 +70,7 @@ export class CartService {
         try {
             await client.query('BEGIN');
             const cart = await this.getOrCreateCart(userId, client);
-            const price = await getProductPrice(data.product_id, client);
+            const price = await getVariantPrice(data.product_id, data.variant_id, client);
 
             if (!price) {
                 throw new HttpError('Product not found', 404);
@@ -79,12 +82,14 @@ export class CartService {
                 await updateCartItem({
                     cart_id: cart.id,
                     product_id: data.product_id,
+                    variant_id: data.variant_id,
                     quantity: data.quantity,
                 }, client)
             } else {
                 await createCartItem({
                     cart_id: cart.id,
                     product_id: data.product_id,
+                    variant_id: data.variant_id,
                     quantity: data.quantity,
                     price: price,
                 }, client)
@@ -103,7 +108,7 @@ export class CartService {
         }
     }
 
-    static async updateQuantity(userId: string, data: UpdateCartDTO): Promise<CartResponseDTO> {
+    static async updateQuantity(userId: string, data: UpdateCartItemDB): Promise<CartResponseDTO> {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
@@ -118,8 +123,9 @@ export class CartService {
                 await deleteCartItem(cart.id, data.product_id, client)
             } else {
                 await updateCartItem({
-                    cart_id: cart.id,
+                    cart_id: cart.id,   // ✅ internal only
                     product_id: data.product_id,
+                    variant_id: data.variant_id,
                     quantity: data.quantity,
                 }, client)
             }

@@ -106,11 +106,14 @@ export async function updateOrderStatus(
 export async function createOrderItem(
     orderId: string,
     productId: string,
+    variantId: string | null,
     productName: string,
     productBrand: string,
     quantity: number,
     price: number,
     subtotal: number,
+    size: string | null,
+    color: string | null,
     image_url: string | null,
     db: Pool | PoolClient = pool
 ): Promise<OrderItemDB | null> {
@@ -118,16 +121,19 @@ export async function createOrderItem(
         `INSERT INTO order_items (
             order_id,
             product_id,
+            variant_id,
             product_name,
             product_brand,
             quantity,
             price_at_purchase,
             subtotal,
+            size,
+            color,
             image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
-        [orderId, productId, productName, productBrand, quantity, price, subtotal, image_url]
+        [orderId, productId, variantId, productName, productBrand, quantity, price, subtotal, size, color, image_url]
     );
     return rows[0] || null;
 }
@@ -159,11 +165,14 @@ export async function getOrderWithItems(
                         'id',               oi.id,
                         'order_id',         oi.order_id,
                         'product_id',       oi.product_id,
+                        'variant_id',       oi.variant_id,
                         'product_name',     oi.product_name,
                         'product_brand',    oi.product_brand,
                         'quantity',         oi.quantity,
                         'price_at_purchase',oi.price_at_purchase,
                         'subtotal',         oi.subtotal,
+                        'size',             oi.size,
+                        'color',            oi.color,
                         'image_url',        oi.image_url,
                         'created_at',       oi.created_at
                     ) ORDER BY oi.created_at ASC
@@ -185,14 +194,25 @@ export async function getOrderWithItems(
 
 export async function buyNowProductByid(
     productId: string,
+    variantId: string,
     db: Pool | PoolClient = pool
-): Promise<ProductWithImagesResponseDTO | null> {
+) {
     const { rows } = await db.query(
-        `SELECT p.id, p.productname, p.price, p.brand, pi.image_url
+        `SELECT 
+            p.id,
+            p.productname,
+            p.brand,
+            pi.image_url,
+            v.id                                    AS variant_id,
+            v.size,
+            v.color,
+            COALESCE(v.price_override, p.price)     AS final_price
          FROM products p
-         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.isprimary = true
+         JOIN product_variants v ON v.id = $2 AND v.product_id = $1
+         LEFT JOIN product_images pi 
+            ON p.id = pi.product_id AND pi.isprimary = true
          WHERE p.id = $1 AND p.deleted_at IS NULL`,
-        [productId]
+        [productId, variantId]
     );
     return rows[0] || null;
 }

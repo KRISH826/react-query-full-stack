@@ -2,13 +2,13 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findById, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryById, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 
 export class ProductService {
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
-        if (!product.productname || !product.description || !product.price || !product.category_names || product.category_names.length === 0) {
+        if (!product.productname || !product.description || !product.price || !product.category_names || product.category_names.length === 0 || !product.variants || product.variants.length === 0) {
             throw new HttpError("All fields are required", 400);
         }
 
@@ -30,12 +30,31 @@ export class ProductService {
                 }
             }
 
+            // for (const variant of product.variants) {
+            //     if (variant.stock_quantity === undefined || variant.stock_quantity === null) {
+            //         throw new HttpError("Stock quantity is required for each variant", 400);
+            //     }
+            // }
+
             const created = await createProduct({
                 ...product,
                 status: product.status || ProductStatus.DRAFT,
                 is_track_inventory: product.is_track_inventory || true,
                 stock_quantity: product.stock_quantity || 0,
             }, client)
+
+            for (const variant of product.variants) {
+                await addProductVariant({
+                    product_id: created.id,
+                    size: variant.size,
+                    color: variant.color,
+                    price_override: variant.price_override,
+                    offer_price_override: variant.offer_price_override,
+                    stock_quantity: variant.stock_quantity,
+                    sku: variant.sku || null,
+                }, client);
+            }
+
 
             if (files?.length) {
                 for (let i = 0; i < files.length; i++) {
@@ -55,7 +74,7 @@ export class ProductService {
             await client.query('COMMIT');
             await cache.delPattern(`product:*`);
             await cache.delPattern(`products:*`);
-            return await findProductWithImagesById(created.id);
+            return await findProductWithImagesById(created.id, client);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -96,6 +115,7 @@ export class ProductService {
                 productname: product.productname ?? existingProduct.productname,
                 description: product.description ?? existingProduct.description,
                 price: product.price ?? existingProduct.price,
+                offer_price: product.offer_price !== undefined ? product.offer_price : existingProduct.offer_price,
                 brand: (product.brand ?? existingProduct.brand) || undefined,
                 stock_quantity: product.stock_quantity ?? existingProduct.stock_quantity,
                 is_track_inventory: product.is_track_inventory ?? existingProduct.is_track_inventory,
@@ -126,6 +146,31 @@ export class ProductService {
                     await addProductCategory(id, categoryId, client)
                 }
             }
+
+            // if (product.variants && product.variants.length > 0) {
+            //     for (const variant of product.variants) {
+            //         if (variant.stock_quantity === null) {
+            //             throw new HttpError("Stock quantity is required for each variant", 400);
+            //         }
+            //     }
+            // }
+
+            if (product.variants) {
+                await deleteProductVariants(id, client);
+
+                for (const variant of product.variants) {
+                    await addProductVariant({
+                        product_id: id,
+                        size: variant.size,
+                        color: variant.color,
+                        price_override: variant.price_override,
+                        offer_price_override: variant.offer_price_override,
+                        stock_quantity: variant.stock_quantity,
+                        sku: variant.sku || null,
+                    }, client);
+                }
+            }
+
             await client.query('COMMIT');
             await cache.delPattern(`product:${id}:*`);
             await cache.delPattern(`products:*`);

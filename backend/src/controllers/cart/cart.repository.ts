@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO } from "../../models/cart";
+import { AddToCartDTO, AddToCartResponse, CartDB, CartItemDB, CartItemWithDetailsDB, CartResponseDTO, UpdateCartDTO, UpdateCartItemDB } from "../../models/cart";
 
 export async function getProductPrice(productId: string, db: Pool | PoolClient = pool): Promise<number | null> {
     const { rows } = await db.query(
@@ -31,10 +31,10 @@ export async function createCart(userId: string, db: Pool | PoolClient = pool): 
 
 // cart items
 
-export async function findCartItem(cartId: string, productId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
+export async function findCartItem(cartId: string, variantId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
     const { rows } = await db.query(
-        `SELECT * FROM cart_items WHERE cart_id=$1 AND product_id=$2`,
-        [cartId, productId]
+        `SELECT * FROM cart_items WHERE cart_id=$1 AND variant_id=$2`,
+        [cartId, variantId]
     )
 
     return rows[0] || null
@@ -42,10 +42,11 @@ export async function findCartItem(cartId: string, productId: string, db: Pool |
 
 export async function createCartItem(data: AddToCartResponse, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
     const { rows } = await db.query(
-        `INSERT INTO cart_items (cart_id, product_id, quantity, price_at_add) VALUES ($1, $2, $3, $4) RETURNING *`,
+        `INSERT INTO cart_items (cart_id, product_id, variant_id, quantity, price_at_add) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
         [
             data.cart_id,
             data.product_id,
+            data.variant_id,
             data.quantity,
             data.price,
         ]
@@ -54,24 +55,24 @@ export async function createCartItem(data: AddToCartResponse, db: Pool | PoolCli
     return rows[0];
 }
 
-export async function updateCartItem(data: UpdateCartDTO, db: Pool | PoolClient = pool): Promise<CartResponseDTO | null> {
+export async function updateCartItem(data: UpdateCartItemDB, db: Pool | PoolClient = pool): Promise<CartResponseDTO | null> {
     const { rows } = await db.query(
-        `UPDATE cart_items SET quantity=$1 WHERE cart_id=$2 AND product_id=$3 RETURNING *`,
+        `UPDATE cart_items SET quantity=$1 WHERE cart_id=$2 AND variant_id=$3 RETURNING *`,
         [
             data.quantity,
             data.cart_id,
-            data.product_id
+            data.variant_id
         ]
     )
 
     return rows[0]
 }
 
-export async function deleteCartItem(cartId: string, productId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
+export async function deleteCartItem(cartId: string, variantId: string, db: Pool | PoolClient = pool): Promise<CartItemDB | null> {
     const { rows } = await db.query(
         `DELETE FROM cart_items
-        WHERE cart_id=$1 AND product_id=$2 RETURNING *`,
-        [cartId, productId]
+        WHERE cart_id=$1 AND variant_id=$2 RETURNING *`,
+        [cartId, variantId]
     )
 
     return rows[0] || null;
@@ -86,9 +87,12 @@ export async function getCartItems(cartId: string, db: Pool | PoolClient = pool)
     ci.price_at_add,
     p.productname,
     p.brand,
-    pi.image_url
+    pi.image_url,
+    v.size,
+    v.color
 FROM cart_items ci
 JOIN products p ON ci.product_id = p.id
+JOIN product_variants v ON ci.variant_id = v.id
 LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.isprimary = true
 WHERE ci.cart_id = $1
     `,
@@ -96,4 +100,15 @@ WHERE ci.cart_id = $1
     )
 
     return rows;
+}
+
+export async function getVariantPrice(variantId: string, productId: string, db: Pool | PoolClient = pool): Promise<number | null> {
+    const {rows} = await db.query(
+        `SELECT COALESCE(v.price_override, p.price) as final_price FROM products p
+        JOIN product_variants v ON v.id = $2 AND v.product_id = $1
+        WHERE p.id = $1`,
+        [productId, variantId]
+    );
+
+    return rows[0]?.final_price || null;
 }
