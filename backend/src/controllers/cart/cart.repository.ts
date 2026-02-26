@@ -102,13 +102,17 @@ WHERE ci.cart_id = $1
     return rows;
 }
 
-export async function getVariantPrice(variantId: string, productId: string, db: Pool | PoolClient = pool): Promise<number | null> {
-    const {rows} = await db.query(
-        `SELECT COALESCE(v.price_override, p.price) as final_price FROM products p
-        JOIN product_variants v ON v.id = $2 AND v.product_id = $1
-        WHERE p.id = $1`,
-        [productId, variantId]
+export async function getVariantPrice(
+    productId: string, 
+    variantId: string, 
+    db: Pool | PoolClient = pool
+): Promise<number | null> {
+    const { rows } = await db.query(
+        `SELECT COALESCE(v.price_override, p.price) AS final_price 
+         FROM products p
+         JOIN product_variants v ON v.id = $2 AND v.product_id = $1
+         WHERE p.id = $1`,
+        [productId, variantId] 
     );
-
     return rows[0]?.final_price || null;
 }
