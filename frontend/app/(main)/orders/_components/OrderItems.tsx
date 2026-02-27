@@ -167,6 +167,11 @@ const OrderItemCard = ({ item }: Props) => {
                         <p className="text-xs text-gray-500">
                             Qty: <span className="font-medium text-gray-700">{item.quantity}</span>
                         </p>
+                        {item.size && (
+                            <span className="inline-block px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                                Size: {item.size}
+                            </span>
+                        )}
                         <div className="flex items-baseline gap-1.5 pt-0.5">
                             <p className="text-xs text-gray-400 line-through">
                                 ₹{(Number(item.price) * 1.1).toFixed(0)}

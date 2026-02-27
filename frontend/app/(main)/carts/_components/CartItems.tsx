@@ -1,9 +1,9 @@
-import { useClearCartMutation, useUpdateCartMutation } from '@/services/cartApi'
+import { useUpdateCartMutation } from '@/services/cartApi'
 import { CartItem } from '@/types/cart'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus } from 'lucide-react'
 import Image from 'next/image'
-import { toast } from 'sonner'
 import DeleteCartProduct from './DeleteCartProduct'
+import { Spinner } from '@/components/ui/spinner'
 
 type cart = {
     cart: CartItem
@@ -12,13 +12,13 @@ type cart = {
 const CartItems = ({ cart }: cart) => {
     const [updateCart, { isLoading }] = useUpdateCartMutation();
     const handleUpdateCart = (quantity: number) => {
-        updateCart({ product_id: cart.productId, quantity });
+        updateCart({ product_id: cart.productId, variant_id: cart.variantId, quantity });
     }
     return (
         <div className="flex gap-6 rounded-xl bg-linear-to-l from-primary/2 shadow-sm to-secondary/15 border border-gray-200 p-4">
             <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                 <Image
-                    src={cart.imageUrl}
+                    src={cart.imageUrl || '/placeholder.png'}
                     alt="product"
                     fill
                     className="object-cover"
@@ -33,6 +33,11 @@ const CartItems = ({ cart }: cart) => {
                     <p className="text-sm text-gray-500 mt-1">
                         {cart.brand}
                     </p>
+                    {cart.size && (
+                        <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+                            Size: {cart.size}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center rounded-lg border border-gray-300 overflow-hidden">
@@ -50,7 +55,7 @@ const CartItems = ({ cart }: cart) => {
                         <span className="text-lg font-semibold text-gray-900">
                             ₹{cart.price}
                         </span>
-                        <DeleteCartProduct id={cart.productId} />
+                        <DeleteCartProduct id={cart.variantId} />
                     </div>
 
                 </div>

@@ -1,7 +1,7 @@
 import { NextFunction, Response } from "express";
 import { HttpError } from "../../middlewares/error.middleware";
-import { CartService } from "./cart.service";
 import { AuthRequest } from "../../middlewares/auth.middleware";
+import { CartService } from "./cart.service";
 
 export class CartController {
     static async getCartController(req: AuthRequest, res: Response, next: NextFunction) {
@@ -110,4 +110,6 @@ export class CartController {
             next(error);
         }
     }
+
+
 }

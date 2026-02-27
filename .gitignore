@@ -1,0 +1,6 @@
+.pem
+node_modules
+package.json
+package-*.json
+dist
+/aws
