@@ -18,6 +18,7 @@ import {
     findOrderItems,
     findUsersOrders,
     getOrderWithItems,
+    markOrderFailed,
     updateOrderStatus,
 } from "./order.repository";
 
@@ -198,6 +199,30 @@ export class OrderService {
             client.release();
         }
     }
+
+    static async cancelOrderService(orderId: string, userId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
+
+            if (!["placed", "confirmed"].includes(order.status)) {
+                throw new HttpError("Order cannot be cancelled", 400);
+            }
+
+            await markOrderFailed(orderId, client);
+            await client.query("COMMIT");
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+
 
     private static formatOrderResponse(
         order: OrderDB,
