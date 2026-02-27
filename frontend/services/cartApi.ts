@@ -53,7 +53,6 @@ export const cartApi = baseApi.injectEndpoints({
             }),
             transformResponse: (response: BackendCartResponse) =>
                 response.data as CartResponse,
-            invalidatesTags: [{ type: "Cart", id: "USER_CART" }],
         }),
         deleteCart: builder.mutation<CartResponse, { variant_id: string }>({
             query: (body) => ({

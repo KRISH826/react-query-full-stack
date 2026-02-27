@@ -3,16 +3,35 @@ import { CartItem } from '@/types/cart'
 import { Minus, Plus } from 'lucide-react'
 import Image from 'next/image'
 import DeleteCartProduct from './DeleteCartProduct'
-import { Spinner } from '@/components/ui/spinner'
+import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 
 type cart = {
     cart: CartItem
 }
 
 const CartItems = ({ cart }: cart) => {
-    const [updateCart, { isLoading }] = useUpdateCartMutation();
-    const handleUpdateCart = (quantity: number) => {
-        updateCart({ product_id: cart.productId, variant_id: cart.variantId, quantity });
+    const [updateCart] = useUpdateCartMutation();
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
+    const [quantity, setQuantity] = useState(cart.quantity);
+    const handleUpdateCart = async (newQuantity: number) => {
+        if (newQuantity < 1) return;
+        setQuantity(newQuantity);
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+            try {
+                updateCart({
+                    product_id: cart.productId,
+                    variant_id: cart.variantId,
+                    quantity: newQuantity
+                }).unwrap();
+            } catch {
+                setQuantity(cart.quantity); // ✅ API fail → rollback
+                toast.error("Failed to update cart");
+            }
+        }, 200);
     }
     return (
         <div className="flex gap-6 rounded-xl bg-linear-to-l from-primary/2 shadow-sm to-secondary/15 border border-gray-200 p-4">
@@ -41,19 +60,19 @@ const CartItems = ({ cart }: cart) => {
                 </div>
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center rounded-lg border border-gray-300 overflow-hidden">
-                        <button onClick={() => handleUpdateCart(cart.quantity - 1)} disabled={cart.quantity === 1} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
+                        <button onClick={() => handleUpdateCart(quantity - 1)} disabled={quantity === 1} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
                             <Minus size={16} />
                         </button>
                         <span className="h-10 w-12 flex items-center justify-center text-sm font-medium">
-                            {cart.quantity}
+                            {quantity}
                         </span>
-                        <button onClick={() => handleUpdateCart(cart.quantity + 1)} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
+                        <button onClick={() => handleUpdateCart(quantity + 1)} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
                             <Plus size={16} />
                         </button>
                     </div>
                     <div className="flex items-center gap-6">
                         <span className="text-lg font-semibold text-gray-900">
-                            ₹{cart.price}
+                            ₹{cart.offerPrice}
                         </span>
                         <DeleteCartProduct id={cart.variantId} />
                     </div>

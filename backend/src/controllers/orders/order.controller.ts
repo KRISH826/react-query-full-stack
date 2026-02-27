@@ -68,8 +68,8 @@ export class OrderController {
                 quantity: 1,
                 shippingAddress,
                 phone,
-                    email,
-                }, userId);
+                email,
+            }, userId);
             return res.status(201).json({ message: 'Order created successfully', order })
         } catch (error) {
             next(error)
@@ -113,11 +113,7 @@ export class OrderController {
             if (!orderId) {
                 throw new HttpError("Order Id is Required", 400);
             }
-            const order = await OrderService.updateStatusServices(
-                orderId,
-                userId,
-                "cancelled",
-            );
+            const order = await OrderService.cancelOrderService(orderId, userId);
 
             return res
                 .status(200)

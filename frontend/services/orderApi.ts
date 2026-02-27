@@ -36,7 +36,7 @@ export const orderApi = baseApi.injectEndpoints({
         cancelOrder: builder.mutation<{ message: string }, string>({
             query: (orderId) => ({
                 url: `orders/${orderId}/cancel`,
-                method: "PUT",
+                method: "PATCH",
             }),
             invalidatesTags: [
                 { type: "Order", id: "LIST" },
