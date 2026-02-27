@@ -10,7 +10,6 @@ export interface ProductVariant {
     id: string;
     product_id: string;
     size: string | null;
-    color?: string | null;
     price_override?: number | null;
     offer_price_override?: number | null;
     sku: string | null;
@@ -22,7 +21,6 @@ export interface ProductVariant {
 export interface CreateVariantPayload {
     product_id?: string;
     size?: string;
-    color?: string;
     price_override?: number;
     offer_price_override?: number | null;
     stock_quantity: number;
