@@ -7,6 +7,7 @@ import { ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
+import { Button } from "@/components/ui/button";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,19 +39,27 @@ const ProductContent = ({ product }: { product: Product }) => {
         [variants, selectedSize, hasVariants]
     );
 
-    const displayPrice = activeVariant?.price_override ?? product.price;
-    const originalPrice = activeVariant?.offer_price_override ?? product.offer_price ?? null;
-    const hasDiscount = originalPrice !== null && originalPrice > displayPrice;
+    const displayPrice = activeVariant?.offer_price_override;
+    const originalPrice = activeVariant?.price_override;
+    const hasDiscount = originalPrice! > displayPrice!;
     const isOutOfStock = hasVariants
         ? (activeVariant !== undefined ? (activeVariant.stock_quantity ?? 0) <= 0 : false)
         : product.is_track_inventory && product.stock_quantity <= 0;
 
     const handleAddToCart = async () => {
+        if (!activeVariant && hasVariants) {
+            toast.error("Please select a size");
+            return;
+        }
         try {
-            await addToCart({ product_id: product.id, quantity }).unwrap();
-            toast.success("Item added to cart");
+            await addToCart({
+                product_id: product.id,
+                variant_id: activeVariant?.id || '', // fallback if no variants (though backend might fail)
+                quantity
+            }).unwrap();
+            toast.success("Item added to bag");
         } catch {
-            toast.error("Failed to add item to cart");
+            toast.error("Failed to add item to bag");
         }
     };
 
@@ -71,18 +80,18 @@ const ProductContent = ({ product }: { product: Product }) => {
             {/* Price section */}
             <div className="flex items-end gap-3 pb-4 border-b border-border/40">
                 <span className="text-2xl font-semibold text-foreground">
-                    ₹{displayPrice.toLocaleString()}
+                    ₹{displayPrice?.toLocaleString()}
                 </span>
 
                 {hasDiscount && (
                     <span className="text-sm text-muted-foreground line-through mb-1">
-                        ₹{originalPrice!.toLocaleString()}
+                        ₹{originalPrice?.toLocaleString()}
                     </span>
                 )}
 
                 {hasDiscount && (
                     <span className="ml-2 rounded-sm bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-600 uppercase mb-1">
-                        {Math.round(((originalPrice! - displayPrice) / originalPrice!) * 100)}% off
+                        {Math.round(((originalPrice! - displayPrice!) / originalPrice!) * 100)}% off
                     </span>
                 )}
 
@@ -152,27 +161,21 @@ const ProductContent = ({ product }: { product: Product }) => {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 mt-auto">
-                <button
+                <Button
                     onClick={handleAddToCart}
                     disabled={isOutOfStock || isLoading}
-                    className="
-                        flex-1 w-full flex items-center justify-center gap-2 h-12 bg-foreground text-background text-sm font-medium
-                        transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2
-                        disabled:pointer-events-none disabled:opacity-50
-                    "
+                    className="flex-1 h-12"
                 >
                     {isLoading ? (
                         <Spinner className="size-4" />
                     ) : (
                         <>
-                            <ShoppingBag className="size-4" />
+                            <ShoppingBag className="size-5!" />
                             Add to bag
                         </>
                     )}
-                </button>
-                <div className="flex-1 w-full [&>button]:h-12 [&>button]:w-full [&>button]:rounded-none [&>button]:border [&>button]:border-foreground [&>button]:bg-background [&>button]:text-foreground hover:[&>button]:bg-accent">
-                    <Buynow />
-                </div>
+                </Button>
+                <Buynow />
             </div>
         </div>
     );

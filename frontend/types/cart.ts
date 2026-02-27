@@ -1,9 +1,10 @@
 export interface CartItem {
-    id: string;
     productId: string;
-    productName: string;
+    variantId: string;
+    productName?: string;
+    size?: string;
     brand?: string;
-    imageUrl: string;
+    imageUrl?: string;
     quantity: number;
     price: number;
     subtotal: number;
@@ -18,6 +19,5 @@ export interface CartResponse {
 
 export interface BackendCartResponse {
     success?: boolean;
-    message?: CartResponse; // for getCart
-    data?: CartResponse;    // for mutations
+    data?: CartResponse;
 }

@@ -15,7 +15,7 @@ export interface ProductsResponse {
 }
 
 interface ProductResponse {
-    product: Product;
+    data: Product;
 }
 
 export const productApi = baseApi.injectEndpoints({
@@ -27,7 +27,7 @@ export const productApi = baseApi.injectEndpoints({
         }),
         getProductById: builder.query<Product, string>({
             query: (id) => `products/${id}`,
-            transformResponse: (response: ProductResponse) => response.product,
+            transformResponse: (response: ProductResponse) => response.data,
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
     })

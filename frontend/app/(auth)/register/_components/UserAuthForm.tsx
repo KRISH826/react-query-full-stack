@@ -25,15 +25,20 @@ const UserAuthForm = ({
         register,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors }
     } = useForm<RegisterValues>({
         resolver: zodResolver(registerSchema),
-        mode: "onTouched"
+        mode: "onTouched",
+        defaultValues: {
+            role: "customer"
+        }
     });
 
     const onSubmit = async (data: RegisterValues) => {
         try {
             await registerUser(data).unwrap();
+            console.log(data);
             toast.success("Account created successfully");
             reset();
             router.replace("/login");
@@ -65,7 +70,7 @@ const UserAuthForm = ({
                         </div>
                         <div className='flex flex-col gap-2'>
                             <Label className='mb-1' htmlFor="role">Role</Label>
-                            <Select>
+                            <Select onValueChange={(value) => setValue("role", value as unknown as "customer" | "admin")}>
                                 <SelectTrigger className='w-full'>
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>

@@ -1,5 +1,3 @@
-// models/cart.ts
-
 export interface CartDB {
     id: string;
     user_id: string;
@@ -51,6 +49,7 @@ export interface CartItemWithDetailsDB {
     variant_id: string;
     quantity: number;
     price_at_add: number;
+    offer_price_override: number | null;
     productname: string;
     brand: string;
     image_url: string | null;
@@ -66,12 +65,12 @@ export interface CartItemResponseDTO {
     imageUrl?: string;
     quantity: number;
     price: number;
+    offerPrice: number | null;
     subtotal: number;
 }
 
-// ✅ cartId not cart_id — this is the response shape
 export interface CartResponseDTO {
-    cartId: string;      // camelCase — it's a response DTO
+    cartId: string;
     items: CartItemResponseDTO[];
     total: number;
     updatedAt: Date;

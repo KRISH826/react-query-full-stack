@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 const CartPage = () => {
     const { data, isLoading } = useGetCartQuery();
     const [clearCart, { isLoading: isClearing }] = useClearCartMutation();
+    console.log(data?.items);
     const router = useRouter();
     const ClearCart = async () => {
         try {

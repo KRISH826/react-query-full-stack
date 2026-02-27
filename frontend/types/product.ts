@@ -10,10 +10,10 @@ export interface ProductVariant {
     id: string;
     product_id: string;
     size: string | null;
-    price_override?: number | null;
-    offer_price_override?: number | null;
+    price_override?: number;
+    offer_price_override?: number;
     sku: string | null;
-    stock_quantity: number | null;
+    stock_quantity: number;
     created_at: string;
     updated_at: string;
 }
@@ -22,7 +22,7 @@ export interface CreateVariantPayload {
     product_id?: string;
     size?: string;
     price_override?: number;
-    offer_price_override?: number | null;
+    offer_price_override?: number;
     stock_quantity: number;
     sku?: string | null;
 }
@@ -31,8 +31,6 @@ export interface Product {
     id: string;
     productname: string;
     description: string;
-    price: number;
-    offer_price?: number | null;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -49,7 +47,6 @@ export interface Product {
 export interface ProductPayload {
     productname: string;
     description: string;
-    price: number;
     brand?: string;
     stock_quantity?: number;
     is_track_inventory?: boolean;

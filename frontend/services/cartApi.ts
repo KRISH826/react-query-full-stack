@@ -8,12 +8,12 @@ export const cartApi = baseApi.injectEndpoints({
                 url: "cart",
                 method: "GET",
             }),
-            transformResponse: (response: BackendCartResponse) => response.message as CartResponse,
+            transformResponse: (response: BackendCartResponse) => response.data as CartResponse,
             providesTags: [{ type: "Cart", id: "USER_CART" }],
         }),
         addToCart: builder.mutation<
             CartResponse,
-            { product_id: string; quantity: number }
+            { product_id: string; variant_id: string; quantity: number }
         >({
             query: (body) => ({
                 url: "cart",
@@ -25,7 +25,8 @@ export const cartApi = baseApi.injectEndpoints({
                     cartApi.util.updateQueryData('getCart', undefined, (draft: CartResponse) => {
                         if (!draft) return;
                         const existingItem = draft.items.find(
-                            (item: { productId: string; }) => item.productId === arg.product_id
+                            (item: { productId: string; variantId: string }) =>
+                                item.productId === arg.product_id && item.variantId === arg.variant_id
                         );
 
                         if (existingItem) {
@@ -44,7 +45,7 @@ export const cartApi = baseApi.injectEndpoints({
             invalidatesTags: [{ type: "Cart", id: "USER_CART" }],
         }),
 
-        updateCart: builder.mutation<CartResponse, { product_id: string; quantity: number }>({
+        updateCart: builder.mutation<CartResponse, { product_id: string; variant_id: string; quantity: number }>({
             query: (body) => ({
                 url: "cart",
                 method: "PUT",
@@ -54,7 +55,7 @@ export const cartApi = baseApi.injectEndpoints({
                 response.data as CartResponse,
             invalidatesTags: [{ type: "Cart", id: "USER_CART" }],
         }),
-        deleteCart: builder.mutation<CartResponse, { product_id: string }>({
+        deleteCart: builder.mutation<CartResponse, { variant_id: string }>({
             query: (body) => ({
                 url: "cart",
                 method: "DELETE",

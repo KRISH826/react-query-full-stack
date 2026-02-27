@@ -1,7 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { CreateOrderDTO, OrderDB, OrderItemDB, OrderStatus } from "../../models/order";
-import { ProductWithImagesResponseDTO } from "../../models/product";
 
 export async function createOrder(
     userId: string,
@@ -50,7 +49,6 @@ export async function findOrderById(
     return rows[0] || null;
 }
 
-// ✅ Single query — no N+1, returns orders with items already joined
 export async function findUsersOrders(
     userId: string,
     db: Pool | PoolClient = pool
@@ -61,16 +59,19 @@ export async function findUsersOrders(
             COALESCE(
                 json_agg(
                     json_build_object(
-                        'id',               oi.id,
-                        'order_id',         oi.order_id,
-                        'product_id',       oi.product_id,
-                        'product_name',     oi.product_name,
-                        'product_brand',    oi.product_brand,
-                        'quantity',         oi.quantity,
-                        'price_at_purchase',oi.price_at_purchase,
-                        'subtotal',         oi.subtotal,
-                        'image_url',        oi.image_url,
-                        'created_at',       oi.created_at
+                        'id',                       oi.id,
+                        'order_id',                 oi.order_id,
+                        'product_id',               oi.product_id,
+                        'variant_id',               oi.variant_id,
+                        'product_name',             oi.product_name,
+                        'product_brand',            oi.product_brand,
+                        'quantity',                 oi.quantity,
+                        'price_at_purchase',        oi.price_at_purchase,
+                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
+                        'subtotal',                 oi.subtotal,
+                        'size',                     oi.size,
+                        'image_url',                oi.image_url,
+                        'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
                 ) FILTER (WHERE oi.id IS NOT NULL),
                 '[]'
@@ -111,9 +112,10 @@ export async function createOrderItem(
     productBrand: string,
     quantity: number,
     price: number,
+    offerPrice: number | null,
     subtotal: number,
     size: string | null,
-    image_url: string | null,
+    imageUrl: string | null,
     db: Pool | PoolClient = pool
 ): Promise<OrderItemDB | null> {
     const { rows } = await db.query(
@@ -125,13 +127,26 @@ export async function createOrderItem(
             product_brand,
             quantity,
             price_at_purchase,
+            offer_price_at_purchase,
             subtotal,
             size,
             image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
-        [orderId, productId, variantId, productName, productBrand, quantity, price, subtotal, size, image_url]
+        [
+            orderId,
+            productId,
+            variantId,
+            productName,
+            productBrand,
+            quantity,
+            price,
+            offerPrice,
+            subtotal,
+            size,
+            imageUrl,
+        ]
     );
     return rows[0] || null;
 }
@@ -149,7 +164,6 @@ export async function findOrderItems(
     return rows;
 }
 
-// ✅ Single query for order + items together
 export async function getOrderWithItems(
     orderId: string,
     db: Pool | PoolClient = pool
@@ -160,19 +174,19 @@ export async function getOrderWithItems(
             COALESCE(
                 json_agg(
                     json_build_object(
-                        'id',               oi.id,
-                        'order_id',         oi.order_id,
-                        'product_id',       oi.product_id,
-                        'variant_id',       oi.variant_id,
-                        'product_name',     oi.product_name,
-                        'product_brand',    oi.product_brand,
-                        'quantity',         oi.quantity,
-                        'price_at_purchase',oi.price_at_purchase,
-                        'subtotal',         oi.subtotal,
-                        'size',             oi.size,
-                        'color',            oi.color,
-                        'image_url',        oi.image_url,
-                        'created_at',       oi.created_at
+                        'id',                       oi.id,
+                        'order_id',                 oi.order_id,
+                        'product_id',               oi.product_id,
+                        'variant_id',               oi.variant_id,
+                        'product_name',             oi.product_name,
+                        'product_brand',            oi.product_brand,
+                        'quantity',                 oi.quantity,
+                        'price_at_purchase',        oi.price_at_purchase,
+                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
+                        'subtotal',                 oi.subtotal,
+                        'size',                     oi.size,
+                        'image_url',                oi.image_url,
+                        'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
                 ) FILTER (WHERE oi.id IS NOT NULL),
                 '[]'
@@ -185,7 +199,6 @@ export async function getOrderWithItems(
     );
 
     if (!rows[0]) return { order: null, items: [] };
-
     const { items, ...order } = rows[0];
     return { order, items };
 }
@@ -201,9 +214,10 @@ export async function buyNowProductByid(
             p.productname,
             p.brand,
             pi.image_url,
-            v.id                                    AS variant_id,
+            v.id                    AS variant_id,
             v.size,
-            COALESCE(v.price_override, p.price)     AS final_price
+            v.price_override        AS price,        -- ✅ IS the price
+            v.offer_price_override  AS offer_price   -- ✅ IS the offer price
          FROM products p
          JOIN product_variants v ON v.id = $2 AND v.product_id = $1
          LEFT JOIN product_images pi 
@@ -214,9 +228,14 @@ export async function buyNowProductByid(
     return rows[0] || null;
 }
 
-export async function markOrderFailed(orderId: string, db: Pool | PoolClient = pool): Promise<void> {
+export async function markOrderFailed(
+    orderId: string,
+    db: Pool | PoolClient = pool
+): Promise<void> {
     await db.query(
-        `UPDATE orders SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        `UPDATE orders 
+         SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $1`,
         [orderId]
     );
 }

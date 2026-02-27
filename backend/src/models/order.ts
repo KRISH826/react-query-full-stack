@@ -23,14 +23,15 @@ export interface OrderItemDB {
     id: string;
     order_id: string;
     product_id: string;
-    variant_id: string | null;      // ✅
+    variant_id: string | null;
     product_name: string;
     product_brand?: string;
     quantity: number;
     price_at_purchase: number;
+    offer_price_at_purchase: number | null;  // ✅ added
     subtotal: number;
     image_url?: string | null;
-    size: string | null;            // ✅
+    size: string | null;
     created_at: Date;
 }
 
@@ -49,7 +50,7 @@ export interface CreateOrderDTO {
 }
 
 export interface DirectPurchaseDTO {
-    variant_id: string;             // ✅ required — determines size/price
+    variant_id: string;
     quantity: number;
     shippingAddress: ShippingAddressDTO;
     phone: string;
@@ -59,13 +60,14 @@ export interface DirectPurchaseDTO {
 export interface OrderItemResponseDTO {
     order_id: string;
     product_id: string;
-    variant_id: string | null;      // ✅
+    variant_id: string | null;
     productname: string;
     product_brand: string;
     image_url?: string | null;
-    size: string | null;            // ✅
+    size: string | null;
     quantity: number;
     price: number;
+    offerPrice: number | null;   // ✅ added
     subtotal: number;
 }
 
