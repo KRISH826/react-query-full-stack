@@ -1,20 +1,19 @@
 "use client"
 
 import { FlatOrderItem, OrderStatus } from "@/types/order"
-import { Calendar, ChevronRight, Package, Truck, CheckCircle2, XCircle, RefreshCw, Clock, Trash2 } from "lucide-react"
+import { Calendar, ChevronRight, RefreshCw, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { statusConfig } from "./statusConfig"
 import { Button } from "@/components/ui/button"
 import { useCancelOrderMutation } from "@/services/orderApi"
-import { unknown } from "zod"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 type Props = {
     item: FlatOrderItem
 }
-
 
 
 const TRACK_STEPS = ["Placed", "Confirmed", "Shipped", "Delivered"]
@@ -23,6 +22,11 @@ const OrderItemCard = ({ item }: Props) => {
     const status = statusConfig[item.status?.toLowerCase() as OrderStatus] ?? statusConfig.placed
     const isCancelledOrRefunded = item.status === "cancelled" || item.status === "refunded"
     const [cancelOrder, { isLoading }] = useCancelOrderMutation();
+    const router = useRouter();
+
+    const handleViewProduct = () => {
+        router.push(`/product/${item.product_id}`);
+    }
 
     const handleCancelOrder = async () => {
         try {
@@ -99,10 +103,11 @@ const OrderItemCard = ({ item }: Props) => {
                     {/* IMAGE */}
                     <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
                         <Image
+                            onClick={handleViewProduct}
                             src={item.image_url || "/placeholder-product.png"}
                             alt={item.productname}
                             fill
-                            className="object-cover"
+                            className="object-cover cursor-pointer"
                         />
                         {/* qty badge */}
                         {item.quantity > 1 && (
