@@ -1,7 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { OrderDB, OrderResponseDTO } from "../../models/order";
-import { CreateProductDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
+import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
 
 export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
@@ -21,17 +20,16 @@ export async function findById(id: string, db: Pool | PoolClient = pool): Promis
 
 export async function createProduct(product: CreateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB> {
     const { rows } = await db.query(
-        `INSERT INTO products (productname, description, price, brand, stock_quantity, is_track_inventory, status, created_by) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        `INSERT INTO products (productname, description, brand, stock_quantity, is_track_inventory, status, created_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
         [
             product.productname,
             product.description,
-            product.price,
-            product.brand,
-            product.stock_quantity,
-            product.is_track_inventory,
+            product.brand ?? null,
+            product.stock_quantity ?? 0,
+            product.is_track_inventory ?? true,
             product.status,
-            product.created_by,
+            product.created_by ?? null,
         ]
     );
     return rows[0];
@@ -50,31 +48,18 @@ export async function addProductImage(image: ProductImageDTO, db: Pool | PoolCli
     return rows[0];
 }
 
-
 export async function updateProduct(id: string, product: UpdateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
-        `UPDATE products SET productname=$1, description=$2, price=$3, brand=$4, stock_quantity=$5, is_track_inventory=$6, status=$7 WHERE id=$8 RETURNING *`,
+        `UPDATE products 
+         SET productname=$1, description=$2, brand=$3, stock_quantity=$4, is_track_inventory=$5, status=$6
+         WHERE id=$7 RETURNING *`,
         [
             product.productname,
             product.description,
-            product.price,
-            product.brand,
+            product.brand ?? null,
             product.stock_quantity,
             product.is_track_inventory,
             product.status,
-            id,
-        ]
-    );
-    return rows[0] || null;
-}
-
-export async function updateProductImage(id: string, image: ProductImageDTO, db: Pool | PoolClient = pool): Promise<ProductImageDB | null> {
-    const { rows } = await db.query(
-        `UPDATE product_images SET product_id=$1, image_url=$2, isprimary=$3 WHERE id=$4 RETURNING *`,
-        [
-            image.product_id,
-            image.image_url,
-            image.isprimary,
             id,
         ]
     );
@@ -104,118 +89,133 @@ export async function deleteProduct(id: string, db: Pool | PoolClient = pool): P
     return rows[0] || null;
 }
 
-// Update findAllProducts to include categories
-export async function findAllProducts(page: number = 1, limit: number = 10): Promise<{ data: ProductWithImagesDTO[], total: number }> {
+export async function findAllProducts(
+    page: number = 1,
+    limit: number = 10
+): Promise<{ data: ProductWithImagesDTO[], total: number }> {
     const offset = (page - 1) * limit;
+
     const countResult = await pool.query(
         `SELECT COUNT(*) FROM products WHERE deleted_at IS NULL`
     );
-    const total = countResult.rows[0].count;
+    const total = parseInt(countResult.rows[0].count);
 
     const { rows } = await pool.query(`
         SELECT 
             p.*,
-            COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', pi.id,
-                        'image_url', pi.image_url,
-                        'alt_text', pi.alt_text,
-                        'isprimary', pi.isprimary
-                    )
-                    ORDER BY jsonb_build_object(
-                        'id', pi.id,
-                        'image_url', pi.image_url,
-                        'alt_text', pi.alt_text,
-                        'isprimary', pi.isprimary
-                    )
-                ) FILTER (WHERE pi.id IS NOT NULL),
-                '[]'
-            ) AS images,
-            COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', c.id,
-                        'name', c.name,
-                        'slug', c.slug,
-                        'parent_id', c.parent_id
-                    )
-                    ORDER BY jsonb_build_object(
-                        'id', c.id,
-                        'name', c.name,
-                        'slug', c.slug,
-                        'parent_id', c.parent_id
-                    )
-                ) FILTER (WHERE c.id IS NOT NULL),
-                '[]'
-            ) AS categories
+            COALESCE(img.images, '[]') AS images,
+            COALESCE(cat.categories, '[]') AS categories,
+            COALESCE(var.variants, '[]') AS variants
         FROM products p
-        LEFT JOIN product_images pi ON pi.product_id = p.id
-        LEFT JOIN product_categories pc ON pc.product_id = p.id
-        LEFT JOIN categories c ON c.id = pc.category_id
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', pi.id,
+                    'image_url', pi.image_url,
+                    'alt_text', pi.alt_text,
+                    'isprimary', pi.isprimary
+                )
+            ) AS images
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+        ) img ON true
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', c.id,
+                    'name', c.name,
+                    'slug', c.slug,
+                    'parent_id', c.parent_id
+                )
+            ) AS categories
+            FROM product_categories pc
+            JOIN categories c ON c.id = pc.category_id
+            WHERE pc.product_id = p.id
+        ) cat ON true
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', v.id,
+                    'size', v.size,
+                    'price_override', v.price_override,
+                    'offer_price_override', v.offer_price_override,
+                    'stock_quantity', v.stock_quantity,
+                    'sku', v.sku
+                )
+            ) AS variants
+            FROM product_variants v
+            WHERE v.product_id = p.id
+        ) var ON true
+
         WHERE p.deleted_at IS NULL
-        GROUP BY p.id
         ORDER BY p.created_at DESC
         LIMIT $1 OFFSET $2
     `, [limit, offset]);
 
-    return {
-        data: rows as ProductWithImagesDTO[],
-        total: parseInt(total)
-    };
+    return { data: rows, total };
 }
 
-// Update findProductWithImagesById to include categories
 export async function findProductWithImagesById(id: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO | null> {
     const { rows } = await db.query(`
         SELECT 
             p.*,
-            COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', pi.id,
-                        'image_url', pi.image_url,
-                        'alt_text', pi.alt_text,
-                        'isprimary', pi.isprimary
-                    )
-                    ORDER BY jsonb_build_object(
-                        'id', pi.id,
-                        'image_url', pi.image_url,
-                        'alt_text', pi.alt_text,
-                        'isprimary', pi.isprimary
-                    )
-                ) FILTER (WHERE pi.id IS NOT NULL),
-                '[]'
-            ) AS images,
-            COALESCE(
-                json_agg(
-                    DISTINCT jsonb_build_object(
-                        'id', c.id,
-                        'name', c.name,
-                        'slug', c.slug,
-                        'parent_id', c.parent_id
-                    )
-                    ORDER BY jsonb_build_object(
-                        'id', c.id,
-                        'name', c.name,
-                        'slug', c.slug,
-                        'parent_id', c.parent_id
-                    )
-                ) FILTER (WHERE c.id IS NOT NULL),
-                '[]'
-            ) AS categories
+            COALESCE(img.images, '[]') AS images,
+            COALESCE(cat.categories, '[]') AS categories,
+            COALESCE(var.variants, '[]') AS variants
         FROM products p
-        LEFT JOIN product_images pi ON pi.product_id = p.id
-        LEFT JOIN product_categories pc ON pc.product_id = p.id
-        LEFT JOIN categories c ON c.id = pc.category_id
-        WHERE p.deleted_at IS NULL AND p.id = $1
-        GROUP BY p.id
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', pi.id,
+                    'image_url', pi.image_url,
+                    'alt_text', pi.alt_text,
+                    'isprimary', pi.isprimary
+                )
+            ) AS images
+            FROM product_images pi
+            WHERE pi.product_id = p.id
+        ) img ON true
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', c.id,
+                    'name', c.name,
+                    'slug', c.slug,
+                    'parent_id', c.parent_id
+                )
+            ) AS categories
+            FROM product_categories pc
+            JOIN categories c ON c.id = pc.category_id
+            WHERE pc.product_id = p.id
+        ) cat ON true
+
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
+                jsonb_build_object(
+                    'id', v.id,
+                    'size', v.size,
+                    'price_override', v.price_override,
+                    'offer_price_override', v.offer_price_override,
+                    'stock_quantity', v.stock_quantity,
+                    'sku', v.sku
+                )
+            ) AS variants
+            FROM product_variants v
+            WHERE v.product_id = p.id
+        ) var ON true
+
+        WHERE p.deleted_at IS NULL
+        AND p.id = $1
     `, [id]);
 
     return rows[0] || null;
 }
 
-// Add helper function to delete all product categories
 export async function deleteProductCategories(productId: string, db: Pool | PoolClient = pool): Promise<void> {
     await db.query(
         `DELETE FROM product_categories WHERE product_id = $1`,
@@ -223,3 +223,23 @@ export async function deleteProductCategories(productId: string, db: Pool | Pool
     );
 }
 
+export async function addProductVariant(variant: CreateVariantDTO, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(`
+        INSERT INTO product_variants (product_id, size, price_override, offer_price_override, stock_quantity, sku)
+        VALUES ($1, $2, $3, $4, $5, $6)
+    `, [
+        variant.product_id,
+        variant.size ?? null,
+        variant.price_override,
+        variant.offer_price_override ?? null,
+        variant.stock_quantity,
+        variant.sku ?? null
+    ]);
+}
+
+export async function deleteProductVariants(productId: string, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(
+        `DELETE FROM product_variants WHERE product_id = $1`,
+        [productId]
+    );
+}

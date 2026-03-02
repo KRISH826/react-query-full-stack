@@ -5,11 +5,11 @@ export enum ProductStatus {
     OUT_OF_STOCK = "out_of_stock",
     ARCHIVED = "archived",
 }
+
 export interface ProductDB {
     id: string;
     productname: string;
     description: string;
-    price: number;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -23,31 +23,30 @@ export interface ProductDB {
 export interface CreateProductDTO {
     productname: string;
     description: string;
-    price: number;
     brand?: string;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     created_by?: string;
-    status?: ProductStatus; // admin only
-    category_names?: string[]; // ADD THIS
+    status?: ProductStatus;
+    category_names?: string[];
+    variants?: CreateVariantDTO[];
 }
 
 export interface UpdateProductDTO {
     productname?: string;
     description?: string;
-    price?: number;
     brand?: string;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     status?: ProductStatus;
-    category_names?: string[]; // ADD THIS
+    category_names?: string[];
+    variants?: CreateVariantDTO[];
 }
 
 export interface ProductResponseDTO {
     id: string;
     productname: string;
     description: string;
-    price: number;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;
@@ -111,12 +110,35 @@ export interface ProductQueryDTO {
     sortOrder?: "asc" | "desc";
 }
 
-// 
+export interface ProductVariantDB {
+    id: string;
+    product_id: string;
+    size: string | null;
+    price_override: number;
+    offer_price_override: number | null;
+    sku: string | null;
+    stock_quantity: number;
+    created_at: Date;
+    updated_at: Date;
+}
+
+export interface CreateVariantDTO {
+    product_id?: string;
+    size?: string;
+    price_override: number;
+    offer_price_override?: number | null;
+    stock_quantity: number;
+    sku?: string | null;
+}
+
 export interface ProductWithImagesDTO extends ProductDB {
     images: ProductImageDB[];
+    categories: CategoryDB[];
+    variants: ProductVariantDB[];
 }
 
 export interface ProductWithImagesResponseDTO extends ProductResponseDTO {
     image_url: string;
     categories: CategoryDTO[];
+    variants: ProductVariantDB[];
 }

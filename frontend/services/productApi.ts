@@ -1,34 +1,33 @@
 import { Product } from "@/types/product";
 import { baseApi } from "./baseQuery";
 
-interface ProductsResponse {
+export interface ProductsQueryParams {
+    page: number;
+    limit: number;
+}
+
+export interface ProductsResponse {
     data: Product[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
 }
 
 interface ProductResponse {
-    product: Product;
+    data: Product;
 }
 
 export const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getProducts: builder.query<Product[], void>({
-            query: () => "products/?limit=20&page=1",
-            transformResponse: (response: ProductsResponse) => response.data,
-            providesTags: (result) =>
-                result
-                    ? [
-                        ...result.map(({ id }) => ({
-                            type: "Product" as const,
-                            id,
-                        })),
-                        { type: "Product", id: "LIST" },
-                    ]
-                    : [{ type: "Product", id: "LIST" }],
-
+        getProducts: builder.query<ProductsResponse, ProductsQueryParams>({
+            query: ({ page, limit }) => `products/?limit=${limit}&page=${page}`,
+            transformResponse: (response: ProductsResponse) => response, // ✅ full response return karo
+            providesTags: [{ type: "Product", id: "LIST" }],
         }),
         getProductById: builder.query<Product, string>({
-            query: (id: string) => `products/${id}`,
-            transformResponse: (response: ProductResponse) => response.product,
+            query: (id) => `products/${id}`,
+            transformResponse: (response: ProductResponse) => response.data,
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
     })

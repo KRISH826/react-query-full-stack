@@ -9,7 +9,7 @@ type cart = {
 const DeleteCartProduct = ({ id }: cart) => {
     const [deleteCartProduct, { isLoading }] = useDeleteCartMutation();
     const handleDeleteProduct = () => {
-        deleteCartProduct({ product_id: id })
+        deleteCartProduct({ variant_id: id })
     }
     return (
         <>

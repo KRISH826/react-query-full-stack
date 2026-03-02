@@ -18,6 +18,7 @@ import {
     findOrderItems,
     findUsersOrders,
     getOrderWithItems,
+    markOrderFailed,
     updateOrderStatus,
 } from "./order.repository";
 
@@ -38,8 +39,12 @@ export class OrderService {
                 throw new HttpError("Cart is empty", 400);
             }
 
+            // ✅ use offer_price if available, else price_at_add
             const totalAmount = cartItems.reduce((sum, item) => {
-                return sum + item.quantity * Number(item.price_at_add);
+                const effectivePrice = item.offer_price_override
+                    ? Number(item.offer_price_override)
+                    : Number(item.price_at_add);
+                return sum + item.quantity * effectivePrice;
             }, 0);
 
             const order = await createOrder(userId, orderData, totalAmount, client);
@@ -48,15 +53,23 @@ export class OrderService {
             await Promise.all(
                 cartItems.map((cartItem) => {
                     const price = Number(cartItem.price_at_add);
-                    const subtotal = cartItem.quantity * price;
+                    const offerPrice = cartItem.offer_price_override
+                        ? Number(cartItem.offer_price_override)
+                        : null;
+                    const effectivePrice = offerPrice ?? price;
+                    const subtotal = cartItem.quantity * effectivePrice;
+
                     return createOrderItem(
                         order.id,
                         cartItem.product_id,
+                        cartItem.variant_id,
                         cartItem.productname,
                         cartItem.brand,
                         cartItem.quantity,
                         price,
+                        offerPrice,
                         subtotal,
+                        cartItem.size,
                         cartItem.image_url,
                         client
                     );
@@ -87,10 +100,8 @@ export class OrderService {
         return this.formatOrderResponse(order, items);
     }
 
-    // ✅ No more N+1 — items already inside each order from single JOIN query
     static async getUSerOrdersService(userId: string): Promise<OrderResponseDTO[]> {
         const orders = await findUsersOrders(userId);
-
         if (!orders || orders.length === 0) return [];
 
         return orders.map((order) => {
@@ -143,12 +154,14 @@ export class OrderService {
         try {
             await client.query("BEGIN");
 
-            const product = await buyNowProductByid(productId, client);
+            const product = await buyNowProductByid(productId, orderData.variant_id, client);
             if (!product) throw new HttpError("Product not found", 404);
 
             const price = Number(product.price);
+            const offerPrice = product.offer_price ? Number(product.offer_price) : null;
+            const effectivePrice = offerPrice ?? price;
             const quantity = Number(orderData.quantity);
-            const subtotal = price * quantity;
+            const subtotal = effectivePrice * quantity;
 
             const order = await createOrder(
                 userId,
@@ -165,12 +178,15 @@ export class OrderService {
             await createOrderItem(
                 order.id,
                 product.id,
+                product.variant_id,
                 product.productname,
                 product.brand || "",
                 quantity,
                 price,
+                offerPrice,
                 subtotal,
-                product.image_url || "",
+                product.size || null,
+                product.image_url || null,
                 client
             );
 
@@ -184,6 +200,30 @@ export class OrderService {
         }
     }
 
+    static async cancelOrderService(orderId: string, userId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
+
+            if (!["placed", "confirmed"].includes(order.status)) {
+                throw new HttpError("Order cannot be cancelled", 400);
+            }
+
+            await markOrderFailed(orderId, client);
+            await client.query("COMMIT");
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+
+
     private static formatOrderResponse(
         order: OrderDB,
         items: any[]
@@ -191,18 +231,23 @@ export class OrderService {
         const formattedItems: OrderItemResponseDTO[] = items.map((item) => ({
             order_id: order.id,
             product_id: item.product_id,
+            variant_id: item.variant_id,
             productname: item.product_name,
             product_brand: item.product_brand ?? "",
             quantity: item.quantity,
-            price: item.price_at_purchase,
-            subtotal: item.subtotal,
+            price: Number(item.price_at_purchase),
+            offerPrice: item.offer_price_at_purchase
+                ? Number(item.offer_price_at_purchase)
+                : null,
+            subtotal: Number(item.subtotal),
+            size: item.size ?? null,
             image_url: item.image_url ?? null,
         }));
 
         return {
             id: order.id,
             ordernumber: order.order_number,
-            totalamount: order.total_amount,
+            totalamount: Number(order.total_amount),
             status: order.status,
             items: formattedItems,
             shippingaddress: {

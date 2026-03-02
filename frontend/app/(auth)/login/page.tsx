@@ -1,6 +1,7 @@
 import Link from "next/link";
 import UserAuthForm from "./_components/UserAuthForm";
 import Image from "next/image";
+import { Suspense } from "react";
 
 export default function Page() {
     return (
@@ -45,7 +46,9 @@ export default function Page() {
                             Enter your email below to sign in
                         </p>
                     </div>
-                    <UserAuthForm />
+                    <Suspense>
+                        <UserAuthForm />
+                    </Suspense>
                     <p className="text-muted-foreground px-8 text-center text-sm">
                         Don&apos;t have an account?{" "}
                         <Link href="/register" className="hover:text-primary underline underline-offset-4">

@@ -14,6 +14,7 @@ export interface OrderItemResponseDTO {
     productname: string;
     product_brand: string;
     image_url?: string | null;
+    size?: string | null;
     quantity: number;
     price: number;
     subtotal: number;

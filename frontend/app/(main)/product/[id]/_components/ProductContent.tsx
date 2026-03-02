@@ -2,126 +2,179 @@
 
 import { Spinner } from "@/components/ui/spinner";
 import { useAddToCartMutation } from "@/services/cartApi";
-import { Product } from "@/types/product";
-import { Heart } from "lucide-react";
-import { useState } from "react";
+import { Product, ProductVariant } from "@/types/product";
+import { ShoppingBag } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
+import { Button } from "@/components/ui/button";
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+/** Return the variant that matches the chosen size */
+function findVariant(
+    variants: ProductVariant[],
+    size: string | null
+): ProductVariant | undefined {
+    return variants.find((v) => size === null || v.size === size);
+}
+
+// ─── component ────────────────────────────────────────────────────────────────
 
 const ProductContent = ({ product }: { product: Product }) => {
-    const [quantity, setQuantity] = useState<number>(1);
+    const quantity = 1;
     const [addToCart, { isLoading }] = useAddToCartMutation();
-    const isOutOfStock =
-        product.is_track_inventory && product.stock_quantity <= 0;
+
+    const variants = useMemo(() => product.variants ?? [], [product.variants]);
+    const hasVariants = variants.length > 0;
+
+    const hasSizes = variants.some((v) => v.size);
+
+    const [selectedSize, setSelectedSize] = useState<string | null>(
+        hasSizes ? (variants[0]?.size ?? null) : null
+    );
+
+    const activeVariant = useMemo(
+        () => (hasVariants ? findVariant(variants, selectedSize) : undefined),
+        [variants, selectedSize, hasVariants]
+    );
+
+    const displayPrice = activeVariant?.offer_price_override;
+    const originalPrice = activeVariant?.price_override;
+    const hasDiscount = originalPrice! > displayPrice!;
+    const isOutOfStock = hasVariants
+        ? (activeVariant !== undefined ? (activeVariant.stock_quantity ?? 0) <= 0 : false)
+        : product.is_track_inventory && product.stock_quantity <= 0;
 
     const handleAddToCart = async () => {
+        if (!activeVariant && hasVariants) {
+            toast.error("Please select a size");
+            return;
+        }
         try {
             await addToCart({
                 product_id: product.id,
+                variant_id: activeVariant?.id || '', // fallback if no variants (though backend might fail)
                 quantity
             }).unwrap();
-            toast.success("Item added to cart");
-        } catch (error) {
-            console.log(error);
-            toast.error("Failed to add item to cart");
+            toast.success("Item added to bag");
+        } catch {
+            toast.error("Failed to add item to bag");
         }
-    }
+    };
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6 lg:pr-4">
+            {/* Header section */}
+            <div className="space-y-1">
+                {product.brand && (
+                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                        {product.brand}
+                    </p>
+                )}
+                <h1 className="text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+                    {product.productname}
+                </h1>
+            </div>
 
-            {/* Title */}
-            <h1 className="text-2xl font-semibold text-gray-900">
-                {product.productname}
-            </h1>
-
-            {/* Brand */}
-            {product.brand && (
-                <p className="text-sm text-gray-500">
-                    Brand: <span className="font-medium">{product.brand}</span>
-                </p>
-            )}
-
-            {/* Price */}
-            <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-gray-900">
-                    ₹{product.price.toLocaleString()}
+            {/* Price section */}
+            <div className="flex items-end gap-3 pb-4 border-b border-border/40">
+                <span className="text-2xl font-semibold text-foreground">
+                    ₹{displayPrice?.toLocaleString()}
                 </span>
 
+                {hasDiscount && (
+                    <span className="text-sm text-muted-foreground line-through mb-1">
+                        ₹{originalPrice?.toLocaleString()}
+                    </span>
+                )}
+
+                {hasDiscount && (
+                    <span className="ml-2 rounded-sm bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-600 uppercase mb-1">
+                        {Math.round(((originalPrice! - displayPrice!) / originalPrice!) * 100)}% off
+                    </span>
+                )}
+
                 {isOutOfStock ? (
-                    <span className="rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-600">
-                        Out of Stock
+                    <span className="ml-auto text-xs font-medium text-destructive">
+                        Out of stock
                     </span>
                 ) : (
-                    <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-600">
-                        In Stock
+                    <span className="ml-auto text-xs font-medium text-emerald-600">
+                        In stock
                     </span>
                 )}
             </div>
 
-            {/* Categories */}
-            {product.categories && product.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {product.categories.map((cat) => (
-                        <span
-                            key={cat.name}
-                            className="rounded-full bg-gray-100 px-3 py-1 text-xs"
-                        >
-                            {cat.name}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Stock Info */}
-            {product.is_track_inventory && (
-                <p className="text-sm text-gray-500">
-                    Available Quantity: {product.stock_quantity}
-                </p>
-            )}
-            {/* Quantity */}
-            <div className="flex items-center gap-4">
-                <span className="text-sm font-medium text-gray-700">
-                    Quantity
-                </span>
-
-                <div className="flex items-center overflow-hidden rounded-lg border">
-                    <button onClick={() => setQuantity(quantity - 1)} disabled={quantity === 1} className="flex h-10 w-10 items-center justify-center text-lg font-medium transition hover:bg-gray-100">
-                        −
-                    </button>
-                    <div className="flex h-10 w-12 items-center justify-center text-sm font-medium">
-                        {quantity}
+            {/* Sizes section */}
+            {hasSizes && (
+                <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Size</h3>
+                        {selectedSize && (
+                            <span className="text-xs font-medium text-foreground">
+                                {selectedSize}
+                            </span>
+                        )}
                     </div>
-                    <button onClick={() => setQuantity(quantity + 1)} className="flex h-10 w-10 items-center justify-center text-lg font-medium transition hover:bg-gray-100">
-                        +
-                    </button>
+
+                    <div className="flex flex-wrap gap-2">
+                        {variants.map((v) => {
+                            if (!v.size) return null;
+                            const isSelected = selectedSize === v.size;
+                            const outOfStock = (v.stock_quantity ?? 0) <= 0;
+                            return (
+                                <button
+                                    key={v.id}
+                                    onClick={() => !outOfStock && setSelectedSize(v.size)}
+                                    disabled={outOfStock}
+                                    className={`
+                                        flex h-10 min-w-[3.5rem] px-3 items-center justify-center border text-xs font-medium
+                                        transition-colors duration-200 cursor-pointer select-none
+                                        ${isSelected
+                                            ? "border-foreground bg-foreground text-background"
+                                            : outOfStock
+                                                ? "border-muted bg-muted/30 text-muted-foreground/40 cursor-not-allowed"
+                                                : "border-border bg-background text-foreground hover:border-foreground/40"
+                                        }
+                                    `}
+                                >
+                                    {v.size}
+                                    {outOfStock && (
+                                        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+                                            <div className="w-[120%] h-px bg-muted-foreground/30 rotate-12 transform origin-center"></div>
+                                        </div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
-            </div>
+            )}
+
             {/* Description */}
-            <div>
-                <h2 className="mb-2 text-lg font-semibold">Description</h2>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                    {product.description}
-                </p>
+            <div className="space-y-2 pt-4">
+                <div className="prose prose-sm text-muted-foreground/90 prose-p:leading-relaxed text-sm">
+                    <p>{product.description}</p>
+                </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4">
-                <button
+            <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 mt-auto">
+                <Button
                     onClick={handleAddToCart}
-                    disabled={isOutOfStock}
-                    className="
-             rounded-lg bg-primary flex-1 flex items-center justify-center px-6 py-3 text-sm font-medium text-white
-            transition hover:bg-primary/90 cursor-pointer duration-300 ease-in-out
-            disabled:cursor-not-allowed disabled:opacity-50
-          "
+                    disabled={isOutOfStock || isLoading}
+                    className="flex-1 h-12"
                 >
-                    {
-                        isLoading ? <Spinner className='size-5' /> : <>
-                            <Heart className="size-5! mr-1" />  Add to Cart
+                    {isLoading ? (
+                        <Spinner className="size-4" />
+                    ) : (
+                        <>
+                            <ShoppingBag className="size-5!" />
+                            Add to bag
                         </>
-                    }
-                </button>
+                    )}
+                </Button>
                 <Buynow />
             </div>
         </div>

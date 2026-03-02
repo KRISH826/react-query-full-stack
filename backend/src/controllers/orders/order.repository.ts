@@ -1,7 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { CreateOrderDTO, OrderDB, OrderItemDB, OrderStatus } from "../../models/order";
-import { ProductWithImagesResponseDTO } from "../../models/product";
 
 export async function createOrder(
     userId: string,
@@ -50,7 +49,6 @@ export async function findOrderById(
     return rows[0] || null;
 }
 
-// ✅ Single query — no N+1, returns orders with items already joined
 export async function findUsersOrders(
     userId: string,
     db: Pool | PoolClient = pool
@@ -61,16 +59,19 @@ export async function findUsersOrders(
             COALESCE(
                 json_agg(
                     json_build_object(
-                        'id',               oi.id,
-                        'order_id',         oi.order_id,
-                        'product_id',       oi.product_id,
-                        'product_name',     oi.product_name,
-                        'product_brand',    oi.product_brand,
-                        'quantity',         oi.quantity,
-                        'price_at_purchase',oi.price_at_purchase,
-                        'subtotal',         oi.subtotal,
-                        'image_url',        oi.image_url,
-                        'created_at',       oi.created_at
+                        'id',                       oi.id,
+                        'order_id',                 oi.order_id,
+                        'product_id',               oi.product_id,
+                        'variant_id',               oi.variant_id,
+                        'product_name',             oi.product_name,
+                        'product_brand',            oi.product_brand,
+                        'quantity',                 oi.quantity,
+                        'price_at_purchase',        oi.price_at_purchase,
+                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
+                        'subtotal',                 oi.subtotal,
+                        'size',                     oi.size,
+                        'image_url',                oi.image_url,
+                        'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
                 ) FILTER (WHERE oi.id IS NOT NULL),
                 '[]'
@@ -106,28 +107,46 @@ export async function updateOrderStatus(
 export async function createOrderItem(
     orderId: string,
     productId: string,
+    variantId: string | null,
     productName: string,
     productBrand: string,
     quantity: number,
     price: number,
+    offerPrice: number | null,
     subtotal: number,
-    image_url: string | null,
+    size: string | null,
+    imageUrl: string | null,
     db: Pool | PoolClient = pool
 ): Promise<OrderItemDB | null> {
     const { rows } = await db.query(
         `INSERT INTO order_items (
             order_id,
             product_id,
+            variant_id,
             product_name,
             product_brand,
             quantity,
             price_at_purchase,
+            offer_price_at_purchase,
             subtotal,
+            size,
             image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
-        [orderId, productId, productName, productBrand, quantity, price, subtotal, image_url]
+        [
+            orderId,
+            productId,
+            variantId,
+            productName,
+            productBrand,
+            quantity,
+            price,
+            offerPrice,
+            subtotal,
+            size,
+            imageUrl,
+        ]
     );
     return rows[0] || null;
 }
@@ -145,7 +164,6 @@ export async function findOrderItems(
     return rows;
 }
 
-// ✅ Single query for order + items together
 export async function getOrderWithItems(
     orderId: string,
     db: Pool | PoolClient = pool
@@ -156,16 +174,19 @@ export async function getOrderWithItems(
             COALESCE(
                 json_agg(
                     json_build_object(
-                        'id',               oi.id,
-                        'order_id',         oi.order_id,
-                        'product_id',       oi.product_id,
-                        'product_name',     oi.product_name,
-                        'product_brand',    oi.product_brand,
-                        'quantity',         oi.quantity,
-                        'price_at_purchase',oi.price_at_purchase,
-                        'subtotal',         oi.subtotal,
-                        'image_url',        oi.image_url,
-                        'created_at',       oi.created_at
+                        'id',                       oi.id,
+                        'order_id',                 oi.order_id,
+                        'product_id',               oi.product_id,
+                        'variant_id',               oi.variant_id,
+                        'product_name',             oi.product_name,
+                        'product_brand',            oi.product_brand,
+                        'quantity',                 oi.quantity,
+                        'price_at_purchase',        oi.price_at_purchase,
+                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
+                        'subtotal',                 oi.subtotal,
+                        'size',                     oi.size,
+                        'image_url',                oi.image_url,
+                        'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
                 ) FILTER (WHERE oi.id IS NOT NULL),
                 '[]'
@@ -178,28 +199,43 @@ export async function getOrderWithItems(
     );
 
     if (!rows[0]) return { order: null, items: [] };
-
     const { items, ...order } = rows[0];
     return { order, items };
 }
 
 export async function buyNowProductByid(
     productId: string,
+    variantId: string,
     db: Pool | PoolClient = pool
-): Promise<ProductWithImagesResponseDTO | null> {
+) {
     const { rows } = await db.query(
-        `SELECT p.id, p.productname, p.price, p.brand, pi.image_url
+        `SELECT 
+            p.id,
+            p.productname,
+            p.brand,
+            pi.image_url,
+            v.id                    AS variant_id,
+            v.size,
+            v.price_override        AS price,        -- ✅ IS the price
+            v.offer_price_override  AS offer_price   -- ✅ IS the offer price
          FROM products p
-         LEFT JOIN product_images pi ON p.id = pi.product_id AND pi.isprimary = true
+         JOIN product_variants v ON v.id = $2 AND v.product_id = $1
+         LEFT JOIN product_images pi 
+            ON p.id = pi.product_id AND pi.isprimary = true
          WHERE p.id = $1 AND p.deleted_at IS NULL`,
-        [productId]
+        [productId, variantId]
     );
     return rows[0] || null;
 }
 
-export async function markOrderFailed(orderId: string, db: Pool | PoolClient = pool): Promise<void> {
+export async function markOrderFailed(
+    orderId: string,
+    db: Pool | PoolClient = pool
+): Promise<void> {
     await db.query(
-        `UPDATE orders SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        `UPDATE orders 
+         SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+         WHERE id = $1`,
         [orderId]
     );
 }
