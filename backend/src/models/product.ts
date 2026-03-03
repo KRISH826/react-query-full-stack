@@ -6,12 +6,19 @@ export enum ProductStatus {
     ARCHIVED = "archived",
 }
 
+export enum Gender {
+    MALE = "male",
+    FEMALE = "female",
+    OTHER = "other",
+}
+
 export interface ProductDB {
     id: string;
     productname: string;
     description: string;
     status: ProductStatus;
     brand?: string | null;
+    gender: Gender;
     stock_quantity: number;
     is_track_inventory: boolean;
     created_by?: string | null;
@@ -24,6 +31,7 @@ export interface CreateProductDTO {
     productname: string;
     description: string;
     brand?: string;
+    gender: Gender;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     created_by?: string;
@@ -36,6 +44,7 @@ export interface UpdateProductDTO {
     productname?: string;
     description?: string;
     brand?: string;
+    gender?: Gender;
     stock_quantity?: number;
     is_track_inventory?: boolean;
     status?: ProductStatus;
@@ -47,6 +56,7 @@ export interface ProductResponseDTO {
     id: string;
     productname: string;
     description: string;
+    gender: Gender;
     status: ProductStatus;
     brand?: string | null;
     stock_quantity: number;

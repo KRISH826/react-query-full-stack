@@ -28,7 +28,7 @@ const CartItems = ({ cart }: cart) => {
                     quantity: newQuantity
                 }).unwrap();
             } catch {
-                setQuantity(cart.quantity); // ✅ API fail → rollback
+                setQuantity(cart.quantity);
                 toast.error("Failed to update cart");
             }
         }, 200);

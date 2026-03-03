@@ -25,7 +25,6 @@ const UserAuthForm = ({
         register,
         handleSubmit,
         reset,
-        setValue,
         formState: { errors }
     } = useForm<RegisterValues>({
         resolver: zodResolver(registerSchema),
@@ -67,19 +66,6 @@ const UserAuthForm = ({
                             <Label className='mb-1' htmlFor="password">Password</Label>
                             <Input id="password" className='h-10 text-base!' type="password" placeholder="Enter your password" {...register("password")} />
                             <p className='text-red-600 text-sm'>{errors.password?.message}</p>
-                        </div>
-                        <div className='flex flex-col gap-2'>
-                            <Label className='mb-1' htmlFor="role">Role</Label>
-                            <Select onValueChange={(value) => setValue("role", value as unknown as "customer" | "admin")}>
-                                <SelectTrigger className='w-full'>
-                                    <SelectValue placeholder="Select a role" />
-                                </SelectTrigger>
-                                <SelectContent position="popper">
-                                    <SelectItem value="customer">Customer</SelectItem>
-                                    <SelectItem value="admin">Admin</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p className='text-red-600 text-sm'>{errors.role?.message}</p>
                         </div>
                         <Button type="submit" disabled={isLoading}>
                             {

@@ -3,11 +3,17 @@ import { Button } from '../../button'
 import { ShoppingBag } from 'lucide-react'
 import { useGetCartQuery } from '@/services/cartApi'
 import { useRouter } from 'next/navigation';
+import { useGetProfileQuery } from '@/services/userApi';
 
 const Cart = () => {
     const { data } = useGetCartQuery();
+    const { data: user, isLoading } = useGetProfileQuery();
     const router = useRouter();
     const handleCart = () => {
+        if (!user && !isLoading) {
+            router.push('/login')
+            return;
+        }
         router.push('/carts')
     }
     return (

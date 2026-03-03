@@ -20,12 +20,13 @@ export async function findById(id: string, db: Pool | PoolClient = pool): Promis
 
 export async function createProduct(product: CreateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB> {
     const { rows } = await db.query(
-        `INSERT INTO products (productname, description, brand, stock_quantity, is_track_inventory, status, created_by) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        `INSERT INTO products (productname, description, brand, gender, stock_quantity, is_track_inventory, status, created_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
         [
             product.productname,
             product.description,
             product.brand ?? null,
+            product.gender,
             product.stock_quantity ?? 0,
             product.is_track_inventory ?? true,
             product.status,
@@ -51,12 +52,13 @@ export async function addProductImage(image: ProductImageDTO, db: Pool | PoolCli
 export async function updateProduct(id: string, product: UpdateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
         `UPDATE products 
-         SET productname=$1, description=$2, brand=$3, stock_quantity=$4, is_track_inventory=$5, status=$6
-         WHERE id=$7 RETURNING *`,
+         SET productname=$1, description=$2, brand=$3, gender=$4, stock_quantity=$5, is_track_inventory=$6, status=$7
+         WHERE id=$8 RETURNING *`,
         [
             product.productname,
             product.description,
             product.brand ?? null,
+            product.gender,
             product.stock_quantity,
             product.is_track_inventory,
             product.status,
