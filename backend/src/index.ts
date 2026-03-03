@@ -12,6 +12,7 @@ import { config } from "./config/config";
 import { Request, Response } from "express";
 import categoryRouter from "./routes/category.route";
 import paymentRouter from "./routes/payment.route";
+import { testDeepSeek } from "./utils/deepseek";
 
 
 const app = express();
