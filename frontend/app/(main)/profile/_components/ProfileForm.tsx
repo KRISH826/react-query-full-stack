@@ -46,7 +46,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
             setValue("city", user.city || "");
             setValue("postcode", user.postcode || "");
             setValue("country", user.country || "");
-            setValue("profileimage", user.profileimage || "");
+            setValue("profileImage", user.profileimage || "");
         }
     }, [user, setValue]);
 
@@ -65,7 +65,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
         formData.append("country", data.country);
 
         if (data.profileImage instanceof File) {
-            formData.append("profileimage", data.profileimage);
+            formData.append("profileimage", data.profileImage);
         }
         try {
             await updateProfile(formData).unwrap();
