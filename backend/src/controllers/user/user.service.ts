@@ -4,13 +4,15 @@ import { HttpError } from "../../middlewares/error.middleware";
 import {
     LoginDTO,
     LoginResponseDTO,
+    ProfileDto,
     RegisterDTO,
     UserDB,
     UserResponseDTO,
 } from "../../models/user";
 import { signAccessToken, signRefreshToken } from "../../utils/jwt";
-import { createUser, findByEmail, findById, logout } from "./user.repository";
+import { createUser, findByEmail, findById, logout, updateProfile } from "./user.repository";
 import argon2 from "argon2";
+import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 
 function toUserResponse(user: UserDB | null): UserResponseDTO | null {
     if (!user) return null;
@@ -99,6 +101,50 @@ export class AuthService {
                 throw new HttpError("User not found", 404);
             }
             await client.query('COMMIT');
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async updateProfile(id: string, data: ProfileDto, files: Express.Multer.File[]): Promise<UserResponseDTO | null> {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            const existingUser = await findById(id, client);
+
+            if (!existingUser) {
+                throw new HttpError("User not found", 404);
+            }
+            let profileImageUrl = existingUser.profileimage;
+            const validFile = files.find((f) => f.size > 0);
+
+            if (validFile) {
+                if (existingUser.profileimage) {
+                    const key = extractKeyFromS3Url(existingUser.profileimage);
+                    if (key) {
+                        await deleteFromS3(key);
+                    }
+                }
+                const uploadProfileImageUrl = await uploadSingleImage(validFile);
+                profileImageUrl = uploadProfileImageUrl.url;
+            }
+            const user = await updateProfile(id, {
+                name: data.name ?? existingUser.name,
+                profileimage: profileImageUrl,
+                address: data.address ?? existingUser.address,
+                postcode: data.postcode ?? existingUser.postcode,
+                country: data.country ?? existingUser.country,
+                city: data.city ?? existingUser.city,
+            }, client);
+
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            await client.query('COMMIT');
+            return toUserResponse(user);
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;

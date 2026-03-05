@@ -4,6 +4,11 @@ export interface User {
     id: string;
     name: string;
     email: string;
+    profileimage: string;
+    address: string;
+    city: string;
+    postcode: string;
+    country: string;
     role: UserRole;
     created_at: string;
     updated_at: string;

@@ -14,6 +14,9 @@ export interface UserDB {
     role: UserRole;
     profileimage: string | null;
     address: string | null;
+    postcode: string | null;
+    country: string | null;
+    city: string | null;
     created_at: Date;
     updated_at: Date;
     token_version: number;
@@ -40,6 +43,9 @@ export interface UserResponseDTO {
     email: string;
     role: UserRole;
     profileimage: string | null;
+    postcode: string | null;
+    country: string | null;
+    city: string | null;
     address: string | null;
     created_at: Date;
     updated_at: Date;
@@ -63,4 +69,13 @@ export interface LoginResponseDTO {
     user: UserResponseDTO | null;
     accessToken: string;
     refreshToken: string;
+}
+
+export interface ProfileDto {
+    name: string;
+    profileimage: string | null;
+    postcode: string | null;
+    country: string | null;
+    city: string | null;
+    address: string | null;
 }
