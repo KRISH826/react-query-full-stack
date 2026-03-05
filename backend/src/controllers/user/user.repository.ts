@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateUserDTO, UserDB } from "../../models/user";
+import { CreateUserDTO, ProfileDto, UserDB } from "../../models/user";
 
 export async function findByEmail(email: string, db: Pool | PoolClient = pool): Promise<UserDB | null> {
     const { rows } = await db.query<UserDB>(
@@ -39,6 +39,29 @@ export async function logout(id: string, db: Pool | PoolClient = pool): Promise<
     const { rows } = await db.query<UserDB>(
         `UPDATE users SET token_version=token_version+1 WHERE id=$1 RETURNING *`,
         [id]
+    )
+    return rows[0] || null;
+}
+
+export async function updateProfile(id: string, data: ProfileDto, db: Pool | PoolClient = pool): Promise<UserDB | null> {
+    const { rows } = await db.query<UserDB>(
+        `UPDATE users SET
+        name=$1,
+        profileimage=$2,
+        address=$3,
+        postcode=$4,
+        country=$5,
+        city=$6
+        WHERE id=$7 RETURNING *`,
+        [
+            data.name ?? null,
+            data.profileimage ?? null,
+            data.address ?? null,
+            data.postcode ?? null,
+            data.country ?? null,
+            data.city ?? null,
+            id
+        ]
     )
     return rows[0] || null;
 }
