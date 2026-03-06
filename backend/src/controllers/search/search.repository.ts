@@ -49,6 +49,5 @@ export const searchProductsQuery = async (
 `;
 
     const { rows } = await pool.query(query, values);
-
     return rows;
 };
