@@ -67,3 +67,16 @@ export async function getUserController(
         next(error);
     }
 }
+
+export async function updateProfileController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const files = req.file ? [req.file] : [];
+        const user = await AuthService.updateProfile(req.user!.id, req.body, files);
+        return res.status(200).json({
+            user,
+            message: "User updated successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
+}

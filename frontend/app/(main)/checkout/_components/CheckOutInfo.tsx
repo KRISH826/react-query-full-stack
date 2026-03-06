@@ -9,10 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Phone, Mail, CreditCard } from "lucide-react"
+import { useGetProfileQuery } from "@/services/userApi"
 
 const CheckOutInfo = () => {
-    const [checkout] = useCheckOutMutation()
-
+    const [checkout] = useCheckOutMutation();
+    const { data: user } = useGetProfileQuery();
+    console.log(user);
     const {
         register,
         handleSubmit,
@@ -21,14 +23,14 @@ const CheckOutInfo = () => {
         resolver: zodResolver(checkOutSchema),
         defaultValues: {
             shippingAddress: {
-                shipping_address: "",
-                city: "",
+                shipping_address: user?.address || "",
+                city: user?.city || "",
                 state: "",
-                postalcode: "",
-                country: ""
+                postalcode: user?.postcode || "",
+                country: user?.country || ""
             },
             phone: "",
-            email: ""
+            email: user?.email || ""
         }
     })
 
