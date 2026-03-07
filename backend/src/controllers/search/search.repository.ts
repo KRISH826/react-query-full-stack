@@ -29,7 +29,10 @@ export const searchProductsQuery = async (
     }
 
     if (max_price) {
-        conditions.push(`p.max_price <= $${i}`);
+        conditions.push(`EXISTS (
+            SELECT 1 FROM product_variants pv
+            WHERE pv.product_id = p.id AND pv.price_override <= $${i}
+        )`);
         values.push(max_price);
         i++;
     }
