@@ -18,6 +18,11 @@ interface ProductResponse {
     data: Product;
 }
 
+interface SearchProductsParams {
+    query: string;
+    limit?: number;
+}
+
 export const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query<ProductsResponse, ProductsQueryParams>({
@@ -30,7 +35,13 @@ export const productApi = baseApi.injectEndpoints({
             transformResponse: (response: ProductResponse) => response.data,
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
+        getSearchProducts: builder.query<ProductsResponse, SearchProductsParams>({
+            query: ({ query, limit = 10 }) =>
+                `search-products/search?q=${query}&limit=${limit}`,
+            transformResponse: (response: ProductsResponse) => response,
+            providesTags: [{ type: "Product", id: "LIST" }],
+        })
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery } = productApi;
