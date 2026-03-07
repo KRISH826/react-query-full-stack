@@ -1,13 +1,69 @@
-import { Search } from 'lucide-react'
-import React from 'react'
+'use client'
+
+import { Search, TrendingUp, History, Sparkles, X } from 'lucide-react'
+import React, { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Input } from '../../input'
 import AiSearch from './AiSearch'
+import { DropdownItem } from '@/app/(main)/product-search/_components/DropDownItem'
+
+const TRENDING_SEARCHES = [
+    { text: "Men's T-Shirts", icon: TrendingUp },
+    { text: 'Dresses for Women', icon: TrendingUp },
+    { text: 'Sneakers & Casual Shoes', icon: Search },
+    { text: 'Cotton Kurtas', icon: History }
+] as const
+
+function generateSuggestions(query: string): string[] {
+    const q = query.toLowerCase()
+
+    const suggestions: (string | null)[] = [
+        query,
+        (!q.includes('men') && !q.includes('women')) ? `${query} for Men` : null,
+        (!q.includes('men') && !q.includes('women')) ? `${query} for Women` : null,
+        (!q.includes('under') && !/\d/.test(query)) ? `${query} under ₹999` : null,
+        (!q.includes('kids') && !q.includes('boy') && !q.includes('girl')) ? `${query} for Kids` : null,
+    ]
+
+    return suggestions.filter(Boolean).slice(0, 4) as string[]
+}
 
 const SearchInput = () => {
+    const [query, setQuery] = useState('')
+    const [isFocused, setIsFocused] = useState(false)
+    const wrapperRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const router = useRouter()
+
+    const handleSearch = (searchQuery: string) => {
+        if (!searchQuery.trim()) return
+        setQuery(searchQuery)
+        setIsFocused(false)
+        inputRef.current?.blur()
+        router.push(`/product-search/?q=${encodeURIComponent(searchQuery.trim())}`)
+    }
+
+    const handleClear = () => {
+        setQuery('')
+        inputRef.current?.focus()
+    }
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+                setIsFocused(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
+
+    const suggestions = generateSuggestions(query)
+    const showDropdown = isFocused
+
     return (
         <>
-            {/* SVG definition for the Gemini-style gradient */}
-            <svg width="0" height="0" className="absolute pointer-events-none">
+            <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden>
                 <defs>
                     <linearGradient id="geminiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="#4285f4" />
@@ -18,14 +74,87 @@ const SearchInput = () => {
                 </defs>
             </svg>
 
-            <div className="hidden md:flex flex-1 max-w-sm">
+            <div className="hidden md:flex flex-1 max-w-sm relative" ref={wrapperRef}>
                 <div className="relative w-full">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
+
                     <Input
-                        placeholder="Search products..."
-                        className="pl-9 bg-muted/40 border-primary/40 focus-visible:ring-primary/40 transition-all"
+                        ref={inputRef}
+                        placeholder="Search brands and products…"
+                        className="pl-9 pr-8 bg-muted/40 border-primary/40 focus-visible:ring-primary/30 focus-visible:border-primary/60 transition-all duration-200"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSearch(query)
+                            if (e.key === 'Escape') {
+                                setIsFocused(false)
+                                inputRef.current?.blur()
+                            }
+                        }}
+                        aria-label="Search products"
+                        aria-autocomplete="list"
+                        aria-expanded={showDropdown}
+                        autoComplete="off"
                     />
+
+                    {query && (
+                        <button
+                            className="absolute right-2 top-2 h-5 w-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={handleClear}
+                            aria-label="Clear search"
+                        >
+                            <X className="h-3 w-3" />
+                        </button>
+                    )}
+
+                    {showDropdown && (
+                        <div
+                            role="listbox"
+                            className="absolute top-full left-0 right-0 mt-1.5 z-50 overflow-hidden rounded-lg border border-border/60 bg-popover text-popover-foreground shadow-lg shadow-black/5 animate-in fade-in-0 zoom-in-95 slide-in-from-top-1 duration-150"
+                        >
+                            <div className="p-1.5">
+                                {!query.trim() ? (
+                                    <>
+                                        <div className="flex items-center gap-1.5 px-2 py-1.5 mb-0.5">
+                                            <Sparkles className="h-3 w-3 text-muted-foreground" />
+                                            <span className="text-xs font-medium text-muted-foreground tracking-wide">
+                                                Trending
+                                            </span>
+                                        </div>
+                                        {TRENDING_SEARCHES.map(({ text, icon: Icon }, idx) => (
+                                            <DropdownItem
+                                                key={idx}
+                                                icon={<Icon className="h-3.5 w-3.5" />}
+                                                label={text}
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                onClick={() => handleSearch(text)}
+                                            />
+                                        ))}
+                                    </>
+                                ) : (
+                                    <>
+                                        {suggestions.map((item, idx) => (
+                                            <DropdownItem
+                                                key={idx}
+                                                icon={<Search className="h-3.5 w-3.5" />}
+                                                label={
+                                                    idx === 0
+                                                        ? <><strong>{query}</strong>{item.slice(query.length)}</>
+                                                        : item
+                                                }
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                onClick={() => handleSearch(item)}
+                                            />
+                                        ))}
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
+
                 <AiSearch />
             </div>
         </>
