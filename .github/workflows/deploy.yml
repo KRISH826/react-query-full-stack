@@ -1,6 +1,6 @@
-name: Deploy Backend to EC2
+name: Deploy Backend
 
-on: 
+on:
   push:
     branches:
       - stage
@@ -10,10 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy Ec2 via ssh
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -21,18 +18,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ${{ secrets.EC2_PATH }}
-            echo "Updating Code..."
-            git fetch origin
-            git reset --hard origin/stage
-            
-            echo "Installing Depencies..."
-            npm ci
-
-            echo "Building Project..."
+            git pull origin stage
+            npm install
             npm run build
-            
-            echo "Restarting Backend..."
-            pm2 start dist/index.js
-
-            pm2 save
-      
+            pm2 restart backend
