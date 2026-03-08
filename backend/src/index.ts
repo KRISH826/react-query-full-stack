@@ -40,7 +40,7 @@ app.use("/api/payments", paymentRouter);
 app.use("/api/search-products", searchRouter);
 
 app.get("/health", (req: Request, res: Response) => {
-    res.send("Health is OKK!")
+    res.send("Health is OK!")
 });
 
 // ❗ MUST BE LAST
