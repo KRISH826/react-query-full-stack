@@ -21,8 +21,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ${{ secrets.EC2_PATH }}
-            git pull origin stage
-            npm install
-            npm run build || true
-            pm2 restart all || pm2 start dist/index.js --name backend
+            echo "Updating Code..."
+            git fetch origin
+            git reset --hard origin/stage
+            
+            echo "Installing Depencies..."
+            npm ci
+
+            echo "Building Project..."
+            npm run build
+            
+            echo "Restarting Backend..."
+            pm2 start dist/index.js
+
+            pm2 save
       
