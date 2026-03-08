@@ -32,7 +32,7 @@ jobs:
             npm run build
             
             echo "Restarting Backend..."
-            pm2 restart backend || pm2 start dist/index.js --name backend
+            pm2 start dist/index.js
 
             pm2 save
       
