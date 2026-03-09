@@ -49,6 +49,10 @@ export const config = {
     deepseek: {
         api_key: process.env.DEEPSEEK_API_KEY,
         api_url: process.env.DEEPSEEK_API_BASEURL
+    },
+    ses: {
+        access_key: process.env.AWS_SES_ACCESS_KEY_ID,
+        secret_key: process.env.AWS_SES_SECRET_ACCESS_KEY,
     }
 }
 
