@@ -53,6 +53,7 @@ export const config = {
     ses: {
         access_key: process.env.AWS_SES_ACCESS_KEY_ID,
         secret_key: process.env.AWS_SES_SECRET_ACCESS_KEY,
+        email_from: process.env.EMAIL_FROM,
     }
 }
 
