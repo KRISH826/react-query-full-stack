@@ -48,7 +48,7 @@ const Profile = () => {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="link" className="gap-1 cursor-pointer bg-transparent border-0! shadow-none! ring-0! outline-none focus:outline-none">
+                    <Button variant="link" className="gap-1 cursor-pointer bg-transparent border-0! shadow-none! px-1.5! ring-0! outline-none focus:outline-none">
                         <User className="h-5 w-5" />
                         <span className="hidden sm:inline">
                             {user?.name.split(" ")[0]}

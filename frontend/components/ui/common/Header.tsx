@@ -50,13 +50,11 @@ const Header = () => {
                     </nav>
                     <SearchInput />
                     {/* Actions */}
-                    <div className="flex items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-0.5">
                         {/* Wishlist */}
                         <Favourites />
-
                         {/* Cart */}
                         <Cart />
-
                         {/* Profile */}
                         <Profile />
 
