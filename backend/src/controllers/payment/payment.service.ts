@@ -4,8 +4,10 @@ import { createPayment, markPaymentFailed, markPaymentSuccess, updateStatusConfi
 import crypto from "crypto";
 import { config } from "../../config/config";
 import { pool } from "../../db/db";
-import { markOrderFailed } from "../orders/order.repository";
+import { getOrderWithItems, markOrderFailed } from "../orders/order.repository";
 import { HttpError } from "../../middlewares/error.middleware";
+import { OrderService } from "../orders/order.service";
+import { sendOrderConfirmatinMail } from "../email/email.service";
 
 export class PaymentService {
 
@@ -55,6 +57,16 @@ export class PaymentService {
             );
             await updateStatusConfirmedByOrderId(data.order_id, client);
             await client.query("COMMIT");
+
+            const { order, items } = await getOrderWithItems(data.order_id);
+
+            if (order) {
+                setImmediate(() => {
+                    sendOrderConfirmatinMail(order, items, order.email).catch(err => {
+                        console.error("Failed to send order confirmation email:", err);
+                    })
+                })
+            }
 
             return true;
 
