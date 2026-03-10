@@ -10,6 +10,7 @@ import {
 } from "../../models/order";
 import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
+import { sendOrderCancellationMail } from "../email/email.service";
 import {
     buyNowProductByid,
     createOrder,
@@ -204,10 +205,10 @@ export class OrderService {
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
+
             const order = await findOrderById(orderId, client);
             if (!order) throw new HttpError("Order not found", 404);
             if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
-
             if (!["placed", "confirmed"].includes(order.status)) {
                 throw new HttpError("Order cannot be cancelled", 400);
             }
@@ -219,6 +220,18 @@ export class OrderService {
             throw error;
         } finally {
             client.release();
+        }
+
+        // ✅ Transaction complete hone ke BAAD — client bhi release ho chuka
+        const { order, items } = await getOrderWithItems(orderId);
+        if (order) {
+            setImmediate(() => {
+                sendOrderCancellationMail(order, items, order.email).catch((err) =>
+                    console.error(
+                        `[EmailService] Cancellation email failed — order: ${order.order_number}`, err
+                    )
+                );
+            });
         }
     }
 
