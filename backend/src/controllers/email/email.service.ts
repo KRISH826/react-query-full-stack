@@ -44,13 +44,13 @@ export async function sendOrderConfirmatinMail(order: OrderDB, items: OrderItemD
         "order_confirmation",
         order.email,
         {
-            customerName,
-            orderId: order.id,
-            orderDate: order.created_at.toISOString(),
-            totalAmount: order.total_amount.toString(),
-            shippingAddress: order.shipping_address,
+            customer_name: customerName,
+            order_number: order.order_number,
+            order_date: order.created_at.toISOString(),
+            total_amount: order.total_amount.toString(),
+            shipping_address: order.shipping_address,
             city: order.shipping_city,
-            postalCode: order.shipping_postal_code,
+            postal_code: order.shipping_postal_code,
             country: order.shipping_country,
             state: order.shipping_state,
             items: buildOrderItems(items)
@@ -60,7 +60,7 @@ export async function sendOrderConfirmatinMail(order: OrderDB, items: OrderItemD
 
 export async function sendOrderCancellationMail(order: OrderDB, items: OrderItemDB[], customerName: string) {
     await sendEmailService(
-        "order_cancellation",
+        "order_cancelled",
         order.email,
         {
             customer_name: customerName,
