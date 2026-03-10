@@ -33,5 +33,6 @@ export const sendEmail = async (
         }
     })
 
-    await sesClient.send(command)  // error yahan throw hoga — caller handle karega
+    await sesClient.send(command);
+    console.log("[SES] Email sent successfully to:", to);
 }

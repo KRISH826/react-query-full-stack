@@ -235,8 +235,6 @@ export class OrderService {
         }
     }
 
-
-
     private static formatOrderResponse(
         order: OrderDB,
         items: any[]

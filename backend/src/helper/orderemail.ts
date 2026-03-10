@@ -3,7 +3,7 @@ export function buildOrderItems(items: any[]) {
         .map(
             (item) => `
 <tr>
-<td>${item.productname}</td>
+<td>${item.product_name}</td>
 <td align="center">${item.quantity}</td>
 <td align="right">₹${item.subtotal}</td>
 </tr>`
