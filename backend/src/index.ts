@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
+import { globalLimiter } from "./middlewares/limiter.middleware";
 import morgan from "morgan";
 import { connectDB } from "./db/db";
 import userRouter from "./routes/user.route";
@@ -30,6 +30,7 @@ app.use(cors({
 app.use(helmet());
 app.use(morgan("dev"));
 
+app.use("/api", globalLimiter);
 connectDB();
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
