@@ -38,6 +38,6 @@ const baseQuery = retry(baseQueryWithAuth, {
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: baseQuery,
-    tagTypes: ["Product", "User", "Cart", "Order"],
+    tagTypes: ["Product", "User", "Cart", "Order", "Favourite"],
     endpoints: () => ({}),
 });

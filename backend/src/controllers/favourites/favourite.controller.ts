@@ -21,12 +21,8 @@ export class favouriteController {
 
     static async removeFavouriteController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
-            const userId = req.user?.id;
-            if (!userId) throw new HttpError("Unauthorized", 401);
-
+            const userId = req.user?.id as string;
             const productId = req.params.productId as string;
-            if (!productId) throw new HttpError("product not found", 401)
-
             const favourite = await FavouriteService.removeFavouritesService(userId, productId);
             res.status(200).json({
                 success: true,
@@ -40,8 +36,7 @@ export class favouriteController {
 
     static async getFavourites(req: AuthRequest, res: Response, next: NextFunction) {
         try {
-            const userId = req.user?.id;
-            if (!userId) throw new HttpError("Unauthorized", 401);
+            const userId = req.user?.id as string;
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 1;
 

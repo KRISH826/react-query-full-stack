@@ -12,7 +12,7 @@ export class FavouriteService {
         }
 
         const existingFavourite = await findFavourite(userId, productId);
-        if (!existingFavourite) {
+        if (existingFavourite) {
             throw new HttpError("Product already added to favourites", 400);
         }
         const favourite = await addFavourite({ user_id: userId, product_id: productId });
@@ -22,7 +22,7 @@ export class FavouriteService {
 
     static async removeFavouritesService(userId: string, productId: string) {
         const existingFavourites = await findFavourite(userId, productId);
-        if (!existingFavourites) {
+        if (existingFavourites) {
             throw new HttpError("Favourite not found", 404);
         }
         const favourite = await removeFavourite(userId, productId);

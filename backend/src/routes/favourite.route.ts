@@ -6,7 +6,7 @@ import { favouriteController } from "../controllers/favourites/favourite.control
 const router = express.Router();
 
 router.get("/", requireAuth, requireRole("customer"), favouriteController.getFavourites);
-router.post("/", requireAuth, requireRole("customer"), favouriteController.addFavouriteController);
-router.delete("/", requireAuth,)
+router.post("/:productId", requireAuth, requireRole("customer"), favouriteController.addFavouriteController);
+router.delete("/:productId", requireAuth, favouriteController.removeFavouriteController)
 
 export default router;
