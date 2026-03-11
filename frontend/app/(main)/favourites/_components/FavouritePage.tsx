@@ -22,48 +22,39 @@ const FavouritePage = () => {
     }
 
     if (error) {
-        return (
-            <div className="container py-10 text-center text-red-500 font-medium">
-                Error loading your wishlist.
-            </div>
-        );
+        return <div className="container py-10 text-center text-red-500">Error loading wishlist.</div>;
     }
 
     const hasItems = data?.data && data.data.length > 0;
 
     return (
-        <section className="py-8 bg-white min-h-[80vh]">
-            <div className="container mx-auto px-4">
+        <section className="py-10 bg-background/30 min-h-screen">
+            <div className="container mx-auto">
                 
-                {/* Heading mirroring CartPage.tsx structure */}
-                <div className="heading flex items-center justify-between gap-4 mb-8">
-                    <div className="title">
-                        <h1 className="text-3xl font-semibold text-gray-900">
-                            My Wishlist
-                        </h1>
-                        <p className="text-sm text-gray-500 mt-1">
-                            {hasItems ? `Manage your ${data.total} saved items.` : "You haven't saved any items yet."}
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+                    <div>
+                        <h1 className="text-3xl font-bold text-foreground">My Wishlist</h1>
+                        <p className="text-muted-foreground mt-1">
+                            {hasItems ? `You have ${data.total} items saved.` : "Your wishlist is empty."}
                         </p>
                     </div>
-                    <Button onClick={() => router.push("/product")} variant={"outline"} className="cursor-pointer">
+                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border">
                         <ArrowLeft className="mr-2 h-4 w-4" /> 
                         Back to Shopping
                     </Button>
                 </div>
 
-                {/* Content - mirroring ProductPage.tsx grid */}
+                {/* List Container - Changed from Grid to Flex Column */}
                 {!hasItems ? (
-                    <div className="flex flex-col items-center justify-center h-64 rounded-xl border-2 border-dashed border-gray-100 bg-gray-50/50">
-                        <p className="text-gray-500 font-medium">Your wishlist is currently empty</p>
-                        <Button 
-                            onClick={() => router.push("/product")} 
-                            className="mt-6 bg-black hover:bg-gray-800 text-white px-8 rounded-lg cursor-pointer"
-                        >
+                    <div className="flex flex-col items-center justify-center h-80 rounded-2xl border-2 border-dashed border-border bg-card/50">
+                        <p className="text-muted-foreground font-medium">Your wishlist is currently empty</p>
+                        <Button onClick={() => router.push("/product")} className="mt-6 bg-primary text-primary-foreground px-8 rounded-lg">
                             Start Shopping
                         </Button>
                     </div>
                 ) : (
-                    <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    <div className="flex flex-col gap-4 w-full">
                         {data.data.map((item) => (
                             <FavouritesItems key={item.product_id} item={item} />
                         ))}

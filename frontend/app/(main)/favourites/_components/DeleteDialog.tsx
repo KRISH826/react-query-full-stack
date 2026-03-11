@@ -2,13 +2,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useRemoveFavouriteMutation } from '@/services/favouriteApi';
 import { Trash2 } from 'lucide-react'
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 type DeleteDialogProps = {
     productId: string;
 }
 
 const DeleteDialog = ({ productId }: DeleteDialogProps) => {
-    const [removeFavourite, { isLoading }]= useRemoveFavouriteMutation();  
+    const [removeFavourite, { isLoading }] = useRemoveFavouriteMutation();
+    
     const handleDeleteFavorites = async () => {
         try {
             await removeFavourite({ productId }).unwrap();
@@ -16,35 +18,39 @@ const DeleteDialog = ({ productId }: DeleteDialogProps) => {
         } catch (error) {
             console.error("Error deleting favorite item:", error);
             toast.error("Failed to remove item");
-        }// Implement the logic to delete the favorite item here
+        }
     }
-  return (
-    <>
+
+    return (
         <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <button className="text-red-500 p-1 cursor-pointer absolute right-3 top-3 flex h-8 w-8 items-center justify-center hover:text-red-600 transition">
-                            <Trash2 size={24} />
-                        </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDeleteFavorites}>
-                                {
-                                    isLoading ? "Deleting..." : "Continue"
-                                }
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-    </>
-  )
+            <AlertDialogTrigger asChild>
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
+                >
+                    <Trash2 className="size-5" />
+                </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Remove from Wishlist?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This will remove the item from your saved favourites. You can always add it back later from the shop.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                        onClick={handleDeleteFavorites}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                    >
+                        {isLoading ? "Removing..." : "Remove"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    )
 }
 
 export default DeleteDialog
