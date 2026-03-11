@@ -45,7 +45,7 @@ export async function findFavourite(
 export async function findAllFavouritesByUser(
     userId: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 20,
     db: Pool | PoolClient = pool
 ): Promise<{ data: FavouriteWithProductDTO[]; total: number }> {
     const offset = (page - 1) * limit;

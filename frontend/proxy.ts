@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // ✅ Protected — login required
-const PROTECTED_ROUTES = ["/carts", "/checkout", "/orders"]
+const PROTECTED_ROUTES = ["/carts", "/checkout", "/orders", "/favourites"]
 // ✅ Auth routes — logged in user nahi ja sakta
 const AUTH_ROUTES = ["/login", "/register"]
 
@@ -31,6 +31,7 @@ export const config = {
         "/carts/:path*",
         "/checkout/:path*",
         "/orders/:path*",
+        "/favourites/:path*",
         "/login",
         "/register",
     ]
