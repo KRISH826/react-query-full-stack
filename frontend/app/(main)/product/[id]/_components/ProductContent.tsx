@@ -1,13 +1,13 @@
 "use client";
-
 import { Spinner } from "@/components/ui/spinner";
-import { useAddToCartMutation } from "@/services/cartApi";
+import { useAddToCartMutation, useGetCartQuery } from "@/services/cartApi";
 import { Product, ProductVariant } from "@/types/product";
 import { ShoppingBag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -24,6 +24,9 @@ function findVariant(
 const ProductContent = ({ product }: { product: Product }) => {
     const quantity = 1;
     const [addToCart, { isLoading }] = useAddToCartMutation();
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
+    const { data: cart } = useGetCartQuery();
+    const router = useRouter();
 
     const variants = useMemo(() => product.variants ?? [], [product.variants]);
     const hasVariants = variants.length > 0;
@@ -38,6 +41,8 @@ const ProductContent = ({ product }: { product: Product }) => {
         () => (hasVariants ? findVariant(variants, selectedSize) : undefined),
         [variants, selectedSize, hasVariants]
     );
+
+    const addcarted = cart?.items.some((item) => item.variantId === activeVariant?.id) ?? false;
 
     const displayPrice = activeVariant?.offer_price_override;
     const originalPrice = activeVariant?.price_override;
@@ -60,6 +65,25 @@ const ProductContent = ({ product }: { product: Product }) => {
             toast.success("Item added to bag");
         } catch {
             toast.error("Failed to add item to bag");
+        }
+    };
+
+    const handleBuyNow = async () => {
+        if (!activeVariant && hasVariants) {
+            toast.error("Please select a size");
+            return;
+        }
+        setIsBuyNowLoading(true);
+        try {
+            await addToCart({
+                product_id: product.id,
+                variant_id: activeVariant?.id || '',
+                quantity
+            }).unwrap();
+            router.push("/checkout");
+        } catch {
+            toast.error("Failed to add item to bag");
+            setIsBuyNowLoading(false);
         }
     };
 
@@ -163,19 +187,39 @@ const ProductContent = ({ product }: { product: Product }) => {
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 mt-auto">
                 <Button
                     onClick={handleAddToCart}
-                    disabled={isOutOfStock || isLoading}
+                    disabled={isOutOfStock || isLoading || isBuyNowLoading || addcarted}
                     className="flex-1 h-12"
                 >
-                    {isLoading ? (
-                        <Spinner className="size-4" />
-                    ) : (
-                        <>
-                            <ShoppingBag className="size-5!" />
-                            Add to bag
-                        </>
-                    )}
+                    {
+                        addcarted ?
+
+                            <>
+                                {isLoading && !isBuyNowLoading ? (
+                                    <Spinner className="size-4" />
+                                ) : (
+                                    <>
+                                        <ShoppingBag className="size-5!" />
+                                        Added to bag
+                                    </>
+                                )}
+                            </> : <>
+                                {isLoading && !isBuyNowLoading ? (
+                                    <Spinner className="size-4" />
+                                ) : (
+                                    <>
+                                        <ShoppingBag className="size-5!" />
+                                        Add to bag
+                                    </>
+                                )}
+                            </>
+                    }
+
                 </Button>
-                <Buynow />
+                <Buynow
+                    onClick={handleBuyNow}
+                    disabled={isOutOfStock || isLoading}
+                    isLoading={isBuyNowLoading}
+                />
             </div>
         </div>
     );

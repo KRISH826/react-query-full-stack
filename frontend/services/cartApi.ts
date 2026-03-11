@@ -96,7 +96,8 @@ export const cartApi = baseApi.injectEndpoints({
                 method: "DELETE",
             }),
             invalidatesTags: [{ type: "Cart", id: "USER_CART" }]
-        })
+        }),
+
     })
 })
 
