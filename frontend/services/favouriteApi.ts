@@ -23,10 +23,11 @@ interface BackendMutationResponse {
 
 export const favouriteApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        getFavourites: builder.query<PaginatedFavouritesResponse, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 } = {}) => ({
-                url: `favourites?page=${page}&limit=${limit}`,
+        getFavourites: builder.query<PaginatedFavouritesResponse, { page: number; limit: number }>({
+            query: ({ page, limit }) => ({
+                url: `favourites`,
                 method: "GET",
+                params: { page, limit }
             }),
             transformResponse: (response: BackendFavouritesResponse) => response.favourite,
             providesTags: (result) =>
@@ -54,11 +55,10 @@ export const favouriteApi = baseApi.injectEndpoints({
                 const patchResult = dispatch(
                     favouriteApi.util.updateQueryData(
                         "getFavourites",
-                        {},
+                        { page: 1, limit: 20 },
                         (draft) => {
                             const initialCount = draft.data.length;
                             draft.data = draft.data.filter(item => item.product_id !== productId);
-                            // Only decrement total if an item was actually removed
                             if (draft.data.length < initialCount) {
                                 draft.total = Math.max(0, draft.total - 1);
                             }

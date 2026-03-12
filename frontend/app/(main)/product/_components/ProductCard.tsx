@@ -1,10 +1,14 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { useAddFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
 import { Product } from "@/types/product";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { toast } from "sonner";
 
 type Props = {
     product: Product;
@@ -12,6 +16,8 @@ type Props = {
 
 const ProductCard = ({ product }: Props) => {
     const router = useRouter();
+    const { data } = useGetFavouritesQuery({ page: 1, limit: 20 });
+    const [addFavourite, { isLoading, isSuccess }] = useAddFavouriteMutation();
     const image =
         product.images?.find((img) => img.isprimary)?.image_url ||
         "/placeholder.png";
@@ -19,9 +25,20 @@ const ProductCard = ({ product }: Props) => {
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
 
+    const addedWishList = data?.data?.some((fav) => fav.product_id === product.id);    
+
     const handlerProductDetails = (id: string) => {
         router.push(`/product/${id}`);
     };
+
+    const handleWishList = async (productId: string) => {
+        try {
+            await addFavourite({ productId }).unwrap();
+            toast.success("Favourites Added SuccessFully")
+        } catch {
+            toast.error("Failed To Add Favourites");
+        }
+    }
 
     return (
         <div className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-lg">
@@ -76,17 +93,21 @@ const ProductCard = ({ product }: Props) => {
                         }
                     </span>
                 </div>
-                <button
-                    className="
-              flex w-full items-center justify-center gap-2
-              rounded-lg bg-black px-4 py-2 mt-3 cursor-pointer text-sm font-medium text-white
-              transition hover:bg-gray-800
-              disabled:cursor-not-allowed disabled:opacity-50
-            "
-                >
-                    <Heart className="h-4 w-4" />
-                    Add to Wishlist
-                </button>
+                <Button
+                className="cursor-pointer mt-3"
+                disabled={isLoading || isSuccess || addedWishList}
+                    onClick={() => handleWishList(product.id)}>
+                    {
+                        isLoading ? <Spinner className="h-4 w-4" /> : <>
+                            {
+                                !addedWishList && <Heart className="h-4 w-4" />
+                            }
+                        </>
+                    }
+                    {
+                        isSuccess || addedWishList ? "Added to Wishlist" : "Add to Wishlist"
+                    }
+                </Button>
             </div>
         </div>
     );
