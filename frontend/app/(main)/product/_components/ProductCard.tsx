@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAddFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
 import { Product } from "@/types/product";
@@ -92,25 +93,21 @@ const ProductCard = ({ product }: Props) => {
                         }
                     </span>
                 </div>
-                <button
+                <Button
+                className="cursor-pointer mt-3"
                 disabled={isLoading || isSuccess || addedWishList}
-                    onClick={() => handleWishList(product.id)}
-                    className="
-              flex w-full items-center justify-center gap-2
-              rounded-lg bg-black px-4 py-2 mt-3 cursor-pointer text-sm font-medium text-white
-              transition hover:bg-gray-800
-              disabled:cursor-not-allowed disabled:opacity-50
-            "
-                >
+                    onClick={() => handleWishList(product.id)}>
                     {
                         isLoading ? <Spinner className="h-4 w-4" /> : <>
-                            <Heart className="h-4 w-4" />
+                            {
+                                !addedWishList && <Heart className="h-4 w-4" />
+                            }
                         </>
                     }
                     {
                         isSuccess || addedWishList ? "Added to Wishlist" : "Add to Wishlist"
                     }
-                </button>
+                </Button>
             </div>
         </div>
     );

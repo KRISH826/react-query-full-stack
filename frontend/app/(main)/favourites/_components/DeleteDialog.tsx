@@ -27,7 +27,7 @@ const DeleteDialog = ({ productId }: DeleteDialogProps) => {
                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
+                    className="text-destructive hover:bg-destructive/20  bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
                 >
                     <Trash2 className="size-5" />
                 </Button>
