@@ -20,6 +20,7 @@ export interface UserDB {
     created_at: Date;
     updated_at: Date;
     token_version: number;
+    isVerified: Boolean;
 }
 
 /**
@@ -50,6 +51,7 @@ export interface UserResponseDTO {
     created_at: Date;
     updated_at: Date;
     token_version?: number;
+    isVerified: Boolean;
 }
 
 export interface RegisterDTO {
