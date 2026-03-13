@@ -40,7 +40,7 @@ export default function Page() {
             </div>
             <div className="flex items-center justify-center lg:h-screen lg:p-8">
                 <div className="mx-auto flex w-full flex-col justify-center gap-4 sm:w-[350px]">
-                    <div className="flex flex-col mb-4 gap-2 text-start">
+                    <div className="flex flex-col mb-4 gap-2c text-start">
                         <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
                         <p className="text-muted-foreground text-sm">
                             Enter your email below to sign in

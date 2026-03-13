@@ -8,12 +8,16 @@ const redisConnection = {
     port: parseInt(process.env.REDIS_PORT || "6379"),
     password: process.env.REDIS_PASSWORD,
     tls: process.env.REDIS_TLS === "true" ? ({} as const) : undefined,
-    maxRetriesPerRequest: null, // required by bullmq
+    maxRetriesPerRequest: null,
     enableReadyCheck: false,
 };
 
 const cognitoClient = new CognitoIdentityProviderClient({
-    region: config.cognito.region,
+    region: config.cognito.region!,
+    credentials: {
+        accessKeyId: config.cognito.access_key_id!,
+        secretAccessKey: config.cognito.secret_access_key!,
+    }
 });
 
 export const cleanupWorker = new Worker(

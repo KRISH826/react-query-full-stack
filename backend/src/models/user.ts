@@ -28,12 +28,11 @@ export interface UserDB {
  * DTO for creating a user (API input)
  */
 export interface CreateUserDTO {
+    id: string;
     name: string;
     email: string;
-    password: string;
-    role?: UserRole; // optional → default handled by DB
-    profileimage?: string;
-    address?: string;
+    password?: string; // optional → managed by Cognito, not stored in DB
+    role?: UserRole;   // optional → default handled by DB
 }
 
 /**

@@ -16,7 +16,7 @@ import searchRouter from "./routes/search.routes";
 import favouriteRouter from "./routes/favourite.route";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
-import "./cron/cleanup.worker";
+import "./corn/user/cleanup.worker"
 
 
 const app = express();
@@ -51,7 +51,7 @@ app.get("/health", (req: Request, res: Response) => {
 
 // ❗ MUST BE LAST
 app.use(errorHandler);
-app.listen(config.app.port, () => {
-    startUpCleanScheduler();
+app.listen(config.app.port, async () => {
+    await startUpCleanScheduler();
     console.log(`Server is running on port ${config.app.port}`);
 });

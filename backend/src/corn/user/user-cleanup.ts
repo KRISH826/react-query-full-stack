@@ -5,9 +5,12 @@ import { deleteExpiredVerificationUsers } from "../../controllers/user/user.repo
 
 
 const cognitoClient = new CognitoIdentityProviderClient({
-    region: config.cognito.region
-})
-
+    region: config.cognito.region!,
+    credentials: {
+        accessKeyId: config.cognito.access_key_id!,
+        secretAccessKey: config.cognito.secret_access_key!,
+    }
+});
 corn.schedule("*/15 * * * *", async () => {
     try {
         const deleteUsers = await deleteExpiredVerificationUsers();
