@@ -19,6 +19,7 @@ export interface UserDB {
     city: string | null;
     created_at: Date;
     updated_at: Date;
+    expires_at: Date;
     token_version: number;
     isverified: Boolean;
 }
@@ -50,6 +51,7 @@ export interface UserResponseDTO {
     address: string | null;
     created_at: Date;
     updated_at: Date;
+    expires_at: Date;
     token_version?: number;
     isverified: Boolean;
 }
