@@ -79,8 +79,24 @@ export const userApi = baseApi.injectEndpoints({
                 }
             },
         }),
+        verifyEmail: builder.mutation<void, { email: string, code: string }>({
+            query: (credentials) => ({
+                url: "users/verify-email",
+                method: "POST",
+                body: credentials,
+            }),
 
+            invalidatesTags: [{ type: "User", id: "PROFILE" }],
+        }),
+        resendCode: builder.mutation<void, { email: string }>({
+            query: (credentials) => ({
+                url: "users/resend-code",
+                method: "POST",
+                body: credentials,
+            }),
+
+        })
     })
-})
+});
 
-export const { useLoginMutation, useGetProfileQuery, useLogoutMutation, useRegisterUserMutation, useUpdateProfileMutation } = userApi;
+export const { useLoginMutation, useGetProfileQuery, useLogoutMutation, useRegisterUserMutation, useUpdateProfileMutation, useVerifyEmailMutation, useResendCodeMutation } = userApi;

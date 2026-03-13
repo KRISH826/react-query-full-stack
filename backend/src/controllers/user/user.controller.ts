@@ -1,6 +1,7 @@
 import { NextFunction, Response } from "express";
 import { AuthService } from "./user.service";
 import { AuthRequest } from "../../middlewares/auth.middleware";
+import { HttpError } from "../../middlewares/error.middleware";
 
 export async function registerController(
     req: AuthRequest,
@@ -31,6 +32,36 @@ export async function loginController(
         });
     } catch (error) {
         next(error);
+    }
+}
+
+export async function verifyEmailController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const { email, code } = req.body;
+        if (!email || !code) {
+            throw new HttpError("Email and code are required", 400);
+        }
+        await AuthService.verifyEmail(email, code);
+        return res.status(200).json({
+            message: "Email verified successfully",
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function resendVerificationController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            throw new HttpError("Email is required", 400);
+        }
+        await AuthService.resenedVerification(email);
+        return res.status(200).json({
+            message: "Verification email sent successfully",
+        });
+    } catch (error) {
+        next(error)
     }
 }
 

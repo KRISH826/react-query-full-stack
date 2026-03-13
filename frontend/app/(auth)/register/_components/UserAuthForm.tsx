@@ -38,9 +38,9 @@ const UserAuthForm = ({
         try {
             await registerUser(data).unwrap();
             console.log(data);
-            toast.success("Account created successfully");
+            toast.success("Email Sent! Please check your inbox to verify your email address.");
             reset();
-            router.replace("/login");
+            router.replace(`/verify-email?email=${encodeURIComponent(data.email)}`);
         } catch (error: any) {
             const errorMessage = error?.data?.message || "Registration failed";
             toast.error(errorMessage);

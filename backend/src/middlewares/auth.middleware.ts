@@ -1,7 +1,6 @@
-import { NextFunction, Response } from "express";
-import { JwtPayload, verifyAccessToken } from "../utils/jwt";
+import { NextFunction, Response, Request } from "express";
 import { pool } from "../db/db";
-import { Request } from "express";
+import { verifyCognitoToken } from "../utils/cognito";
 
 export interface AuthRequest extends Request {
     user?: {
@@ -23,21 +22,25 @@ export const requireAuth = async (
 
     try {
         const token = authHeader.split(" ")[1];
-        const decoded: JwtPayload = verifyAccessToken(token);
+        
+        // 🔥 Verify with Cognito
+        const payload = await verifyCognitoToken(token);
 
+        // We still check our DB for the user's role and existence
+        // payload.sub is the unique ID from Cognito
         const { rows } = await pool.query(
-            `SELECT token_version FROM users WHERE id = $1`,
-            [decoded.sub]
+            `SELECT id, role FROM users WHERE id = $1`,
+            [payload.sub]
         );
 
-        if (!rows.length || rows[0].token_version !== decoded.token_version) {
-            return res.status(401).json({ message: "Token revoked" });
+        if (!rows.length) {
+            return res.status(401).json({ message: "User not found in local database" });
         }
 
         // Attach user to request
         req.user = {
-            id: decoded.sub,
-            role: decoded.role,
+            id: rows[0].id,
+            role: rows[0].role,
         };
 
         next();
