@@ -40,7 +40,7 @@ const UserAuthForm = ({
             console.log(data);
             toast.success("Email Sent! Please check your inbox to verify your email address.");
             reset();
-            router.replace("/verify-email");
+            router.replace(`/verify-email?email=${encodeURIComponent(data.email)}`);
         } catch (error: any) {
             const errorMessage = error?.data?.message || "Registration failed";
             toast.error(errorMessage);

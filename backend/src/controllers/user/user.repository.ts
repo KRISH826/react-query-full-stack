@@ -68,7 +68,7 @@ export async function updateProfile(id: string, data: ProfileDto, db: Pool | Poo
 
 export async function verifyUser(email: string, db: Pool | PoolClient = pool): Promise<UserDB | null> {
     const { rows } = await db.query<UserDB>(
-        `UPDATE users SET isVerified = TRUE WHERE email = $1 RETURNING *`,
+        `UPDATE users SET isverified = TRUE WHERE email = $1 RETURNING *`,
         [email]
     );
     return rows[0] || null;

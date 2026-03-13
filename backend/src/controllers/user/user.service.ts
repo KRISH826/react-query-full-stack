@@ -86,12 +86,9 @@ export class AuthService {
                 throw new HttpError("Authentication failed", 401);
             }
 
-            const { AccessToken, RefreshToken, IdToken } = response.AuthenticationResult;
-
-            // Fetch user from local DB to return safe profile data
+            const { AccessToken, RefreshToken } = response.AuthenticationResult;
             const user = await findByEmail(payload.email);
-
-            if (!user?.isVerified) {
+            if (!user?.isverified) {
                 throw new HttpError("Please verify your email first", 403);
             }
 
@@ -134,7 +131,7 @@ export class AuthService {
             if (!user) {
                 throw new HttpError("User not found", 404);
             }
-            if (user.isVerified) {
+            if (user.isverified) {
                 throw new HttpError("User already verified", 400);
             }
 
