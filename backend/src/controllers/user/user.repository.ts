@@ -17,13 +17,11 @@ export async function findById(id: string, db: Pool | PoolClient = pool): Promis
     )
     return rows[0] || null;
 }
-
 export async function createUser(data: CreateUserDTO, db: Pool | PoolClient = pool): Promise<UserDB | null> {
     const { rows } = await db.query<UserDB>(
-        `INSERT INTO users (
-            name, email, password, role, profileimage, address
-        ) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-        [data.name, data.email, data.password, data.role, data.profileimage, data.address]
+        `INSERT INTO users (id, name, email, role, expires_at) 
+         VALUES ($1, $2, $3, $4, NOW() + INTERVAL '15 minutes') RETURNING *`,
+        [data.id, data.name, data.email, data.role]
     )
     return rows[0] || null;
 }
@@ -68,8 +66,16 @@ export async function updateProfile(id: string, data: ProfileDto, db: Pool | Poo
 
 export async function verifyUser(email: string, db: Pool | PoolClient = pool): Promise<UserDB | null> {
     const { rows } = await db.query<UserDB>(
-        `UPDATE users SET isverified = TRUE WHERE email = $1 RETURNING *`,
+        `UPDATE users SET isverified = TRUE, expires_at= NULL WHERE email = $1 RETURNING *`,
         [email]
     );
     return rows[0] || null;
+}
+
+
+export async function deleteExpiredVerificationUsers(db: Pool | PoolClient = pool): Promise<{ email: string }[]> {
+    const { rows } = await db.query<{ email: string }>(
+        `DELETE FROM users WHERE isverified = FALSE AND expires_at < NOW() RETURNING email`
+    )
+    return rows || [];
 }

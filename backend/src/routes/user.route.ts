@@ -1,10 +1,12 @@
 import express from "express";
 import {
+    forgetPasswordController,
     getUserController,
     logOutController,
     loginController,
     registerController,
     resendVerificationController,
+    resetPasswordController,
     updateProfileController,
     verifyEmailController,
 } from "../controllers/user/user.controller";
@@ -25,5 +27,7 @@ router.put("/profile", requireAuth, upload.single("profileimage"), updateProfile
 router.post("/logout", requireAuth, logOutController);
 router.post("/verify-email", verifyEmailController);
 router.post("/resend-mail", resendVerificationController);
+router.post("/forget-password", forgetPasswordController);
+router.post("/reset-password", resetPasswordController);
 
 export default router;

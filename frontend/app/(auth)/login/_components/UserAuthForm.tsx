@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form'
 import { useLoginMutation } from '@/services/userApi'
 import { Spinner } from '@/components/ui/spinner';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const UserAuthForm = ({
     className,
@@ -54,6 +55,11 @@ const UserAuthForm = ({
                         <Label className='mb-1' htmlFor="password">Password</Label>
                         <Input id="password" className='h-10 text-base!' type="password" placeholder="name@example.com" {...register("password")} />
                         <p className='text-red-600 text-sm'>{errors.password?.message}</p>
+                        <div className='w-full flex justify-end'>
+                            <Link href="/forget-password" className='text-sm hover:text-primary underline underline-offset-4'>
+                                Forgot password?
+                            </Link>
+                        </div>
                     </div>
                     <Button type="submit" disabled={isLoading}>
                         {

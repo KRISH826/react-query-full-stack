@@ -65,6 +65,36 @@ export async function resendVerificationController(req: AuthRequest, res: Respon
     }
 }
 
+export async function forgetPasswordController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            throw new HttpError("Email is required", 400);
+        }
+        await AuthService.forgetPassword(email);
+        return res.status(200).json({
+            message: "Forget password email sent successfully",
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+
+export async function resetPasswordController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const { email, code, newPassword } = req.body;
+        if (!email || !code || !newPassword) {
+            throw new HttpError("Email, code and new password are required", 400);
+        }
+        await AuthService.resetPassword(email, code, newPassword);
+        return res.status(200).json({
+            message: "Password reset successfully",
+        });
+    } catch (error) {
+        next(error)
+    }
+}
+
 export async function logOutController(
     req: AuthRequest,
     res: Response,

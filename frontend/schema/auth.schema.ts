@@ -25,3 +25,15 @@ export const registerSchema = z.object({
 })
 
 export type RegisterValues = z.input<typeof registerSchema>;
+
+export const resetSchema = z.object({
+    password: z.string().min(8, "Minimum 8 characters").regex(/[A-Z]/, "One uppercase required").regex(/[0-9]/, "One number required").regex(/[^a-zA-Z0-9]/, "One special character required"),
+    confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+});
+
+export const forgotSchema = z.object({
+    email: z.email("Invalid email address"),
+});

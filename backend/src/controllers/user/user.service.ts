@@ -9,7 +9,7 @@ import {
     UserDB,
     UserResponseDTO,
 } from "../../models/user";
-import { findByEmail, findById, logout, updateProfile, verifyUser } from "./user.repository";
+import { createUser, findByEmail, findById, logout, updateProfile, verifyUser } from "./user.repository";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import {
     CognitoIdentityProviderClient,
@@ -17,12 +17,20 @@ import {
     InitiateAuthCommand,
     AuthFlowType,
     ConfirmSignUpCommand,
-    ResendConfirmationCodeCommand
+    ResendConfirmationCodeCommand,
+    ForgotPasswordCommand,
+    ConfirmForgotPasswordCommand
 } from "@aws-sdk/client-cognito-identity-provider";
 import { config } from "../../config/config";
 import { computeSecretHash } from "../../helper/user";
 
-const cognitoClient = new CognitoIdentityProviderClient({ region: config.cognito.region });
+const cognitoClient = new CognitoIdentityProviderClient({
+    region: config.cognito.region!,
+    credentials: {
+        accessKeyId: config.cognito.access_key_id!,
+        secretAccessKey: config.cognito.secret_access_key!,
+    }
+});
 
 function toUserResponse(user: UserDB | null): UserResponseDTO | null {
     if (!user) return null;
@@ -54,16 +62,28 @@ export class AuthService {
             }));
 
             const cognitoSub = signUpResponse.UserSub;
+            if (!cognitoSub) {
+                throw new HttpError("Cognito registration failed: no user sub returned", 500);
+            }
 
-            const user = await client.query<UserDB>(
-                `INSERT INTO users (id, name, email, role) VALUES ($1, $2, $3, $4) RETURNING *`,
-                [cognitoSub, payload.name, payload.email, payload.role]
-            );
+            const user = await createUser({
+                id: cognitoSub,
+                name: payload.name,
+                email: payload.email,
+                role: payload.role,
+                password: ""
+            }, client);
 
             await client.query('COMMIT');
-            return toUserResponse(user.rows[0]);
-        } catch (error) {
+            return toUserResponse(user);
+        } catch (error: any) {
             await client.query('ROLLBACK');
+            if (error.name === "NotAuthorizedException") {
+                throw new HttpError("Invalid email or password", 401);
+            }
+            if (error.name === "UserNotConfirmedException") {
+                throw new HttpError("Please verify your email first", 403);
+            }
             throw error;
         } finally {
             client.release();
@@ -101,6 +121,9 @@ export class AuthService {
         } catch (error: any) {
             if (error.name === "NotAuthorizedException") {
                 throw new HttpError("Invalid email or password", 401);
+            }
+            if (error.name === "UserNotConfirmedException") {
+                throw new HttpError("Please verify your email first", 403);
             }
             throw error;
         }
@@ -149,6 +172,64 @@ export class AuthService {
             }
             if (error.name === "LimitExceededException") {
                 throw new HttpError("Too many attempts, try later", 429);
+            }
+            throw error;
+        }
+    }
+
+    static async forgetPassword(email: string): Promise<void> {
+        try {
+            const user = await findByEmail(email);
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            if (!user.isverified) {
+                throw new HttpError("User not verified", 400);
+            }
+
+            await cognitoClient.send(
+                new ForgotPasswordCommand({
+                    ClientId: config.cognito.client_id,
+                    Username: email,
+                    SecretHash: computeSecretHash(email),
+                })
+            )
+        } catch (error: any) {
+            if (error.name === "UserNotFoundException") {
+                throw new HttpError("User not found", 404);
+            }
+            if (error.name === "LimitExceededException") {
+                throw new HttpError("Too many attempts, try later", 429);
+            }
+            throw error;
+        }
+    }
+
+    static async resetPassword(email: string, code: string, password: string): Promise<void> {
+        try {
+            const user = await findByEmail(email);
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            if (!user.isverified) {
+                throw new HttpError("User not verified", 400);
+            }
+
+            await cognitoClient.send(
+                new ConfirmForgotPasswordCommand({
+                    ClientId: config.cognito.client_id,
+                    Username: email,
+                    ConfirmationCode: code,
+                    Password: password,
+                    SecretHash: computeSecretHash(email),
+                })
+            )
+        } catch (error: any) {
+            if (error.name === "CodeMismatchException") {
+                throw new HttpError("Invalid verification code", 400);
+            }
+            if (error.name === "ExpiredCodeException") {
+                throw new HttpError("Code expired, request a new one", 400);
             }
             throw error;
         }

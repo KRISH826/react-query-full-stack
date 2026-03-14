@@ -60,6 +60,8 @@ export const config = {
         client_id: process.env.AWS_COGNITO_CLIENT_ID,
         client_secret: process.env.AWS_COGNITO_CLIENT_SECRET,
         region: process.env.AWS_REGION || "us-east-1",
+        access_key_id: process.env.AWS_COGNITO_ACCESS_KEY,
+        secret_access_key: process.env.AWS_COGNITO_ACCESS_SECRET,
     }
 }
 
