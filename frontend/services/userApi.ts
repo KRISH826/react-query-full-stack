@@ -94,9 +94,22 @@ export const userApi = baseApi.injectEndpoints({
                 method: "POST",
                 body: credentials,
             }),
-
-        })
+        }),
+        forgotPassword: builder.mutation<void, {email: string}>({
+            query: (credentials) => ({
+                url: "users/forget-password",
+                method: "POST",
+                body: credentials,
+            }),
+        }),
+        resetPassword: builder.mutation<void, {email: string, code: string, newPassword: string}>({
+            query: (credentials) => ({
+                url: "users/reset-password",
+                method: "POST",
+                body: credentials,
+            }),
+        }),
     })
 });
 
-export const { useLoginMutation, useGetProfileQuery, useLogoutMutation, useRegisterUserMutation, useUpdateProfileMutation, useVerifyEmailMutation, useResendCodeMutation } = userApi;
+export const { useLoginMutation, useGetProfileQuery, useLogoutMutation, useRegisterUserMutation, useUpdateProfileMutation, useVerifyEmailMutation, useResendCodeMutation, useForgotPasswordMutation, useResetPasswordMutation } = userApi;

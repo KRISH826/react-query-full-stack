@@ -10,13 +10,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { forgotSchema } from '@/schema/auth.schema';
-import { useResendCodeMutation } from '@/services/userApi';
+import { useForgotPasswordMutation, useResendCodeMutation } from '@/services/userApi';
 
 type ForgotValues = z.infer<typeof forgotSchema>;
 
 const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     const router = useRouter();
-    const [resendCode, {isLoading}] = useResendCodeMutation();
+    const [forgotPassword, {isLoading}] = useForgotPasswordMutation();
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotValues>({
         resolver: zodResolver(forgotSchema),
@@ -25,7 +25,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDi
 
     const onSubmit = async (data: ForgotValues) => {
         try {
-            resendCode({ email: data.email }).unwrap();
+            await forgotPassword({ email: data.email }).unwrap();
             toast.success("Reset code sent to your email!");
             router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
         } catch (error: any) {
@@ -42,8 +42,8 @@ const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDi
                         <Input id="email" className='h-10 text-base!' type="email" placeholder="name@example.com" {...register("email")} />
                         <p className='text-red-600 text-sm'>{errors.email?.message}</p>
                     </div>
-                    <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? <Spinner className='text-white size-4' /> : "Send Reset Code"}
+                    <Button type="submit" disabled={isLoading}>
+                        {isLoading ? <Spinner className='text-white size-4' /> : "Send Reset Code"}
                     </Button>
                 </div>
             </form>
