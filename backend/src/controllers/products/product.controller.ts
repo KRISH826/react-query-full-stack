@@ -17,6 +17,7 @@ export class ProductController {
             }
 
             const product = await ProductService.createProductService(req.body, files);
+
             return res.status(201).json({
                 success: true,
                 data: product,

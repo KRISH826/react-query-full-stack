@@ -1,6 +1,7 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
+import { ProductAITags } from "../../models/aimodel";
 
 export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
@@ -20,12 +21,13 @@ export async function findById(id: string, db: Pool | PoolClient = pool): Promis
 
 export async function createProduct(product: CreateProductDTO, db: Pool | PoolClient = pool): Promise<ProductDB> {
     const { rows } = await db.query(
-        `INSERT INTO products (productname, description, brand, gender, stock_quantity, is_track_inventory, status, created_by) 
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        `INSERT INTO products (productname, description, brand, ai_tags, gender, stock_quantity, is_track_inventory, status, created_by) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
         [
             product.productname,
             product.description,
             product.brand ?? null,
+            product.ai_tags ?? null,
             product.gender,
             product.stock_quantity ?? 0,
             product.is_track_inventory ?? true,
@@ -243,5 +245,16 @@ export async function deleteProductVariants(productId: string, db: Pool | PoolCl
     await db.query(
         `DELETE FROM product_variants WHERE product_id = $1`,
         [productId]
+    );
+}
+
+export async function saveProductAITags(
+    productId: string,
+    tags: ProductAITags,
+    client: PoolClient
+) {
+    await client.query(
+        `UPDATE products SET ai_tags = $1 WHERE id = $2`,
+        [JSON.stringify(tags), productId]
     );
 }
