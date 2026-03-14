@@ -12,11 +12,13 @@ import { z } from 'zod';
 import { useState } from 'react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { resetSchema } from '@/schema/auth.schema';
+import { useResetPasswordMutation } from '@/services/userApi';
 
 
 type ResetValues = z.infer<typeof resetSchema>;
 
 const ResetPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
+    const [resetPassword, { isLoading }] = useResetPasswordMutation();
     const [otp, setOtp] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -33,7 +35,7 @@ const ResetPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
             return;
         }
         try {
-            // API call here
+            await resetPassword({ email, code: otp, newPassword: data.password }).unwrap();
             toast.success("Password reset successful!");
             router.push("/login");
         } catch (error: any) {
@@ -70,8 +72,8 @@ const ResetPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
                         <Input id="confirmPassword" className='h-10 text-base!' type="password" placeholder="Repeat your password" {...register("confirmPassword")} />
                         <p className='text-red-600 text-sm'>{errors.confirmPassword?.message}</p>
                     </div>
-                    <Button type="submit" disabled={isSubmitting || otp.length !== 6}>
-                        {isSubmitting ? <Spinner className='text-white size-4' /> : "Reset Password"}
+                    <Button type="submit" disabled={isLoading || otp.length !== 6}>
+                        {isLoading ? <Spinner className='text-white size-4' /> : "Reset Password"}
                     </Button>
                 </div>
             </form>
