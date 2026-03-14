@@ -17,7 +17,9 @@ import {
     InitiateAuthCommand,
     AuthFlowType,
     ConfirmSignUpCommand,
-    ResendConfirmationCodeCommand
+    ResendConfirmationCodeCommand,
+    ForgotPasswordCommand,
+    ConfirmForgotPasswordCommand
 } from "@aws-sdk/client-cognito-identity-provider";
 import { config } from "../../config/config";
 import { computeSecretHash } from "../../helper/user";
@@ -170,6 +172,64 @@ export class AuthService {
             }
             if (error.name === "LimitExceededException") {
                 throw new HttpError("Too many attempts, try later", 429);
+            }
+            throw error;
+        }
+    }
+
+    static async forgetPassword(email: string): Promise<void> {
+        try {
+            const user = await findByEmail(email);
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            if (!user.isverified) {
+                throw new HttpError("User not verified", 400);
+            }
+
+            await cognitoClient.send(
+                new ForgotPasswordCommand({
+                    ClientId: config.cognito.client_id,
+                    Username: email,
+                    SecretHash: computeSecretHash(email),
+                })
+            )
+        } catch (error: any) {
+            if (error.name === "UserNotFoundException") {
+                throw new HttpError("User not found", 404);
+            }
+            if (error.name === "LimitExceededException") {
+                throw new HttpError("Too many attempts, try later", 429);
+            }
+            throw error;
+        }
+    }
+
+    static async resetPassword(email: string, code: string, password: string): Promise<void> {
+        try {
+            const user = await findByEmail(email);
+            if (!user) {
+                throw new HttpError("User not found", 404);
+            }
+            if (!user.isverified) {
+                throw new HttpError("User not verified", 400);
+            }
+
+            await cognitoClient.send(
+                new ConfirmForgotPasswordCommand({
+                    ClientId: config.cognito.client_id,
+                    Username: email,
+                    ConfirmationCode: code,
+                    Password: password,
+                    SecretHash: computeSecretHash(email),
+                })
+            )
+        } catch (error: any) {
+            if (error.name === "CodeMismatchException") {
+                throw new HttpError("Invalid verification code", 400);
+            }
+            if (error.name === "ExpiredCodeException") {
+                throw new HttpError("Code expired, request a new one", 400);
             }
             throw error;
         }
