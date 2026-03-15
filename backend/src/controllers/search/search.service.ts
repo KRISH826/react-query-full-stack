@@ -1,5 +1,5 @@
 // search.service.ts
-import { parseSearchQuery } from "../../helper/search";
+import { parseSearchQuery } from "../../helper/parseSearchQuery";
 import { searchProductsQuery } from "./search.repository";
 
 export class SearchService {

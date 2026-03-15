@@ -9,9 +9,9 @@ export enum ProductStatus {
 }
 
 export enum Gender {
-    MALE = "male",
-    FEMALE = "female",
-    UNISEX = "unisex",
+    MALE = "MALE",
+    FEMALE = "FEMALE",
+    UNISEX = "UNISEX",
 }
 
 export interface ProductDB {
