@@ -25,8 +25,6 @@ Rules:
 2. If the product clearly targets a specific gender, choose 'male' or 'female'. If it's ambiguous or explicit for both, choose 'unisex'.
 3. Choose the closest matching style.
 4. vibe should describe the aesthetic, material, occasion, and fit (e.g., "oversized", "breathable", "summer").
-5. Do NOT invent attributes that cannot be logically inferred.
-6. vibe must contain short keywords (1–2 words each).
 5. vibe should describe the fashion aesthetic.
 6. Do NOT invent attributes that cannot be inferred.
 7. vibe must contain short keywords (1–2 words each).

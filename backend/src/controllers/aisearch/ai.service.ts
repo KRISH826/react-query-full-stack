@@ -37,7 +37,7 @@ export class AiService {
                     }
                 ],
                 max_tokens: 500,
-                temperature: 0.2
+                temperature: 0.5
             });
 
             const content = response.choices?.[0]?.message.content;
