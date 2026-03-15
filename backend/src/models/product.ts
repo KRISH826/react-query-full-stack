@@ -1,3 +1,5 @@
+import { ProductAITags } from "./aimodel";
+
 export enum ProductStatus {
     DRAFT = "draft",
     ACTIVE = "active",
@@ -9,7 +11,7 @@ export enum ProductStatus {
 export enum Gender {
     MALE = "male",
     FEMALE = "female",
-    OTHER = "other",
+    UNISEX = "unisex",
 }
 
 export interface ProductDB {
@@ -22,6 +24,7 @@ export interface ProductDB {
     stock_quantity: number;
     is_track_inventory: boolean;
     created_by?: string | null;
+    ai_tags?: ProductAITags;
     created_at: Date;
     updated_at: Date;
     deleted_at?: Date | null;
@@ -36,6 +39,7 @@ export interface CreateProductDTO {
     is_track_inventory?: boolean;
     created_by?: string;
     status?: ProductStatus;
+    ai_tags?: ProductAITags;
     category_names?: string[];
     variants?: CreateVariantDTO[];
 }

@@ -2,9 +2,10 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, saveProductAITags, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
+import { AiService } from "../aisearch/ai.service";
 
 export class ProductService {
 
@@ -65,14 +66,31 @@ export class ProductService {
                 }, client);
             }
 
+            let aiTags = null;
+
             if (files?.length) {
+                const uploadedImages: string[] = [];
                 for (let i = 0; i < files.length; i++) {
                     const uploaded = await uploadSingleImage(files[i]);
+
+                    uploadedImages.push(uploaded.url);
                     await addProductImage({
                         product_id: created.id,
                         image_url: uploaded.url,
                         isprimary: i === 0,
                     }, client);
+                }
+
+                aiTags = await AiService.generateProductTags({
+                    description: product.description,
+                    brand: product.brand,
+                    gender: product.gender,
+                    category_names: product.category_names,
+                    productname: product.productname,
+                })
+
+                if (aiTags) {
+                    await saveProductAITags(created.id, aiTags, client);
                 }
             }
 
@@ -262,3 +280,4 @@ export class ProductService {
         }
     }
 }
+
