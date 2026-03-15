@@ -10,13 +10,28 @@ export type StyleType =
     | "casual"
     | "formal"
     | "sporty"
-    | "traditional";
+    | "traditional"
+    | "elegant"
+    | "bohemian"
+    | "vintage"
+    | "minimal"
+    | "luxury";
+
+export type ProductGender =
+    | "male"
+    | "female"
+    | "unisex";
+
 
 export interface ProductAITags {
     age_group: AgeGroup;
     style: StyleType;
-    gender: "male" | "female" | "unisex";
-    vibe?: string[];
+    gender: ProductGender;
+    occasion?: string;
+    season?: string;
+    fit?: string;
+    pattern?: string;
+    fabric_hint?: string;
+    vibe: string[];
+    search_keywords: string[];
 }
-
-

@@ -11,7 +11,6 @@ export class SearchService {
             keyword: parsed.keyword,
             gender: parsed.gender,
             max_price: parsed.max_price,
-            limit: parsed.limit,
         });
     }
 }
