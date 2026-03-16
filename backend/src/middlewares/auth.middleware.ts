@@ -22,12 +22,8 @@ export const requireAuth = async (
 
     try {
         const token = authHeader.split(" ")[1];
-        
-        // 🔥 Verify with Cognito
         const payload = await verifyCognitoToken(token);
 
-        // We still check our DB for the user's role and existence
-        // payload.sub is the unique ID from Cognito
         const { rows } = await pool.query(
             `SELECT id, role FROM users WHERE id = $1`,
             [payload.sub]
@@ -36,8 +32,6 @@ export const requireAuth = async (
         if (!rows.length) {
             return res.status(401).json({ message: "User not found in local database" });
         }
-
-        // Attach user to request
         req.user = {
             id: rows[0].id,
             role: rows[0].role,
