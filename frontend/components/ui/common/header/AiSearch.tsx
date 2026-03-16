@@ -138,7 +138,6 @@ const AiSearch = () => {
                                         <Mic className="h-5 w-5" />
                                     </Button>
                                 )}
-
                                 <Button
                                     size="icon"
                                     disabled={!query.trim()}
