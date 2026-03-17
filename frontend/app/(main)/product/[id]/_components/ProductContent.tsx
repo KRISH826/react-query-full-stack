@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import Buynow from "./Buynow";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import ProductRating from "../../_components/ProductRating";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -88,7 +89,7 @@ const ProductContent = ({ product }: { product: Product }) => {
     };
 
     return (
-        <div className="flex flex-col gap-6 lg:pr-4">
+        <div className="flex flex-col gap-5 lg:pr-4">
             {/* Header section */}
             <div className="space-y-1">
                 {product.brand && (
@@ -129,7 +130,7 @@ const ProductContent = ({ product }: { product: Product }) => {
                     </span>
                 )}
             </div>
-
+            <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={18} fontSizeClass="text-base" />
             {/* Sizes section */}
             {hasSizes && (
                 <div className="space-y-3 pt-2">
