@@ -21,7 +21,7 @@ export class ReviewServices {
         const client = await pool.connect();
 
         try {
-            client.query("BEGIN");
+            await client.query("BEGIN");
             let review;
 
             try {
@@ -39,12 +39,12 @@ export class ReviewServices {
                 throw error;
             }
 
-            await UpdateProductRatingReview(data.product_id, data.rating, client);
-            client.query("COMMIT");
+            await UpdateProductRatingReview(data.product_id, client);
+            await client.query("COMMIT");
             await cache.delPattern(`reviews:${data.product_id}:*`);
             return review;
         } catch (error) {
-            client.query("ROLLBACK");
+            await client.query("ROLLBACK");
             throw error;
         } finally {
             client.release();
