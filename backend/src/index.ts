@@ -14,6 +14,7 @@ import categoryRouter from "./routes/category.route";
 import paymentRouter from "./routes/payment.route";
 import searchRouter from "./routes/search.routes";
 import favouriteRouter from "./routes/favourite.route";
+import reviewRouter from "./routes/review.routes";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
@@ -44,6 +45,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/search-products", searchRouter);
 app.use("/api/favourites", favouriteRouter)
+app.use("/api/reviews", reviewRouter)
 
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is Perfect!")

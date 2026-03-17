@@ -28,6 +28,8 @@ export interface ProductDB {
     created_at: Date;
     updated_at: Date;
     deleted_at?: Date | null;
+    avg_rating: number;     // ✅ was: rating
+    total_reviews: number;
 }
 
 export interface CreateProductDTO {
@@ -42,6 +44,8 @@ export interface CreateProductDTO {
     ai_tags?: ProductAITags;
     category_names?: string[];
     variants?: CreateVariantDTO[];
+    avg_rating?: number;
+    total_reviews?: number;
 }
 
 export interface UpdateProductDTO {
@@ -67,6 +71,8 @@ export interface ProductResponseDTO {
     is_track_inventory: boolean;
     created_at: Date;
     updated_at: Date;
+    avg_rating: number;
+    total_reviews: number;
 }
 
 export interface ProductImageDB {

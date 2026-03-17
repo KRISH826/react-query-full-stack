@@ -64,9 +64,7 @@ export const searchProductsQuery = async (
     }
 
     if (gender) {
-
         conditions.push(`p.gender IN ($${i}::gender_enum, 'UNISEX'::gender_enum)`);
-
         values.push(gender);
 
         i++;
