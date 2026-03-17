@@ -36,41 +36,50 @@ const ProductRating = ({
     const stars = getStars(rating);
 
     return (
-        <div className="flex items-center gap-1.5 my-1">
-
-            {/* ⭐ Stars */}
+        <>
             {
-                rating > 0 && (
+                rating !== 0 && (
                     <>
-                        <div className="flex items-center gap-0.5">
-                            {stars.map((type, i) => {
-                                if (type === "full") {
-                                    return <BsFillStarFill key={i} size={size} color={STAR_COLOR} />;
-                                }
-                                if (type === "half") {
-                                    return <BsStarHalf key={i} size={size} color={STAR_COLOR} />;
-                                }
-                                return <BsStar key={i} size={size} color={STAR_COLOR} />;
-                            })}
+                        <div className="flex items-center gap-1.5 my-1">
+
+                            {/* ⭐ Stars */}
+                            {
+                                rating > 0 && (
+                                    <>
+                                        <div className="flex items-center gap-0.5">
+                                            {stars.map((type, i) => {
+                                                if (type === "full") {
+                                                    return <BsFillStarFill key={i} size={size} color={STAR_COLOR} />;
+                                                }
+                                                if (type === "half") {
+                                                    return <BsStarHalf key={i} size={size} color={STAR_COLOR} />;
+                                                }
+                                                return <BsStar key={i} size={size} color={STAR_COLOR} />;
+                                            })}
+                                        </div>
+                                    </>
+                                )
+                            }
+
+                            {/* ⭐ Rating */}
+                            {rating > 0 && (
+                                <span className={`${fontSizeClass} font-bold`} style={{ color: STAR_COLOR }}>
+                                    {rating.toFixed(1)}
+                                </span>
+                            )}
+
+                            {/* ⭐ Review Count */}
+                            {reviewCount > 0 && (
+                                <span className={`${fontSizeClass} text-gray-400`}>
+                                    ({reviewCount.toLocaleString()})
+                                </span>
+                            )}
                         </div>
                     </>
                 )
             }
+        </>
 
-            {/* ⭐ Rating */}
-            {rating > 0 && (
-                <span className={`${fontSizeClass} font-bold`} style={{ color: STAR_COLOR }}>
-                    {rating.toFixed(1)}
-                </span>
-            )}
-
-            {/* ⭐ Review Count */}
-            {reviewCount > 0 && (
-                <span className={`${fontSizeClass} text-gray-400`}>
-                    ({reviewCount.toLocaleString()})
-                </span>
-            )}
-        </div>
     );
 };
 

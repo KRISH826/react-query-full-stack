@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation'
 import ImageGallery from './ImageGallery';
 import ProductContent from './ProductContent';
 import { Spinner } from '@/components/ui/spinner';
+import ProductReviews from './ProductReviews';
 
 const ProductDetailsPage = () => {
     const params = useParams();
@@ -26,6 +27,9 @@ const ProductDetailsPage = () => {
                     <div>
                         <ProductContent product={data} />
                     </div>
+                </div>
+                <div className='mt-12'>
+                    <ProductReviews />
                 </div>
             </div>
         </div>
