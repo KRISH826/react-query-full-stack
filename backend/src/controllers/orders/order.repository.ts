@@ -51,8 +51,21 @@ export async function findOrderById(
 
 export async function findUsersOrders(
     userId: string,
+    page: number = 1,
+    limit: number = 10,
     db: Pool | PoolClient = pool
-): Promise<(OrderDB & { items: OrderItemDB[] })[]> {
+): Promise<{ data: (OrderDB & { items: OrderItemDB[] })[]; total: number }> {
+    const offset = (page - 1) * limit;
+
+    const countResult = await db.query(
+        `SELECT COUNT(*) 
+         FROM orders 
+         WHERE user_id = $1
+           AND deleted_at IS NULL`,
+        [userId]
+    );
+    const total = parseInt(countResult.rows[0].count, 10);
+
     const { rows } = await db.query(
         `SELECT 
             o.*,
@@ -81,10 +94,11 @@ export async function findUsersOrders(
         ) items ON true
         WHERE o.user_id = $1
           AND o.deleted_at IS NULL
-        ORDER BY o.created_at DESC`,
-        [userId]
+        ORDER BY o.created_at DESC
+        LIMIT $2 OFFSET $3`,
+        [userId, limit, offset]
     );
-    return rows;
+    return { data: rows, total };
 }
 
 export async function updateOrderStatus(

@@ -94,3 +94,11 @@ export interface OrderListItemDTO {
     totalquantity: number;
     created_at: Date;
 }
+
+export interface PaginatedOrdersResponseDTO {
+    orders: OrderResponseDTO[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}

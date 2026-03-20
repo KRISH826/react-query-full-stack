@@ -42,7 +42,12 @@ export class OrderController {
             if (!userId) {
                 throw new HttpError("Unauthorized", 401);
             }
-            const orders = await OrderService.getUSerOrdersService(userId);
+            const rawPage = Number(req.query.page ?? 1);
+            const rawLimit = Number(req.query.limit ?? 10);
+            const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
+            const limit = Number.isNaN(rawLimit) ? 10 : Math.min(10, Math.max(1, rawLimit));
+
+            const orders = await OrderService.getUSerOrdersService(userId, page, limit);
             return res
                 .status(200)
                 .json({ message: "Orders fetched successfully", orders });
