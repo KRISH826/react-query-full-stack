@@ -8,9 +8,9 @@ export const categoryApi = baseApi.injectEndpoints({
                 url: "categories",
                 method: "GET",
             }),
-            transformResponse: (response: { data: Category[] }) => response.data,
+            transformResponse: (response: { categories: Category[] }) => response.categories,
             providesTags: ["Category"],
-        }),
+        })
     })
 })
 
