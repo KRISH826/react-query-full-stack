@@ -13,7 +13,6 @@ export class CategoryController {
             next(error);
         }
     }
-
     static async getCategoryByIdController(req: Request, res: Response, next: NextFunction) {
         try {
             const category = await CategoryService.getCategoryByidService(req.params.id as string);
