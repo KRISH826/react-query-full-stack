@@ -7,6 +7,10 @@ export interface Review {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+    user?: {
+        name: string;
+        profileimage?: string | null;
+    };
 }
 
 export interface ReviewStats {

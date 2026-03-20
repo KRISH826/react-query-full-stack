@@ -42,9 +42,7 @@ const ProductContent = ({ product }: { product: Product }) => {
         () => (hasVariants ? findVariant(variants, selectedSize) : undefined),
         [variants, selectedSize, hasVariants]
     );
-
     const addcarted = cart?.items.some((item) => item.variantId === activeVariant?.id) ?? false;
-
     const displayPrice = activeVariant?.offer_price_override;
     const originalPrice = activeVariant?.price_override;
     const hasDiscount = originalPrice! > displayPrice!;
@@ -177,13 +175,6 @@ const ProductContent = ({ product }: { product: Product }) => {
                 </div>
             )}
 
-            {/* Description */}
-            <div className="space-y-2 pt-4">
-                <div className="prose prose-sm text-muted-foreground/90 prose-p:leading-relaxed text-sm">
-                    <p>{product.description}</p>
-                </div>
-            </div>
-
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 mt-auto">
                 <Button
@@ -221,6 +212,13 @@ const ProductContent = ({ product }: { product: Product }) => {
                     disabled={isOutOfStock || isLoading}
                     isLoading={isBuyNowLoading}
                 />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2 pt-4">
+                <div className="prose prose-sm text-muted-foreground/90 prose-p:leading-relaxed text-sm">
+                    <p>{product.description}</p>
+                </div>
             </div>
         </div>
     );
