@@ -1,6 +1,7 @@
 import { pool } from "../../db/db";
+import { buildCategoryTree } from "../../helper/helper";
 import { HttpError } from "../../middlewares/error.middleware";
-import { CategoryCreateDTO, CategoryDb, CategoryResponseDTO } from "../../models/category";
+import { CategoryCreateDTO, CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
 import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, updateCategory } from "./category.repository";
 
 export class CategoryService {
@@ -50,12 +51,13 @@ export class CategoryService {
         }
     }
 
-    static async getAllCategoriesService(): Promise<CategoryDb[] | null> {
+    static async getAllCategoriesService(): Promise<CategoryTree[] | null> {
         const client = await pool.connect();
         try {
             const categories = await getAllCategories(client);
-            if (categories) {
-                return categories;
+            const categoriesTree = buildCategoryTree(categories);
+            if (categoriesTree.length > 0) {
+                return categoriesTree;
             }
             throw new HttpError("Categories not found", 404);
         } catch (error) {

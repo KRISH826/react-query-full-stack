@@ -12,7 +12,7 @@ export const searchProductsQuery = async (
     filters: SearchFilters
 ): Promise<ProductWithImagesDTO[]> => {
 
-    const { keyword, gender, max_price, limit = 20 } = filters;
+    const { keyword, gender, max_price, limit = 100 } = filters;
 
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];

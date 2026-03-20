@@ -1,6 +1,7 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { CategoryDb, CategoryResponseDTO, ProductCategoryDB } from "../../models/category";
+import { generateSlug } from "../../helper/helper";
 
 export async function findCategoryById(id: string, db: Pool | PoolClient = pool): Promise<CategoryDb | null> {
     const { rows } = await db.query(
@@ -29,7 +30,7 @@ export async function findCategoryBySlug(slug: string, db: Pool | PoolClient = p
 export async function createCateGory(data: CategoryResponseDTO, db: Pool | PoolClient = pool): Promise<CategoryDb> {
     const { rows } = await db.query(
         `INSERT INTO categories (name, slug, parent_id) VALUES ($1, $2, $3) RETURNING *`,
-        [data.name, data.slug = data.name.toLowerCase(), data.parent_id || null]
+        [data.name, data.slug = generateSlug(data.name), data.parent_id || null]
     )
     return rows[0];
 }
@@ -37,7 +38,7 @@ export async function createCateGory(data: CategoryResponseDTO, db: Pool | PoolC
 export async function updateCategory(id: string, data: CategoryResponseDTO, db: Pool | PoolClient = pool) {
     const { rows } = await db.query(
         `UPDATE categories SET name=$1, slug=$2, parent_id=$3 WHERE id=$4 RETURNING *`,
-        [data.name, data.slug = data.name.toLowerCase(), data.parent_id || null, id]
+        [data.name, data.slug = generateSlug(data.name), data.parent_id || null, id]
     )
     return rows[0] || null;
 }
