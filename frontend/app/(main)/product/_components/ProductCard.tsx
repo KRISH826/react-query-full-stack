@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAddFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
 import { Product } from "@/types/product";
 import { Heart } from "lucide-react";
+import ProductRating from "./ProductRating";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -77,6 +78,11 @@ const ProductCard = ({ product }: Props) => {
                 <p className="mt-1 line-clamp-2 text-sm text-gray-500">
                     {product.productname}
                 </p>
+
+                <ProductRating
+                    rating={product.avg_rating}
+                    reviewCount={product.total_reviews}
+                />
 
                 {/* Spacer */}
                 <div className="flex-1" />

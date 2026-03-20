@@ -13,7 +13,7 @@ const ImageGallery = ({ images }: { images: ProductImage[] }) => {
         <div className="flex gap-4">
 
             {/* Thumbnails */}
-            <div className="flex max-h-[520px] flex-col gap-3 overflow-y-auto">
+            <div className="flex max-h-[550px] flex-col gap-3 overflow-y-auto">
                 {images.map((img, index) => (
                     <button
                         key={img.id}
@@ -35,8 +35,9 @@ const ImageGallery = ({ images }: { images: ProductImage[] }) => {
 
             {/* Main Image */}
             <div className="relative flex-1 overflow-hidden rounded-xl border bg-gray-100">
-                <div className="relative h-[520px] w-full">
+                <div className="relative h-[550px] w-full">
                     <Image
+                        key={images[selected].id}
                         src={images[selected].image_url}
                         alt={images[selected].alt_text || "product"}
                         fill

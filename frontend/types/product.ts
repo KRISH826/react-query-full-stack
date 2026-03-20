@@ -39,6 +39,8 @@ export interface Product {
     created_at: string;
     updated_at: string;
     deleted_at?: string | null;
+    avg_rating?: number;
+    total_reviews?: number;
     images?: ProductImage[];
     categories?: Category[];
     variants?: ProductVariant[];
