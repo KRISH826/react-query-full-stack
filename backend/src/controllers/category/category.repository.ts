@@ -99,7 +99,7 @@ export async function getProductByCategoryId(categoryId: string, page: number = 
     const total = parseInt((await countResult).rows[0].count, 10);
 
     const query = await db.query(
-        `SELECT p.id, p.productname, p.description, p.brand,p.total_reviews, p.avg_rating
+        `SELECT p.id, p.productname, p.description, p.brand,p.total_reviews, p.avg_rating,
         COALESCE(img.images, '[]'::json) AS images,
         COALESCE(cat.categories, '[]'::json) AS categories,
         COALESCE(var.variants, '[]'::json) AS variants
