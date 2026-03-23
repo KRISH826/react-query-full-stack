@@ -78,7 +78,7 @@ const CategoryMenu = () => {
                                 >
                                     {/* Parent Category Header */}
                                     <Link
-                                        href={`/categories/${category.id}`}
+                                        href={`/categories/category?slug=${category.slug}&id=${category.id}`}
                                         className="inline-block text-sm font-bold uppercase tracking-wide mb-3 pb-1 transition-opacity hover:opacity-70"
                                         style={{ color: COLORS[index % COLORS.length] }}
                                         onClick={() => setIsOpen(false)}
@@ -92,7 +92,7 @@ const CategoryMenu = () => {
                                             {category.children.map((child) => (
                                                 <li key={child.id}>
                                                     <Link
-                                                        href={`/categories/${child.id}`}
+                                                        href={`/categories/category?slug=${child.slug}&id=${child.id}`}
                                                         className="block text-sm text-gray-600 py-1 rounded transition-all duration-150 hover:text-gray-900 hover:bg-gray-50"
                                                         onClick={() => setIsOpen(false)}
                                                     >

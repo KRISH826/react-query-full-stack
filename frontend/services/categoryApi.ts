@@ -12,11 +12,12 @@ export const categoryApi = baseApi.injectEndpoints({
             transformResponse: (response: { categories: Category[] }) => response.categories,
             providesTags: ["Category"],
         }),
-        getProductsByCategories: builder.query<Product[], { categoryId: string; limit: number; page: number }>({
-            query: ({ categoryId, limit, page }) => `categories/${categoryId}/products?limit=${limit}&page=${page}`,
-            transformResponse: (response: { data: Product[] }) => response.data,
-            providesTags: ["Product"],
-        })
+        getProductsByCategories: builder.query<{ data: Product[]; total: number },
+            { categoryId: string; slug: string; limit: number; page: number }>({
+                query: ({ categoryId, slug, limit, page }) => `categories/products?slug=${slug}&id=${categoryId}&limit=${limit}&page=${page}`,
+                transformResponse: (response: { products: { data: Product[]; total: number } }) => response.products,
+                providesTags: ["Product"],
+            })
     })
 })
 

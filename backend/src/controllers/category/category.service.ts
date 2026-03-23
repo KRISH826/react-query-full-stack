@@ -108,16 +108,22 @@ export class CategoryService {
         }
     }
 
-    static async getProductByCategoryIdService(categoryId: string, page: number, limit: number) {
+    static async getProductByCategoryIdService(slug: string, categoryId: string, page: number, limit: number) {
+        if (!slug) {
+            throw new HttpError("Category slug is required", 400);
+        }
+        if (!categoryId) {
+            throw new HttpError("Category id is required", 400);
+        }
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
             const safePage = Math.max(1, page);
             const safeLimit = Math.min(30, Math.max(1, limit));
             const cacheProducts = cache.getOrSet(
-                `category:${categoryId}:products:page:${safePage}:limit:${safeLimit}`,
+                `category:${categoryId}:slug:${slug}:products:page:${safePage}:limit:${safeLimit}`,
                 async () => {
-                    const products = await getProductByCategoryId(categoryId, safePage, safeLimit, client);
+                    const products = await getProductByCategoryId(slug, categoryId, safePage, safeLimit, client);
                     return products;
                 }
             )
