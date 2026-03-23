@@ -26,7 +26,7 @@ const CategoryMenu = () => {
     };
 
     const handleMouseLeave = () => {
-        timeoutRef.current = setTimeout(() => setIsOpen(false), 200);
+        timeoutRef.current = setTimeout(() => setIsOpen(false), 80);
     };
 
     useEffect(() => {
@@ -59,8 +59,7 @@ const CategoryMenu = () => {
             {/* Mega Menu Panel */}
             {isOpen && (
                 <div
-                    className="absolute top-full left-0 mt-1 z-50 bg-white rounded-lg shadow-xl border border-gray-100 animate-in fade-in-0 slide-in-from-top-2 duration-200"
-                    style={{ minWidth: "680px" }}
+                    className="absolute top-full min-w-[500px] max-w-[750px] left-0 mt-1 z-50 bg-white rounded-lg shadow-xl border border-gray-100 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                 >
                     {isLoading ? (
                         <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
@@ -68,15 +67,14 @@ const CategoryMenu = () => {
                             <span className="text-sm">Loading categories...</span>
                         </div>
                     ) : categories && categories.length > 0 ? (
-                        <div className="flex p-5 gap-0">
+                        <div className="flex flex-col flex-wrap p-4 gap-0 max-h-[500px]">
                             {categories.map((category, index) => (
                                 <div
                                     key={category.id}
-                                    className={`flex-1 px-5 ${
-                                        index !== categories.length - 1
-                                            ? "border-r border-gray-100"
-                                            : ""
-                                    }`}
+                                    className={`flex-1 px-5 ${index !== categories.length - 1
+                                        ? "border-r border-secondary"
+                                        : ""
+                                        }`}
                                 >
                                     {/* Parent Category Header */}
                                     <Link
@@ -95,7 +93,7 @@ const CategoryMenu = () => {
                                                 <li key={child.id}>
                                                     <Link
                                                         href={`/categories/${child.id}`}
-                                                        className="block text-sm text-gray-600 py-1 px-1 rounded transition-all duration-150 hover:text-gray-900 hover:bg-gray-50 hover:pl-2"
+                                                        className="block text-sm text-gray-600 py-1 rounded transition-all duration-150 hover:text-gray-900 hover:bg-gray-50"
                                                         onClick={() => setIsOpen(false)}
                                                     >
                                                         {child.name}
@@ -114,7 +112,7 @@ const CategoryMenu = () => {
                     )}
 
                     {/* Bottom strip like Myntra */}
-                    <div className="border-t border-gray-100 bg-gray-50/50 rounded-b-lg px-5 py-2.5">
+                    <div className="border-t border-secondary bg-secondary/50 rounded-b-lg px-5 py-2.5">
                         <Link
                             href="/categories"
                             className="text-xs font-medium text-primary hover:underline"

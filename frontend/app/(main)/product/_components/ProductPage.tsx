@@ -40,7 +40,6 @@ const ProductPage = () => {
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
-
                 <div className="flex gap-4 w-full justify-between md:mt-10 mt-6 items-center">
                     <p className="text-xs flex-1 text-muted-foreground">
                         Page {page} of {totalPages} — {data?.total} products
@@ -87,8 +86,6 @@ const ProductPage = () => {
                         </>
                     }
                 </div>
-
-
             </div>
 
         </section>

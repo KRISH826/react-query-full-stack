@@ -52,7 +52,6 @@ export class CategoryController {
 
     static async getProductsByCategoryIdController(req: Request, res: Response, next: NextFunction) {
         try {
-            debugger;
             const categoryId = req.params.id as string;
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 30;
@@ -62,7 +61,10 @@ export class CategoryController {
             }
             res.status(200).json({
                 message: "Products fetched successfully",
-                products
+                products,
+                total: products.total,
+                page,
+                limit
             });
         } catch (error) {
             next(error);

@@ -114,8 +114,6 @@ export class CategoryService {
             await client.query("BEGIN");
             const safePage = Math.max(1, page);
             const safeLimit = Math.min(30, Math.max(1, limit));
-
-
             const cacheProducts = cache.getOrSet(
                 `category:${categoryId}:products:page:${safePage}:limit:${safeLimit}`,
                 async () => {
