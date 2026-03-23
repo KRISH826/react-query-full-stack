@@ -1,8 +1,10 @@
+import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { buildCategoryTree } from "../../helper/helper";
 import { HttpError } from "../../middlewares/error.middleware";
 import { CategoryCreateDTO, CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
-import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, updateCategory } from "./category.repository";
+import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, getProductByCategoryId, updateCategory } from "./category.repository";
+import { cache } from "../../utils/cache";
 
 export class CategoryService {
     static async createCateoryService(data: CategoryResponseDTO): Promise<CategoryDb | null> {
@@ -100,6 +102,31 @@ export class CategoryService {
             return updatedCategory;
         } catch (error) {
             await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async getProductByCategoryIdService(categoryId: string, page: number, limit: number) {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const safePage = Math.max(1, page);
+            const safeLimit = Math.min(30, Math.max(1, limit));
+
+
+            const cacheProducts = cache.getOrSet(
+                `category:${categoryId}:products:page:${safePage}:limit:${safeLimit}`,
+                async () => {
+                    const products = await getProductByCategoryId(categoryId, safePage, safeLimit, client);
+                    return products;
+                }
+            )
+            await client.query("COMMIT");
+            return cacheProducts;
+
+        } catch (error) {
             throw error;
         } finally {
             client.release();

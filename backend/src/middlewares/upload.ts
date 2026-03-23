@@ -38,14 +38,14 @@ export const compressImage = async (file: Express.Multer.File) => {
 
 export const uploadSingleImage = async (file: Express.Multer.File): Promise<{ url: string, key: string }> => {
     try {
-        const key = `products/${crypto.randomUUID()}`;
+        const key = `products/${crypto.randomUUID()}.webp`;
         const compressedBuffer = await compressImage(file);
         await s3Client.send(
             new PutObjectCommand({
                 Bucket: process.env.AWS_BUCKET_NAME,
                 Key: key,
                 Body: compressedBuffer,
-                ContentType: file.mimetype
+                ContentType: "image/webp"
             })
         )
         return {
@@ -74,5 +74,6 @@ export const deleteFromS3 = async (key: string) => {
 
 export const extractKeyFromS3Url = (url: string): string => {
     const bucket = process.env.AWS_BUCKET_NAME!;
-    return url.split(`${bucket}.s3.ap-southeast-2.amazonaws.com/`)[1];
+    const region = process.env.AWS_REGION!;
+    return url.split(`${bucket}.s3.${region}.amazonaws.com/`)[1];
 };

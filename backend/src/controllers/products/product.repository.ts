@@ -105,34 +105,43 @@ export async function findAllProducts(
     const total = parseInt(countResult.rows[0].count);
 
     const { rows } = await pool.query(`
+        WITH paged_products AS (
+            SELECT *
+            FROM products
+            WHERE deleted_at IS NULL
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        )
         SELECT 
             p.*,
             COALESCE(img.images, '[]') AS images,
             COALESCE(cat.categories, '[]') AS categories,
             COALESCE(var.variants, '[]') AS variants
-        FROM products p
+        FROM paged_products p
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', pi.id,
                     'image_url', pi.image_url,
                     'alt_text', pi.alt_text,
                     'isprimary', pi.isprimary
                 )
+                ORDER BY pi.isprimary DESC, pi.created_at ASC
             ) AS images
             FROM product_images pi
             WHERE pi.product_id = p.id
         ) img ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', c.id,
                     'name', c.name,
                     'slug', c.slug,
                     'parent_id', c.parent_id
                 )
+                ORDER BY c.name ASC
             ) AS categories
             FROM product_categories pc
             JOIN categories c ON c.id = pc.category_id
@@ -140,7 +149,7 @@ export async function findAllProducts(
         ) cat ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
@@ -149,14 +158,13 @@ export async function findAllProducts(
                     'stock_quantity', v.stock_quantity,
                     'sku', v.sku
                 )
+                ORDER BY v.created_at ASC
             ) AS variants
             FROM product_variants v
             WHERE v.product_id = p.id
         ) var ON true
 
-        WHERE p.deleted_at IS NULL
         ORDER BY p.created_at DESC
-        LIMIT $1 OFFSET $2
     `, [limit, offset]);
 
     return { data: rows, total };
@@ -172,26 +180,28 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
         FROM products p
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', pi.id,
                     'image_url', pi.image_url,
                     'alt_text', pi.alt_text,
                     'isprimary', pi.isprimary
                 )
+                ORDER BY pi.isprimary DESC, pi.created_at ASC
             ) AS images
             FROM product_images pi
             WHERE pi.product_id = p.id
         ) img ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', c.id,
                     'name', c.name,
                     'slug', c.slug,
                     'parent_id', c.parent_id
                 )
+                ORDER BY c.name ASC
             ) AS categories
             FROM product_categories pc
             JOIN categories c ON c.id = pc.category_id
@@ -199,7 +209,7 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
         ) cat ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
@@ -208,6 +218,7 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
                     'stock_quantity', v.stock_quantity,
                     'sku', v.sku
                 )
+                ORDER BY v.created_at ASC
             ) AS variants
             FROM product_variants v
             WHERE v.product_id = p.id

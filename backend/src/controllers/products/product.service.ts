@@ -8,6 +8,15 @@ import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
 
 export class ProductService {
+    private static async invalidateProductCache(productId?: string): Promise<void> {
+        if (productId) {
+            await cache.delete(`product:${productId}`);
+            await cache.delPattern(`product:${productId}:*`);
+        }
+
+        await cache.delPattern(`product:*`);
+        await cache.delPattern(`products:*`);
+    }
 
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
         if (
@@ -99,8 +108,7 @@ export class ProductService {
             }
 
             await client.query('COMMIT');
-            await cache.delPattern(`product:*`);
-            await cache.delPattern(`products:*`);
+            await this.invalidateProductCache(created.id);
 
             return await findProductWithImagesById(created.id);
         } catch (error) {
@@ -201,8 +209,7 @@ export class ProductService {
             }
 
             await client.query('COMMIT');
-            await cache.delPattern(`product:${id}:*`);
-            await cache.delPattern(`products:*`);
+            await this.invalidateProductCache(id);
 
             return await findProductWithImagesById(id);
         } catch (error) {
@@ -268,8 +275,7 @@ export class ProductService {
             }
 
             await client.query('COMMIT');
-            await cache.delPattern(`product:${id}:*`);
-            await cache.delPattern(`products:*`);
+            await this.invalidateProductCache(id);
 
             return deleted;
         } catch (error) {

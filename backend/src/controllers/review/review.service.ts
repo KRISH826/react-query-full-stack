@@ -5,6 +5,13 @@ import { cache } from "../../utils/cache";
 import { UpdateProductRatingReview, createReviewRepo, getProductRatingStars, getReviewProductById } from "./review.repository";
 
 export class ReviewServices {
+    private static async invalidateReviewCaches(productId: string): Promise<void> {
+        await cache.delPattern(`reviews:${productId}:*`);
+        await cache.delete(`product:${productId}`);
+        await cache.delPattern(`product:${productId}:*`);
+        await cache.delPattern(`products:*`);
+    }
+
     static async createReview(userId: string, data: CreateReviewDTO) {
         if (!userId) {
             throw new HttpError("Unauthorized", 401);
@@ -41,7 +48,7 @@ export class ReviewServices {
 
             await UpdateProductRatingReview(data.product_id, client);
             await client.query("COMMIT");
-            await cache.delPattern(`reviews:${data.product_id}:*`);
+            await this.invalidateReviewCaches(data.product_id);
             return review;
         } catch (error) {
             await client.query("ROLLBACK");
@@ -58,18 +65,20 @@ export class ReviewServices {
             throw new HttpError("product_id required", 400);
         }
 
-        const cacheKey = `reviews:${productId}:${page}:${limit}`;
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.max(1, limit);
+        const cacheKey = `reviews:${productId}:${safePage}:${safeLimit}`;
 
         return cache.getOrSet(cacheKey, async () => {
-            const offset = (page - 1) * limit;
-            const reviews = await getReviewProductById(productId, limit, offset);
+            const offset = (safePage - 1) * safeLimit;
+            const reviews = await getReviewProductById(productId, safeLimit, offset);
             const reviewStats = await getProductRatingStars(productId);
 
             return {
                 reviews,
                 reviewStats,
-                page,
-                limit,
+                page: safePage,
+                limit: safeLimit,
                 total: reviewStats.total_reviews,
             };
         });

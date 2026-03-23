@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { CategoryService } from "./category.service";
+import { HttpError } from "../../middlewares/error.middleware";
 
 export class CategoryController {
     static async createCategoryController(req: Request, res: Response, next: NextFunction) {
@@ -43,6 +44,25 @@ export class CategoryController {
             res.status(200).json({
                 message: "Category updated successfully",
                 category
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getProductsByCategoryIdController(req: Request, res: Response, next: NextFunction) {
+        try {
+            debugger;
+            const categoryId = req.params.id as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 30;
+            const products = await CategoryService.getProductByCategoryIdService(categoryId, page, limit);
+            if (!products.data.length) {
+                throw new HttpError("Products not found", 404);
+            }
+            res.status(200).json({
+                message: "Products fetched successfully",
+                products
             });
         } catch (error) {
             next(error);

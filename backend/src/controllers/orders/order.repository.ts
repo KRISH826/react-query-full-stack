@@ -51,13 +51,28 @@ export async function findOrderById(
 
 export async function findUsersOrders(
     userId: string,
+    page: number = 1,
+    limit: number = 10,
     db: Pool | PoolClient = pool
-): Promise<(OrderDB & { items: OrderItemDB[] })[]> {
+): Promise<{ data: (OrderDB & { items: OrderItemDB[] })[]; total: number }> {
+    const offset = (page - 1) * limit;
+
+    const countResult = await db.query(
+        `SELECT COUNT(*) 
+         FROM orders 
+         WHERE user_id = $1
+           AND deleted_at IS NULL`,
+        [userId]
+    );
+    const total = parseInt(countResult.rows[0].count, 10);
+
     const { rows } = await db.query(
         `SELECT 
             o.*,
-            COALESCE(
-                json_agg(
+            COALESCE(items.items, '[]') AS items
+        FROM orders o
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
                     json_build_object(
                         'id',                       oi.id,
                         'order_id',                 oi.order_id,
@@ -73,17 +88,17 @@ export async function findUsersOrders(
                         'image_url',                oi.image_url,
                         'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
-                ) FILTER (WHERE oi.id IS NOT NULL),
-                '[]'
-            ) AS items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
+                ) AS items
+            FROM order_items oi
+            WHERE oi.order_id = o.id
+        ) items ON true
         WHERE o.user_id = $1
-        GROUP BY o.id
-        ORDER BY o.created_at DESC`,
-        [userId]
+          AND o.deleted_at IS NULL
+        ORDER BY o.created_at DESC
+        LIMIT $2 OFFSET $3`,
+        [userId, limit, offset]
     );
-    return rows;
+    return { data: rows, total };
 }
 
 export async function updateOrderStatus(
@@ -171,8 +186,10 @@ export async function getOrderWithItems(
     const { rows } = await db.query(
         `SELECT 
             o.*,
-            COALESCE(
-                json_agg(
+            COALESCE(items.items, '[]') AS items
+        FROM orders o
+        LEFT JOIN LATERAL (
+            SELECT json_agg(
                     json_build_object(
                         'id',                       oi.id,
                         'order_id',                 oi.order_id,
@@ -188,13 +205,12 @@ export async function getOrderWithItems(
                         'image_url',                oi.image_url,
                         'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
-                ) FILTER (WHERE oi.id IS NOT NULL),
-                '[]'
-            ) AS items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi.order_id
+                ) AS items
+            FROM order_items oi
+            WHERE oi.order_id = o.id
+        ) items ON true
         WHERE o.id = $1
-        GROUP BY o.id`,
+          AND o.deleted_at IS NULL`,
         [orderId]
     );
 

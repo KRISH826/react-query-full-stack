@@ -4,6 +4,10 @@ import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } fro
 
 interface OrdersFullResponse {
     orders: OrderResponseDTO[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
 }
 
 interface OrderDetailResponse {
@@ -23,9 +27,9 @@ export const orderApi = baseApi.injectEndpoints({
                 { type: "Cart", id: "USER_CART" },
             ],
         }),
-        getOrders: builder.query<OrderResponseDTO[], void>({
-            query: () => "orders",
-            transformResponse: (response: OrdersFullResponse) => response.orders,
+        getOrders: builder.query<OrdersFullResponse, { page?: number; limit?: number }>({
+            query: ({ page = 1, limit = 10 }) => `orders?page=${page}&limit=${limit}`,
+            transformResponse: (response: OrdersFullResponse) => response,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
         getOrderById: builder.query<OrderResponseDTO, string>({

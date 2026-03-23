@@ -5,6 +5,7 @@ import {
     DirectPurchaseDTO,
     OrderDB,
     OrderItemResponseDTO,
+    PaginatedOrdersResponseDTO,
     OrderResponseDTO,
     OrderStatus,
 } from "../../models/order";
@@ -101,14 +102,27 @@ export class OrderService {
         return this.formatOrderResponse(order, items);
     }
 
-    static async getUSerOrdersService(userId: string): Promise<OrderResponseDTO[]> {
-        const orders = await findUsersOrders(userId);
-        if (!orders || orders.length === 0) return [];
+    static async getUSerOrdersService(
+        userId: string,
+        page: number = 1,
+        limit: number = 10
+    ): Promise<PaginatedOrdersResponseDTO> {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(10, Math.max(1, limit));
+        const { data, total } = await findUsersOrders(userId, safePage, safeLimit);
 
-        return orders.map((order) => {
+        const orders = data.map((order) => {
             const { items, ...orderData } = order as any;
             return this.formatOrderResponse(orderData, items ?? []);
         });
+
+        return {
+            orders,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+        };
     }
 
     static async updateStatusServices(

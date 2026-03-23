@@ -5,6 +5,7 @@ export interface Category {
     slug: string;
     parent_id: string | null;
     created_at?: string;
+    children?: Category[];
 }
 
 export interface CategoryCreatePayload {
