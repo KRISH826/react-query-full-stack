@@ -62,7 +62,10 @@ export class CategoryController {
             }
             res.status(200).json({
                 message: "Products fetched successfully",
-                products
+                products,
+                total: products.total,
+                page,
+                limit
             });
         } catch (error) {
             next(error);
