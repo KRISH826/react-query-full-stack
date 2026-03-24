@@ -57,9 +57,7 @@ export class CategoryController {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 30;
             const products = await CategoryService.getProductByCategoryIdService(slug, categoryId, page, limit);
-            if (!products.data.length) {
-                throw new HttpError("Products not found", 404);
-            }
+            
             res.status(200).json({
                 message: "Products fetched successfully",
                 products,

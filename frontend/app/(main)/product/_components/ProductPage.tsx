@@ -9,7 +9,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { Product } from "@/types/product";
 
 
-const LIMIT = 20;
+const LIMIT = 30;
 const ProductPage = () => {
     const [page, setPage] = useState(1);
     const { isLoading, error, data } = useGetProductsQuery({ page, limit: LIMIT });
