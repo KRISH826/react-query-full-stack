@@ -86,14 +86,16 @@ export async function getCategoriesForProduct(productId: string, db: Pool | Pool
 }
 
 
-export async function getProductByCategoryId(categoryId: string, page: number = 1,
+export async function getProductByCategoryId(slug: string, categoryId: string, page: number = 1,
     limit: number = 30, db: Pool | PoolClient = pool): Promise<{ data: ProductResponseDTO[], total: number }> {
-    debugger;
     const offset = (page - 1) * limit;
 
     const countResult = db.query(
-        `SELECT COUNT(*) FROM product_categories WHERE category_id = $1`,
-        [categoryId]
+        `SELECT COUNT(*)
+         FROM product_categories pc
+         INNER JOIN categories c ON c.id = pc.category_id
+         WHERE pc.category_id = $1 AND c.slug = $2`,
+        [categoryId, slug]
     );
 
     const total = parseInt((await countResult).rows[0].count, 10);
@@ -104,6 +106,7 @@ export async function getProductByCategoryId(categoryId: string, page: number = 
         COALESCE(cat.categories, '[]'::json) AS categories,
         COALESCE(var.variants, '[]'::json) AS variants
     FROM product_categories pc
+    INNER JOIN categories c_filter ON c_filter.id = pc.category_id
     INNER JOIN products p ON pc.product_id = p.id
     LEFT JOIN LATERAL (
         SELECT json_agg(
@@ -147,8 +150,9 @@ export async function getProductByCategoryId(categoryId: string, page: number = 
         WHERE v.product_id = p.id
     ) var ON true                              -- ✅ was completely absent
     WHERE pc.category_id = $1                 -- ✅ was missing, $1 was never bound
-    LIMIT $2 OFFSET $3`,
-        [categoryId, limit, offset]
+      AND c_filter.slug = $2
+    LIMIT $3 OFFSET $4`,
+        [categoryId, slug, limit, offset]
     );
 
     return { data: query.rows, total };
