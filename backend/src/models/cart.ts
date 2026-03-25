@@ -1,3 +1,5 @@
+import { PoolClient } from "pg";
+
 export interface CartDB {
     id: string;
     user_id: string;

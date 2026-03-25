@@ -32,6 +32,9 @@ export interface OrderItemDB {
     subtotal: number;
     image_url?: string | null;
     size: string | null;
+    status: OrderStatus; // ✅ reuse enum
+    cancelled_at?: Date | null;
+    returned_at?: Date | null;
     created_at: Date;
 }
 
@@ -58,7 +61,7 @@ export interface DirectPurchaseDTO {
 }
 
 export interface OrderItemResponseDTO {
-    order_id: string;
+    id: string;
     product_id: string;
     variant_id: string | null;
     productname: string;
@@ -69,6 +72,7 @@ export interface OrderItemResponseDTO {
     price: number;
     offerPrice: number | null;   // ✅ added
     subtotal: number;
+    status: OrderStatus;
 }
 
 export interface OrderResponseDTO {

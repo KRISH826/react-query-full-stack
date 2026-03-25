@@ -8,12 +8,14 @@ import {
     PaginatedOrdersResponseDTO,
     OrderResponseDTO,
     OrderStatus,
+    OrderItemDB,
 } from "../../models/order";
 import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
-import { sendOrderCancellationMail } from "../email/email.service";
+import { sendOrderCancellationMail, sendOrderItemsCancellationMail } from "../email/email.service";
 import {
     buyNowProductByid,
+    cancelOrderItem,
     createOrder,
     createOrderItem,
     findOrderById,
@@ -33,7 +35,6 @@ export class OrderService {
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
-
             const cart = await CartService.getOrCreateCart(userId, client);
             const cartItems = await getCartItems(cart.id, client);
 
@@ -72,6 +73,7 @@ export class OrderService {
                         offerPrice,
                         subtotal,
                         cartItem.size,
+                        order.status,
                         cartItem.image_url,
                         client
                     );
@@ -200,6 +202,7 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
+                product.status,
                 product.size || null,
                 product.image_url || null,
                 client
@@ -235,8 +238,6 @@ export class OrderService {
         } finally {
             client.release();
         }
-
-        // ✅ Transaction complete hone ke BAAD — client bhi release ho chuka
         const { order, items } = await getOrderWithItems(orderId);
         if (order) {
             setImmediate(() => {
@@ -249,12 +250,66 @@ export class OrderService {
         }
     }
 
+    static async cancelOrderItemsService(orderId: string, userId: string, orderItemsId: string[]): Promise<OrderResponseDTO> {
+        const client = await pool.connect();
+        const cancelledItems: OrderItemDB[] = [];
+
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
+            if (!["placed", "confirmed"].includes(order.status)) {
+                throw new HttpError("Items cannot be cancelled", 400);
+            }
+
+            let totalAmount = Number(order.total_amount);
+
+            for (const itemId of orderItemsId) {
+                const cancelled = await cancelOrderItem(itemId, client);
+                if (cancelled) {
+                    cancelledItems.push(cancelled);
+                    totalAmount -= Number(cancelled.subtotal);
+                }
+            }
+
+            const allItems = await findOrderItems(orderId, client);
+            const allCancelled = allItems.every(item => item.status === "cancelled");
+            if (allCancelled) {
+                await updateOrderStatus(orderId, "cancelled", client);
+            }
+
+            // Persist updated total_amount
+            await client.query(
+                `UPDATE orders SET total_amount = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+                [totalAmount, orderId]
+            );
+
+            await client.query("COMMIT");
+
+            // Fetch the updated order for the response
+            const updatedOrder = await findOrderById(orderId);
+
+            setImmediate(() => sendOrderItemsCancellationMail(order, cancelledItems, order.email)
+                .catch(err => console.error(`[EmailService] Items cancellation email failed — order: ${order.order_number}`, err))
+            );
+
+            return this.formatOrderResponse(updatedOrder!, allItems);
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     private static formatOrderResponse(
         order: OrderDB,
-        items: any[]
+        items: OrderItemDB[]
     ): OrderResponseDTO {
         const formattedItems: OrderItemResponseDTO[] = items.map((item) => ({
-            order_id: order.id,
+            id: item.id,
             product_id: item.product_id,
             variant_id: item.variant_id,
             productname: item.product_name,
@@ -267,6 +322,7 @@ export class OrderService {
             subtotal: Number(item.subtotal),
             size: item.size ?? null,
             image_url: item.image_url ?? null,
+            status: item.status as OrderStatus,
         }));
 
         return {

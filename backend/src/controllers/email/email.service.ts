@@ -70,3 +70,19 @@ export async function sendOrderCancellationMail(order: OrderDB, items: OrderItem
         }
     )
 }
+
+export async function sendOrderItemsCancellationMail(order: OrderDB, items: OrderItemDB[], customerName: string) {
+    const cancelledTotal = items
+        .reduce((sum, item) => sum + Number(item.subtotal), 0)
+        .toFixed(2);
+    await sendEmailService(
+        "order_items_cancelled",
+        order.email,
+        {
+            customer_name: customerName,
+            order_number: order.order_number,
+            items: buildOrderItems(items),
+            total_amount: cancelledTotal,
+        }
+    )
+}

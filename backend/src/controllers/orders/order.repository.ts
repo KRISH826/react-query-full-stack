@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateOrderDTO, OrderDB, OrderItemDB, OrderStatus } from "../../models/order";
+import { CreateOrderDTO, OrderDB, OrderItemDB, OrderItemResponseDTO, OrderStatus } from "../../models/order";
 
 export async function createOrder(
     userId: string,
@@ -130,6 +130,7 @@ export async function createOrderItem(
     offerPrice: number | null,
     subtotal: number,
     size: string | null,
+    status: OrderStatus,
     imageUrl: string | null,
     db: Pool | PoolClient = pool
 ): Promise<OrderItemDB | null> {
@@ -145,9 +146,10 @@ export async function createOrderItem(
             offer_price_at_purchase,
             subtotal,
             size,
+            status,
             image_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *`,
         [
             orderId,
@@ -160,6 +162,7 @@ export async function createOrderItem(
             offerPrice,
             subtotal,
             size,
+            status,
             imageUrl,
         ]
     );
@@ -202,6 +205,7 @@ export async function getOrderWithItems(
                         'offer_price_at_purchase',  oi.offer_price_at_purchase,
                         'subtotal',                 oi.subtotal,
                         'size',                     oi.size,
+                        'status',                   oi.status,
                         'image_url',                oi.image_url,
                         'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
@@ -254,4 +258,19 @@ export async function markOrderFailed(
          WHERE id = $1`,
         [orderId]
     );
+}
+
+export async function cancelOrderItem(
+    orderItemId: string,
+    db: Pool | PoolClient = pool
+): Promise<OrderItemDB | null> {
+    const { rows } = await db.query(
+        `UPDATE order_items
+         SET status = 'cancelled',
+             cancelled_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING *`,
+        [orderItemId]
+    );
+    return rows[0] || null;
 }
