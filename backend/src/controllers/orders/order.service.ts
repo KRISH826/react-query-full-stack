@@ -12,7 +12,7 @@ import {
 } from "../../models/order";
 import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
-import { sendOrderCancellationMail } from "../email/email.service";
+import { sendOrderCancellationMail, sendOrderItemsCancellationMail } from "../email/email.service";
 import {
     buyNowProductByid,
     cancelOrderItem,
@@ -73,6 +73,7 @@ export class OrderService {
                         offerPrice,
                         subtotal,
                         cartItem.size,
+                        order.status,
                         cartItem.image_url,
                         client
                     );
@@ -201,6 +202,7 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
+                product.status,
                 product.size || null,
                 product.image_url || null,
                 client
@@ -250,6 +252,7 @@ export class OrderService {
 
     static async cancelOrderItemsService(orderId: string, userId: string, orderItemsId: string[]): Promise<OrderResponseDTO> {
         const client = await pool.connect();
+        const cancelledItems: OrderItemDB[] = [];
 
         try {
             await client.query("BEGIN");
@@ -260,25 +263,43 @@ export class OrderService {
                 throw new HttpError("Items cannot be cancelled", 400);
             }
 
+            let totalAmount = Number(order.total_amount);
+
             for (const itemId of orderItemsId) {
-                await cancelOrderItem(itemId, client);
+                const cancelled = await cancelOrderItem(itemId, client);
+                if (cancelled) {
+                    cancelledItems.push(cancelled);
+                    totalAmount -= Number(cancelled.subtotal);
+                }
             }
 
-            const items = await findOrderItems(orderId, client);
-            const cancelledItems = items.every(item => orderItemsId.includes(item.id));
-            if (cancelledItems) {
+            const allItems = await findOrderItems(orderId, client);
+            const allCancelled = allItems.every(item => item.status === "cancelled");
+            if (allCancelled) {
                 await updateOrderStatus(orderId, "cancelled", client);
             }
 
+            // Persist updated total_amount
+            await client.query(
+                `UPDATE orders SET total_amount = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+                [totalAmount, orderId]
+            );
+
             await client.query("COMMIT");
-            const updateItems = await findOrderItems(orderId, client);
-            return this.formatOrderResponse(order, updateItems);
+
+            // Fetch the updated order for the response
+            const updatedOrder = await findOrderById(orderId);
+
+            setImmediate(() => sendOrderItemsCancellationMail(order, cancelledItems, order.email)
+                .catch(err => console.error(`[EmailService] Items cancellation email failed — order: ${order.order_number}`, err))
+            );
+
+            return this.formatOrderResponse(updatedOrder!, allItems);
 
         } catch (error) {
             await client.query("ROLLBACK");
             throw error;
-        }
-        finally {
+        } finally {
             client.release();
         }
     }
@@ -288,7 +309,7 @@ export class OrderService {
         items: OrderItemDB[]
     ): OrderResponseDTO {
         const formattedItems: OrderItemResponseDTO[] = items.map((item) => ({
-            order_id: order.id,
+            id: item.id,
             product_id: item.product_id,
             variant_id: item.variant_id,
             productname: item.product_name,

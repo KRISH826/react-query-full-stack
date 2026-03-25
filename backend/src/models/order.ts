@@ -61,7 +61,7 @@ export interface DirectPurchaseDTO {
 }
 
 export interface OrderItemResponseDTO {
-    order_id: string;
+    id: string;
     product_id: string;
     variant_id: string | null;
     productname: string;
