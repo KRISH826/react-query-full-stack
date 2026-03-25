@@ -128,6 +128,31 @@ export class OrderController {
         }
     }
 
+    static async cancelOrderItemController(
+        req: AuthRequest,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const userId = req.user?.id;
+            if(!userId) {
+                throw new HttpError("Unauthorized", 401);
+            }
+            const orderId = req.params.orderId as string;
+            const {orderItemsId} = req.body as {orderItemsId: string[]};
+            if (!orderId || !orderItemsId || !Array.isArray(orderItemsId) || orderItemsId.length === 0) {
+                throw new HttpError("Order Id and orderItemsId are required", 400);
+             }
+                const order = await OrderService.cancelOrderItemsService(orderId, userId, orderItemsId);
+
+                return res
+                    .status(200)
+                    .json({ message: "Order cancelled successfully", order });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async updateOrderStatusController(
         req: AuthRequest,
         res: Response,

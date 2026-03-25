@@ -32,6 +32,9 @@ export interface OrderItemDB {
     subtotal: number;
     image_url?: string | null;
     size: string | null;
+    status: OrderStatus; // ✅ reuse enum
+    cancelled_at?: Date | null;
+    returned_at?: Date | null;
     created_at: Date;
 }
 
@@ -69,6 +72,7 @@ export interface OrderItemResponseDTO {
     price: number;
     offerPrice: number | null;   // ✅ added
     subtotal: number;
+    status: OrderStatus;
 }
 
 export interface OrderResponseDTO {

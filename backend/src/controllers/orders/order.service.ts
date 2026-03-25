@@ -8,12 +8,14 @@ import {
     PaginatedOrdersResponseDTO,
     OrderResponseDTO,
     OrderStatus,
+    OrderItemDB,
 } from "../../models/order";
 import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
 import { sendOrderCancellationMail } from "../email/email.service";
 import {
     buyNowProductByid,
+    cancelOrderItem,
     createOrder,
     createOrderItem,
     findOrderById,
@@ -33,7 +35,6 @@ export class OrderService {
         const client = await pool.connect();
         try {
             await client.query("BEGIN");
-
             const cart = await CartService.getOrCreateCart(userId, client);
             const cartItems = await getCartItems(cart.id, client);
 
@@ -235,8 +236,6 @@ export class OrderService {
         } finally {
             client.release();
         }
-
-        // ✅ Transaction complete hone ke BAAD — client bhi release ho chuka
         const { order, items } = await getOrderWithItems(orderId);
         if (order) {
             setImmediate(() => {
@@ -249,9 +248,44 @@ export class OrderService {
         }
     }
 
+    static async cancelOrderItemsService(orderId: string, userId: string, orderItemsId: string[]): Promise<OrderResponseDTO> {
+        const client = await pool.connect();
+
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
+            if (!["placed", "confirmed"].includes(order.status)) {
+                throw new HttpError("Items cannot be cancelled", 400);
+            }
+
+            for (const itemId of orderItemsId) {
+                await cancelOrderItem(itemId, client);
+            }
+
+            const items = await findOrderItems(orderId, client);
+            const cancelledItems = items.every(item => orderItemsId.includes(item.id));
+            if (cancelledItems) {
+                await updateOrderStatus(orderId, "cancelled", client);
+            }
+
+            await client.query("COMMIT");
+            const updateItems = await findOrderItems(orderId, client);
+            return this.formatOrderResponse(order, updateItems);
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        }
+        finally {
+            client.release();
+        }
+    }
+
     private static formatOrderResponse(
         order: OrderDB,
-        items: any[]
+        items: OrderItemDB[]
     ): OrderResponseDTO {
         const formattedItems: OrderItemResponseDTO[] = items.map((item) => ({
             order_id: order.id,
@@ -267,6 +301,7 @@ export class OrderService {
             subtotal: Number(item.subtotal),
             size: item.size ?? null,
             image_url: item.image_url ?? null,
+            status: item.status as OrderStatus,
         }));
 
         return {

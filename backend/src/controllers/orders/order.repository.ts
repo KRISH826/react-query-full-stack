@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateOrderDTO, OrderDB, OrderItemDB, OrderStatus } from "../../models/order";
+import { CreateOrderDTO, OrderDB, OrderItemDB, OrderItemResponseDTO, OrderStatus } from "../../models/order";
 
 export async function createOrder(
     userId: string,
@@ -254,4 +254,19 @@ export async function markOrderFailed(
          WHERE id = $1`,
         [orderId]
     );
+}
+
+export async function cancelOrderItem(
+    orderItemId: string,
+    db: Pool | PoolClient = pool
+): Promise<OrderItemDB | null> {
+    const { rows } = await db.query(
+        `UPDATE order_items
+         SET status = 'cancelled',
+             cancelled_at = CURRENT_TIMESTAMP
+         WHERE id = $1
+         RETURNING *`,
+        [orderItemId]
+    );
+    return rows[0] || null;
 }
