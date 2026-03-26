@@ -12,5 +12,6 @@ router.delete("/:orderId/items/:itemId", requireAuth, OrderController.cancelOrde
 router.patch("/:orderId/cancel", requireAuth, requireRole("customer"), OrderController.cancelOrderController);
 router.patch("/:orderId/status", requireAuth, requireRole("admin"), OrderController.updateOrderStatusController);
 router.post("/buy-now", requireAuth, requireRole("customer"), OrderController.buyNowController);
+router.patch("/:orderId/items/:itemId/status", requireAuth, requireRole("damin"), OrderController.updateOrderItemStatusController);
 
 export default router;

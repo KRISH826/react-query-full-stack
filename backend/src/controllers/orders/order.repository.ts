@@ -85,6 +85,7 @@ export async function findUsersOrders(
                         'offer_price_at_purchase',  oi.offer_price_at_purchase,
                         'subtotal',                 oi.subtotal,
                         'size',                     oi.size,
+                        'status',                   oi.status,
                         'image_url',                oi.image_url,
                         'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
@@ -116,6 +117,14 @@ export async function updateOrderStatus(
          RETURNING *`,
         [status, orderId]
     );
+
+    await db.query(
+        `UPDATE order_items 
+         SET status = $1
+         WHERE order_id = $2 AND status != 'cancelled'`,
+        [status, orderId]
+    );
+
     return rows[0] || null;
 }
 
@@ -258,6 +267,24 @@ export async function markOrderFailed(
          WHERE id = $1`,
         [orderId]
     );
+}
+
+
+// order items repo
+export async function findOrderItemById(orderItemId: string, db: Pool | PoolClient): Promise<OrderItemDB | null> {
+    const { rows } = await db.query(
+        `SELECT * FROM order_items WHERE id = $1`,
+        [orderItemId]
+    )
+    return rows[0] || null;
+}
+
+export async function updateOrderItemStatus(orderItemId: string, status: OrderStatus, db: Pool | PoolClient): Promise<OrderItemDB | null> {
+    const { rows } = await db.query(
+        `UPDATE order_items SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *`,
+        [status, orderItemId]
+    )
+    return rows[0] || null;
 }
 
 export async function cancelOrderItem(

@@ -19,10 +19,12 @@ import {
     createOrder,
     createOrderItem,
     findOrderById,
+    findOrderItemById,
     findOrderItems,
     findUsersOrders,
     getOrderWithItems,
     markOrderFailed,
+    updateOrderItemStatus,
     updateOrderStatus,
 } from "./order.repository";
 
@@ -162,6 +164,36 @@ export class OrderService {
         }
     }
 
+    static async updateOrderItemStatusService(
+        orderId: string,
+        itemId: string,
+        userId: string,
+        status: OrderStatus
+    ): Promise<OrderResponseDTO> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+
+            const order = await findOrderById(orderId, client);
+            const orderItem = await findOrderItemById(itemId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+            if (!orderItem) throw new HttpError("Order item not found", 404);
+            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
+
+            await updateOrderItemStatus(itemId, status, client);
+
+            const items = await findOrderItems(orderId, client);
+            await client.query("COMMIT");
+
+            return this.formatOrderResponse(order, items);
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     static async buyNowService(
         productId: string,
         orderData: DirectPurchaseDTO,
@@ -279,7 +311,6 @@ export class OrderService {
                 await updateOrderStatus(orderId, "cancelled", client);
             }
 
-            // Persist updated total_amount
             await client.query(
                 `UPDATE orders SET total_amount = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
                 [totalAmount, orderId]

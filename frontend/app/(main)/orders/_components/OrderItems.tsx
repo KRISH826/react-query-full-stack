@@ -7,21 +7,23 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { statusConfig } from "./statusConfig"
 import { Button } from "@/components/ui/button"
-import { useCancelOrderMutation } from "@/services/orderApi"
+import { useCancelOrderItemsMutation, useCancelOrderMutation } from "@/services/orderApi"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { OrderItemResponseDTO } from "@/types/order"
 
 type Props = {
-    item: FlatOrderItem
+    item: OrderItemResponseDTO
+    orderId: string
 }
 
 
 const TRACK_STEPS = ["Placed", "Confirmed", "Shipped", "Delivered"]
 
-const OrderItemCard = ({ item }: Props) => {
+const OrderItemCard = ({ item, orderId }: Props) => {
     const status = statusConfig[item.status?.toLowerCase() as OrderStatus] ?? statusConfig.placed
     const isCancelledOrRefunded = item.status === "cancelled" || item.status === "refunded"
-    const [cancelOrder, { isLoading }] = useCancelOrderMutation();
+    const [cancelOrderItems, { isLoading }] = useCancelOrderItemsMutation();
     const router = useRouter();
 
     const handleViewProduct = () => {
@@ -30,7 +32,7 @@ const OrderItemCard = ({ item }: Props) => {
 
     const handleCancelOrder = async () => {
         try {
-            await cancelOrder(item.order_id);
+            await cancelOrderItems({ orderId, itemsId: item.id });
             toast.success("Order cancelled successfully");
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -42,61 +44,7 @@ const OrderItemCard = ({ item }: Props) => {
     }
 
     return (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-
-            {/* TOP BAR — order meta */}
-            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200">
-                <div className="flex flex-wrap items-center gap-5">
-                    <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
-                            Order
-                        </p>
-                        <p className="text-xs font-bold text-gray-800 mt-0.5">
-                            #{item.ordernumber}
-                        </p>
-                    </div>
-
-                    <div className="w-px h-7 bg-gray-200 hidden sm:block" />
-
-                    <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
-                            Placed On
-                        </p>
-                        <div className="flex items-center gap-1 text-xs font-medium text-gray-700 mt-0.5">
-                            <Calendar size={11} className="text-gray-400" />
-                            {new Date(item.created_at).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="w-px h-7 bg-gray-200 hidden sm:block" />
-
-                    <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
-                            Order Total
-                        </p>
-                        <p className="text-xs font-bold text-gray-800 mt-0.5">
-                            ₹{Number(item.totalamount).toLocaleString("en-IN")}
-                        </p>
-                    </div>
-                </div>
-
-                {/* STATUS BADGE */}
-                <div className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border",
-                    status.color,
-                    status.bg,
-                    status.border
-                )}>
-                    <span className={cn("h-1.5 w-1.5 rounded-full", status.dot)} />
-                    {status.icon}
-                    {status.label}
-                </div>
-            </div>
-
+        <div className="bg-white overflow-hidden transition-shadow duration-200">
             {/* PRODUCT ROW */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4">
                 <div className="flex gap-4 items-start">
@@ -135,10 +83,10 @@ const OrderItemCard = ({ item }: Props) => {
                         )}
                         <div className="flex items-baseline gap-1.5 pt-0.5">
                             <p className="text-xs text-gray-400 line-through">
-                                ₹{(Number(item.price) * 1.1).toFixed(0)}
+                                ₹{(Number(item.price)).toFixed(0)}
                             </p>
                             <p className="text-sm font-bold text-gray-900">
-                                ₹{Number(item.price).toLocaleString("en-IN")}
+                                ₹{Number(item.offerPrice).toLocaleString("en-IN")}
                             </p>
                             <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                                 10% off
@@ -157,7 +105,7 @@ const OrderItemCard = ({ item }: Props) => {
                     </div>
                     <div className="flex items-center gap-2">
                         <Link
-                            href={item.status === "cancelled" || item.status === "refunded" ? `/product/${item.product_id}` : `/orders/${item.order_id}`}
+                            href={item.status === "cancelled" || item.status === "refunded" ? `/product/${item.product_id}` : `/orders/${orderId}`}
                             className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gray-900 hover:bg-gray-700 transition-colors px-4 py-2 rounded-lg whitespace-nowrap"
                         >
                             {item.status === "cancelled" || item.status === "refunded" ? "Re-Order" : "Track Order"}

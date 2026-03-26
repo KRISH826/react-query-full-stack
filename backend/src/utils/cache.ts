@@ -28,7 +28,6 @@ export const cache = {
     },
     async delPattern(pattern: string): Promise<void> {
         try {
-            // ✅ Promise mein wrap karo taaki stream complete hone ka wait ho
             await new Promise<void>((resolve, reject) => {
                 const stream = redis.scanStream({
                     match: pattern,
@@ -47,7 +46,7 @@ export const cache = {
 
                 stream.on('end', async () => {
                     try {
-                        await pipeline.exec(); // ✅ ab properly awaited hai
+                        await pipeline.exec();
                         resolve();
                     } catch (err) {
                         reject(err);
