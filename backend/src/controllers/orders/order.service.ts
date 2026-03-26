@@ -279,7 +279,6 @@ export class OrderService {
                 await updateOrderStatus(orderId, "cancelled", client);
             }
 
-            // Persist updated total_amount
             await client.query(
                 `UPDATE orders SET total_amount = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
                 [totalAmount, orderId]

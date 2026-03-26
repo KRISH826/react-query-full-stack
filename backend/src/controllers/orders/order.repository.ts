@@ -85,6 +85,7 @@ export async function findUsersOrders(
                         'offer_price_at_purchase',  oi.offer_price_at_purchase,
                         'subtotal',                 oi.subtotal,
                         'size',                     oi.size,
+                        'status',                   oi.status,
                         'image_url',                oi.image_url,
                         'created_at',               oi.created_at
                     ) ORDER BY oi.created_at ASC
@@ -116,6 +117,14 @@ export async function updateOrderStatus(
          RETURNING *`,
         [status, orderId]
     );
+
+    await db.query(
+        `UPDATE order_items 
+         SET status = $1
+         WHERE order_id = $2 AND status != 'cancelled'`,
+        [status, orderId]
+    );
+
     return rows[0] || null;
 }
 

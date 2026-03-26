@@ -29,7 +29,7 @@ export const orderApi = baseApi.injectEndpoints({
         }),
         getOrders: builder.query<OrdersFullResponse, { page?: number; limit?: number }>({
             query: ({ page = 1, limit = 10 }) => `orders?page=${page}&limit=${limit}`,
-            transformResponse: (response: { orders: OrdersFullResponse }) => response.orders,
+            transformResponse: (response: { orders: OrderResponseDTO }) => response.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
         getOrderById: builder.query<OrderResponseDTO, string>({
@@ -41,6 +41,16 @@ export const orderApi = baseApi.injectEndpoints({
             query: (orderId) => ({
                 url: `orders/${orderId}/cancel`,
                 method: "PATCH",
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
+        cancelOrderItems: builder.mutation<{ message: string }, { orderId: string, itemsId: string }>({
+            query: ({ orderId, itemsId }) => ({
+                url: `orders/${orderId}/items/${itemsId}`,
+                method: "DELETE",
             }),
             invalidatesTags: [
                 { type: "Order", id: "LIST" },
@@ -76,4 +86,5 @@ export const {
     useBuyNowOrderMutation,
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
+    useCancelOrderItemsMutation,
 } = orderApi;

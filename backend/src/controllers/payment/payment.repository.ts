@@ -23,7 +23,11 @@ export async function markPaymentFailed(orderId: string, db: Pool | PoolClient =
     const { rows } = await db.query(
         `UPDATE payments SET status='failed' WHERE order_id=$1 RETURNING *`,
         [orderId]
-    )
+    );
+    await db.query(
+        `UPDATE order_items SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE order_id=$1`,
+        [orderId]
+    );
     return rows[0];
 }
 
@@ -31,5 +35,9 @@ export async function updateStatusConfirmedByOrderId(orderId: string, db: Pool |
     await db.query(
         `UPDATE orders SET status='confirmed', updated_at=CURRENT_TIMESTAMP WHERE id=$1`,
         [orderId]
-    )
+    );
+    await db.query(
+        `UPDATE order_items SET status='confirmed', updated_at=CURRENT_TIMESTAMP WHERE order_id=$1 AND status != 'cancelled'`,
+        [orderId]
+    );
 }
