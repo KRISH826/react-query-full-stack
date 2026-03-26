@@ -192,4 +192,34 @@ export class OrderController {
             next(error);
         }
     }
+
+    static async updateOrderItemStatusController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new HttpError("Unauthorized", 401);
+            }
+            const orderId = req.params.orderId as string;
+            const itemId = req.params.itemId as string;
+            const status = req.body.status as OrderStatus;
+            if (!orderId || !itemId || !status) {
+                throw new HttpError("Order ID, Item ID and status are required", 400);
+            }
+            const validStatuses: OrderStatus[] = [
+                "placed",
+                "confirmed",
+                "shipped",
+                "delivered",
+                "cancelled",
+                "refunded",
+            ];
+            if (!validStatuses.includes(status)) {
+                throw new HttpError("Invalid status", 400);
+            }
+            const order = await OrderService.updateOrderItemStatusService(orderId, itemId, userId, status);
+            return res.status(200).json({ message: "Order item status updated successfully", order });
+        } catch (error) {
+            next(error)
+        }
+    }
 }
