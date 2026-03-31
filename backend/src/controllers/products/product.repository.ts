@@ -115,62 +115,10 @@ export async function findAllProducts(
 }
 
 export async function findProductWithImagesById(id: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO | null> {
-    const { rows } = await db.query(`
-        SELECT 
-            p.*,
-            COALESCE(img.images, '[]') AS images,
-            COALESCE(cat.categories, '[]') AS categories,
-            COALESCE(var.variants, '[]') AS variants
-        FROM products p
-
-        LEFT JOIN LATERAL (
-            SELECT jsonb_agg(
-                jsonb_build_object(
-                    'id', pi.id,
-                    'image_url', pi.image_url,
-                    'alt_text', pi.alt_text,
-                    'isprimary', pi.isprimary
-                )
-                ORDER BY pi.isprimary DESC, pi.created_at ASC
-            ) AS images
-            FROM product_images pi
-            WHERE pi.product_id = p.id
-        ) img ON true
-
-        LEFT JOIN LATERAL (
-            SELECT jsonb_agg(
-                jsonb_build_object(
-                    'id', c.id,
-                    'name', c.name,
-                    'slug', c.slug,
-                    'parent_id', c.parent_id
-                )
-                ORDER BY c.name ASC
-            ) AS categories
-            FROM product_categories pc
-            JOIN categories c ON c.id = pc.category_id
-            WHERE pc.product_id = p.id
-        ) cat ON true
-
-        LEFT JOIN LATERAL (
-            SELECT jsonb_agg(
-                jsonb_build_object(
-                    'id', v.id,
-                    'size', v.size,
-                    'price_override', v.price_override,
-                    'offer_price_override', v.offer_price_override,
-                    'stock_quantity', v.stock_quantity,
-                    'sku', v.sku
-                )
-                ORDER BY v.created_at ASC
-            ) AS variants
-            FROM product_variants v
-            WHERE v.product_id = p.id
-        ) var ON true
-
-        WHERE p.deleted_at IS NULL
-        AND p.id = $1
-    `, [id]);
+    const { rows } = await db.query(
+        `SELECT * FROM product_detail_mv WHERE id=$1`,
+        [id]
+    )
 
     return rows[0] || null;
 }
@@ -237,3 +185,12 @@ export async function topProducts(
 
     return rows;
 }
+
+export async function refreshProductFullMV(db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY product_full_mv`);
+}
+
+export async function refreshProductDetailMV(db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY product_detail_mv`);
+}
+
