@@ -1,7 +1,8 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
+import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
 import { ProductAITags } from "../../models/aimodel";
+import { OrderItemDB } from "../../models/order";
 
 export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
@@ -268,4 +269,28 @@ export async function saveProductAITags(
         `UPDATE products SET ai_tags = $1 WHERE id = $2`,
         [JSON.stringify(tags), productId]
     );
+}
+
+export async function topProducts(
+    limit: number = 15,
+    db: Pool | PoolClient = pool
+): Promise<ProductWithImagesDTO[]> {
+
+    const { rows } = await db.query(`
+        SELECT 
+            v.*,
+            oc.order_count
+        FROM v_product_details v
+        JOIN (
+            SELECT 
+                product_id, 
+                COUNT(*) AS order_count
+            FROM order_items
+            GROUP BY product_id
+        ) oc ON oc.product_id = v.id
+        ORDER BY oc.order_count DESC
+        LIMIT $1;
+    `, [limit]);
+
+    return rows;
 }

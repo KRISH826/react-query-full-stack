@@ -51,7 +51,6 @@ app.get("/health", (req: Request, res: Response) => {
     res.send("Health is Perfect!")
 });
 
-// ❗ MUST BE LAST
 app.use(errorHandler);
 app.listen(config.app.port, async () => {
     await startUpCleanScheduler();

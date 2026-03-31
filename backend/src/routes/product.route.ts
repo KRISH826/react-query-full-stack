@@ -7,8 +7,9 @@ import { requireRole } from "../middlewares/role.middleware";
 const router = Router();
 
 router.post("/", requireAuth, requireRole("admin"), upload.array("images"), ProductController.createProductController);
-router.get("/:id", ProductController.getByIdController);
 router.get("/", ProductController.getAllController);
+router.get("/top-products", ProductController.topProductsController);
+router.get("/:id", ProductController.getByIdController);
 router.delete("/:id", requireAuth, requireRole("admin"), ProductController.deleteProductController);
 router.put("/:id", requireAuth, requireRole("admin"), upload.array("images"), ProductController.updateProductController);
 
