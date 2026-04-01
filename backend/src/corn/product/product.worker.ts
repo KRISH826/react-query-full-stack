@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import redis from "../../db/redis";
+import { redisConnection } from "../../db/redis";
 import { refreshProductDetailMV, refreshProductFullMV } from "../../controllers/products/product.repository";
 
 export const productWorker = new Worker('product-refresh-queue', async (job) => {
@@ -19,7 +19,7 @@ export const productWorker = new Worker('product-refresh-queue', async (job) => 
 },
 
     {
-        connection: redis as any,
+        connection: redisConnection as any,
         concurrency: 1,
 
     }

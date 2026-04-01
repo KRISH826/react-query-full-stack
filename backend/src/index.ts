@@ -19,7 +19,7 @@ import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
 import { startProductScheduler } from "./corn/product/product.scheduler";
-
+import "./corn/product/product.worker"
 
 const app = express();
 

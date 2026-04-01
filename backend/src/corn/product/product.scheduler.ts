@@ -1,8 +1,8 @@
 import { Queue } from "bullmq";
-import redis from "../../db/redis";
+import { redisConnection } from "../../db/redis";
 
 export const refreshProductQueue = new Queue('product-refresh-queue', {
-    connection: redis as any,
+    connection: redisConnection as any,
     defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: 100,
