@@ -42,7 +42,12 @@ export class OrderController {
             if (!userId) {
                 throw new HttpError("Unauthorized", 401);
             }
-            const orders = await OrderService.getUSerOrdersService(userId);
+            const rawPage = Number(req.query.page ?? 1);
+            const rawLimit = Number(req.query.limit ?? 10);
+            const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
+            const limit = Number.isNaN(rawLimit) ? 10 : Math.min(10, Math.max(1, rawLimit));
+
+            const orders = await OrderService.getUSerOrdersService(userId, page, limit);
             return res
                 .status(200)
                 .json({ message: "Orders fetched successfully", orders });
@@ -123,6 +128,30 @@ export class OrderController {
         }
     }
 
+    static async cancelOrderItemController(
+        req: AuthRequest,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) throw new HttpError("Unauthorized", 401);
+
+            const orderId = req.params.orderId as string;
+            const itemId = req.params.itemId as string;
+
+            if (!orderId || !itemId) {
+                throw new HttpError("Order Id and Item Id are required", 400);
+            }
+
+            const order = await OrderService.cancelOrderItemsService(orderId, userId, [itemId]);
+
+            return res.status(200).json({ message: "Order item cancelled successfully", order });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async updateOrderStatusController(
         req: AuthRequest,
         res: Response,
@@ -161,6 +190,36 @@ export class OrderController {
                 .json({ message: "Order status updated successfully", order });
         } catch (error) {
             next(error);
+        }
+    }
+
+    static async updateOrderItemStatusController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user?.id;
+            if (!userId) {
+                throw new HttpError("Unauthorized", 401);
+            }
+            const orderId = req.params.orderId as string;
+            const itemId = req.params.itemId as string;
+            const status = req.body.status as OrderStatus;
+            if (!orderId || !itemId || !status) {
+                throw new HttpError("Order ID, Item ID and status are required", 400);
+            }
+            const validStatuses: OrderStatus[] = [
+                "placed",
+                "confirmed",
+                "shipped",
+                "delivered",
+                "cancelled",
+                "refunded",
+            ];
+            if (!validStatuses.includes(status)) {
+                throw new HttpError("Invalid status", 400);
+            }
+            const order = await OrderService.updateOrderItemStatusService(orderId, itemId, userId, status);
+            return res.status(200).json({ message: "Order item status updated successfully", order });
+        } catch (error) {
+            next(error)
         }
     }
 }

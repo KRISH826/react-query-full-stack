@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { CategoryService } from "./category.service";
+import { HttpError } from "../../middlewares/error.middleware";
 
 export class CategoryController {
     static async createCategoryController(req: Request, res: Response, next: NextFunction) {
@@ -13,7 +14,6 @@ export class CategoryController {
             next(error);
         }
     }
-
     static async getCategoryByIdController(req: Request, res: Response, next: NextFunction) {
         try {
             const category = await CategoryService.getCategoryByidService(req.params.id as string);
@@ -44,6 +44,26 @@ export class CategoryController {
             res.status(200).json({
                 message: "Category updated successfully",
                 category
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getProductsByCategoryIdController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const categoryId = (req.query.id as string) || (req.params.id as string);
+            const slug = req.query.slug as string;
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 30;
+            const products = await CategoryService.getProductByCategoryIdService(slug, categoryId, page, limit);
+            
+            res.status(200).json({
+                message: "Products fetched successfully",
+                products,
+                total: products.total,
+                page,
+                limit
             });
         } catch (error) {
             next(error);

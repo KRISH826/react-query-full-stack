@@ -1,7 +1,8 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
+import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
 import { ProductAITags } from "../../models/aimodel";
+import { OrderItemDB } from "../../models/order";
 
 export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
@@ -105,34 +106,43 @@ export async function findAllProducts(
     const total = parseInt(countResult.rows[0].count);
 
     const { rows } = await pool.query(`
+        WITH paged_products AS (
+            SELECT *
+            FROM products
+            WHERE deleted_at IS NULL
+            ORDER BY created_at DESC
+            LIMIT $1 OFFSET $2
+        )
         SELECT 
             p.*,
             COALESCE(img.images, '[]') AS images,
             COALESCE(cat.categories, '[]') AS categories,
             COALESCE(var.variants, '[]') AS variants
-        FROM products p
+        FROM paged_products p
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', pi.id,
                     'image_url', pi.image_url,
                     'alt_text', pi.alt_text,
                     'isprimary', pi.isprimary
                 )
+                ORDER BY pi.isprimary DESC, pi.created_at ASC
             ) AS images
             FROM product_images pi
             WHERE pi.product_id = p.id
         ) img ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', c.id,
                     'name', c.name,
                     'slug', c.slug,
                     'parent_id', c.parent_id
                 )
+                ORDER BY c.name ASC
             ) AS categories
             FROM product_categories pc
             JOIN categories c ON c.id = pc.category_id
@@ -140,7 +150,7 @@ export async function findAllProducts(
         ) cat ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
@@ -149,14 +159,13 @@ export async function findAllProducts(
                     'stock_quantity', v.stock_quantity,
                     'sku', v.sku
                 )
+                ORDER BY v.created_at ASC
             ) AS variants
             FROM product_variants v
             WHERE v.product_id = p.id
         ) var ON true
 
-        WHERE p.deleted_at IS NULL
         ORDER BY p.created_at DESC
-        LIMIT $1 OFFSET $2
     `, [limit, offset]);
 
     return { data: rows, total };
@@ -172,26 +181,28 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
         FROM products p
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', pi.id,
                     'image_url', pi.image_url,
                     'alt_text', pi.alt_text,
                     'isprimary', pi.isprimary
                 )
+                ORDER BY pi.isprimary DESC, pi.created_at ASC
             ) AS images
             FROM product_images pi
             WHERE pi.product_id = p.id
         ) img ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', c.id,
                     'name', c.name,
                     'slug', c.slug,
                     'parent_id', c.parent_id
                 )
+                ORDER BY c.name ASC
             ) AS categories
             FROM product_categories pc
             JOIN categories c ON c.id = pc.category_id
@@ -199,7 +210,7 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
         ) cat ON true
 
         LEFT JOIN LATERAL (
-            SELECT json_agg(
+            SELECT jsonb_agg(
                 jsonb_build_object(
                     'id', v.id,
                     'size', v.size,
@@ -208,6 +219,7 @@ export async function findProductWithImagesById(id: string, db: Pool | PoolClien
                     'stock_quantity', v.stock_quantity,
                     'sku', v.sku
                 )
+                ORDER BY v.created_at ASC
             ) AS variants
             FROM product_variants v
             WHERE v.product_id = p.id
@@ -257,4 +269,28 @@ export async function saveProductAITags(
         `UPDATE products SET ai_tags = $1 WHERE id = $2`,
         [JSON.stringify(tags), productId]
     );
+}
+
+export async function topProducts(
+    limit: number = 15,
+    db: Pool | PoolClient = pool
+): Promise<ProductWithImagesDTO[]> {
+
+    const { rows } = await db.query(`
+        SELECT 
+            v.*,
+            oc.order_count
+        FROM v_product_details v
+        JOIN (
+            SELECT 
+                product_id, 
+                COUNT(*) AS order_count
+            FROM order_items
+            GROUP BY product_id
+        ) oc ON oc.product_id = v.id
+        ORDER BY oc.order_count DESC
+        LIMIT $1;
+    `, [limit]);
+
+    return rows;
 }

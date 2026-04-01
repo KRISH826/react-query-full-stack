@@ -47,3 +47,10 @@ export interface ProductCategoryResponseDTO {
     product_id: string;
     category_id: string;
 }
+export interface CategoryTree {
+    id: string;
+    name: string;
+    slug: string;
+    parent_id: string | null;
+    children: CategoryTree[];
+}

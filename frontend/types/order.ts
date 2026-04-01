@@ -9,7 +9,7 @@ export interface ShippingAddressDTO {
 }
 
 export interface OrderItemResponseDTO {
-    order_id: string;
+    id: string;
     product_id: string;
     productname: string;
     product_brand: string;
@@ -17,6 +17,8 @@ export interface OrderItemResponseDTO {
     size?: string | null;
     quantity: number;
     price: number;
+    offerPrice: number;
+    status: OrderStatus;
     subtotal: number;
 }
 

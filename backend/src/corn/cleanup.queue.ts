@@ -19,13 +19,20 @@ export const cleanupQueue = new Queue("cleanup-unverified-users", {
 })
 
 export const startUpCleanScheduler = async () => {
-    await cleanupQueue.obliterate({ force: true });
-    await cleanupQueue.add(
-        "cleanup",
-        {},
-        {
-            repeat: { every: 15 * 60 * 1000 }
-        }
+    const repeatInterval = 15 * 60 * 1000;
+    const existingJobs = await cleanupQueue.getRepeatableJobs();
+    const hasCleanupJob = existingJobs.some(
+        (job) => job.name === "cleanup" && Number(job.every) === repeatInterval
     );
+
+    if (!hasCleanupJob) {
+        await cleanupQueue.add(
+            "cleanup",
+            {},
+            {
+                repeat: { every: repeatInterval }
+            }
+        );
+    }
     console.log("Cleanup scheduler started ✅");
 }

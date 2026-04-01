@@ -6,8 +6,10 @@ import { requireRole } from "../middlewares/role.middleware";
 const router = express.Router();
 
 router.post("/", requireAuth, requireRole("admin"), CategoryController.createCategoryController);
-router.get("/:id", requireAuth, requireRole("admin"), CategoryController.getCategoryByIdController);
-router.get("/", requireAuth, requireRole("admin"), CategoryController.getAllCategoriesController);
+router.get("/products", CategoryController.getProductsByCategoryIdController);
+router.get("/:id", requireAuth, requireRole("admin", "customer"), CategoryController.getCategoryByIdController);
+router.get("/", CategoryController.getAllCategoriesController);
+router.get("/products", CategoryController.getProductsByCategoryIdController);
 router.put("/:id", requireAuth, requireRole("admin"), CategoryController.updateCategoryController);
 router.delete("/:id", requireAuth, requireRole("admin"), CategoryController.deleteCategoryController);
 

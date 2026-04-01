@@ -95,4 +95,17 @@ export class ProductController {
             next(error);
         }
     }
+
+    static async topProductsController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const products = await ProductService.topProductsService();
+            return res.status(200).json({
+                success: true,
+                data: products,
+                message: "Top products fetched successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

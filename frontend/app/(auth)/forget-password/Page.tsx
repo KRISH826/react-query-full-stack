@@ -28,7 +28,7 @@ export default function Page() {
                     <div className="flex flex-col mb-4 gap-2 text-start">
                         <h1 className="text-2xl font-semibold tracking-tight">Forgot Password</h1>
                         <p className="text-muted-foreground text-sm">
-                            Enter your email and we'll send you a reset code
+                            Enter your email and we&apos;ll send you a reset code
                         </p>
                     </div>
                     <Suspense>
