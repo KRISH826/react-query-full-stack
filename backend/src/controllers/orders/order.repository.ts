@@ -1,6 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateOrderDTO, OrderDB, OrderItemDB, OrderItemResponseDTO, OrderStatus } from "../../models/order";
+import { CreateOrderDTO, OrderDB, OrderItemDB, OrderStatus } from "../../models/order";
 
 export async function createOrder(
     userId: string,
@@ -268,7 +268,6 @@ export async function markOrderFailed(
         [orderId]
     );
 }
-
 
 // order items repo
 export async function findOrderItemById(orderItemId: string, db: Pool | PoolClient): Promise<OrderItemDB | null> {

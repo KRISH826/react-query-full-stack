@@ -5,7 +5,7 @@ export const redis = new Redis({
     port: parseInt(process.env.REDIS_PORT || '6379'),
     tls: process.env.REDIS_TLS === 'true' ? {} : undefined,
     password: process.env.REDIS_PASSWORD,
-    maxRetriesPerRequest: 1,
+    maxRetriesPerRequest: null,
     enableReadyCheck: false,
     lazyConnect: false,
     keepAlive: 10000,
@@ -20,3 +20,13 @@ redis.on('connect', () => {
 })
 
 export default redis
+
+
+export const redisConnection = {
+    host: process.env.REDIS_HOST || "localhost",
+    port: parseInt(process.env.REDIS_PORT || "6379"),
+    password: process.env.REDIS_PASSWORD,
+    tls: process.env.REDIS_TLS === "true" ? ({} as const) : undefined,
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+};
