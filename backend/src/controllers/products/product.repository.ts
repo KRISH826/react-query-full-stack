@@ -186,6 +186,8 @@ export async function topProducts(
     return rows;
 }
 
+
+
 export async function refreshProductFullMV(db: Pool | PoolClient = pool): Promise<void> {
     await db.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY product_full_mv`);
 }

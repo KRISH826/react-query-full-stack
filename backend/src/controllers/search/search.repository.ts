@@ -54,7 +54,6 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             WHERE pc.product_id = p.id
         ) cat ON true
 
-        -- Fetch Variants
         LEFT JOIN LATERAL (
             SELECT json_agg(v.*) AS variants 
             FROM product_variants v WHERE v.product_id = p.id
