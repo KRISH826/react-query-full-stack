@@ -18,6 +18,7 @@ import reviewRouter from "./routes/review.routes";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
+import { startProductScheduler } from "./corn/product/product.scheduler";
 
 
 const app = express();
@@ -54,5 +55,6 @@ app.get("/health", (req: Request, res: Response) => {
 app.use(errorHandler);
 app.listen(config.app.port, async () => {
     await startUpCleanScheduler();
+    await startProductScheduler();
     console.log(`Server is running on port ${config.app.port}`);
 });
