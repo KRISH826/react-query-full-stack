@@ -4,3 +4,4 @@ package.json
 package-*.json
 dist
 /aws
+.sql
