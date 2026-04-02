@@ -1,12 +1,15 @@
 "use client";
 
-import { Menu, Search, User, LayoutDashboard, Package, Tags, ShoppingCart, LogOut } from "lucide-react";
+import { Menu, Search, User, LayoutDashboard, Package, Tags, ShoppingCart, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useGetProfileQuery } from "@/services/userApi";
+import { Spinner } from "../ui/spinner";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -17,6 +20,8 @@ const navItems = [
 
 export function AdminHeader() {
   const pathname = usePathname();
+  const { data, isLoading } = useGetProfileQuery();
+  console.log(data);
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-sidebar-border bg-background px-4 shadow-xs sm:px-6 lg:px-8">
@@ -83,7 +88,14 @@ export function AdminHeader() {
             <Input className="w-[270px] pl-8 border border-primary/35" placeholder="Search products, orders..." />
           </div>
         </form>
-
+        {
+          isLoading ? <Spinner className="size-5" /> : <>
+            <Avatar>
+              <AvatarImage src={data?.profileimage} />
+              <AvatarFallback>{data?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)}</AvatarFallback>
+            </Avatar>
+          </>
+        }
       </div>
     </header>
   );

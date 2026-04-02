@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // ✅ Protected — login required
-const PROTECTED_ROUTES = ["/carts", "/checkout", "/orders", "/favourites"]
+const PROTECTED_ROUTES = ["/carts", "/checkout", "/orders", "/favourites", "/admin", "/dashboard"]
 // ✅ Auth routes — logged in user nahi ja sakta
-const AUTH_ROUTES = ["/login", "/register"]
+const AUTH_ROUTES = ["/login", "/register", "/forget-password", "/reset-password", "/verify-email"]
 
 export function proxy(request: NextRequest) {
     const token = request.cookies.get("token")?.value || request.headers.get("authorization")?.replace("Bearer", "")
@@ -30,9 +30,13 @@ export const config = {
     matcher: [
         "/carts/:path*",
         "/checkout/:path*",
+        "/dashboard",
         "/orders/:path*",
         "/favourites/:path*",
         "/login",
         "/register",
+        "/forget-password",
+        "/reset-password",
+        "/verify-email",
     ]
 }
