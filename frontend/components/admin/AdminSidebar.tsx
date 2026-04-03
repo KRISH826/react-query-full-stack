@@ -12,10 +12,10 @@ import { baseApi } from "@/services/baseQuery";
 import { useDispatch } from 'react-redux'
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/product", icon: Package, label: "Products" },
-  { href: "/category", icon: Tags, label: "Categories" },
-  { href: "/orders", icon: ShoppingCart, label: "Orders" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/product", icon: Package, label: "Products" },
+  { href: "/admin/category", icon: Tags, label: "Categories" },
+  { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
 ];
 
 export function AdminSidebar() {
@@ -28,13 +28,10 @@ export function AdminSidebar() {
       await logout().unwrap();
       toast.success("Logout successful");
       router.replace("/login");
-
-      // Reset API state after navigation to avoid flash of empty content
       setTimeout(() => {
         dispatch(baseApi.util.resetApiState());
       }, 100);
     } catch {
-      // Fallback if API fails
       toast.error("Logout failed, but session cleared");
       router.replace("/login");
       setTimeout(() => {

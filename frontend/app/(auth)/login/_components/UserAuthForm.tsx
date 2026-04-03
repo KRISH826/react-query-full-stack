@@ -33,10 +33,19 @@ const UserAuthForm = ({
     });
     const onSubmit = async (data: LoginValues) => {
         try {
-            await login(data).unwrap();
+            const response = await login(data).unwrap();
             toast.success("Login successful");
             reset();
-            router.push(callBackUrl);
+            const role = response?.user?.role;
+            if (role === "admin") {
+                router.push("/admin/dashboard");
+            } else {
+                if (callBackUrl.startsWith("/admin")) {
+                    router.push("/product");
+                } else {
+                    router.push(callBackUrl);
+                }
+            }
         } catch (error: any) {
             const errorMessage = error?.data?.message || "Login failed";
             toast.error(errorMessage);
