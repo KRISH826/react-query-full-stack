@@ -16,17 +16,20 @@ export const userApi = baseApi.injectEndpoints({
             async onQueryStarted(arg, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-
                     dispatch(setAccessToken(data.accessToken));
+                    localStorage.setItem("token", data.accessToken);
                     localStorage.setItem("user", JSON.stringify(data.user));
 
+                    // 🔥 Set cookies on frontend domain so proxy.ts can read them
+                    const role = data.user?.role || "customer";
+                    const maxAge = 60 * 60 * 24 * 7;
+                    document.cookie = `token=${data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+                    document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
                 } catch (err) {
                     console.log(err);
                 }
             },
         }),
-
-        // ✅ REGISTER
         registerUser: builder.mutation<AuthResponse, RegisterRequest>({
             query: (credentials) => ({
                 url: "users/register",
@@ -35,7 +38,6 @@ export const userApi = baseApi.injectEndpoints({
             }),
         }),
 
-        // ✅ PROFILE
         getProfile: builder.query<User, void>({
             query: () => "users/profile",
             transformResponse: (res: { user: User }) => res.user,
@@ -53,8 +55,14 @@ export const userApi = baseApi.injectEndpoints({
                 try {
                     await queryFulfilled;
                 } finally {
+                    localStorage.removeItem("token");
                     localStorage.removeItem("user");
                     dispatch(clearAccessToken());
+
+                    // 🔥 Clear frontend cookies so proxy.ts knows user is logged out
+                    document.cookie = "token=; path=/; max-age=0";
+                    document.cookie = "role=; path=/; max-age=0";
+
                     window.location.href = "/login";
                 }
             },

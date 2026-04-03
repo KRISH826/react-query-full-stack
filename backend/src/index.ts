@@ -35,6 +35,7 @@ app.use(cors({
 }));
 app.use(helmet());
 app.use(morgan("dev"));
+console.log("MERA AWS KEY KYA HAI:", process.env.AWS_ACCESS_KEY_ID);
 
 app.use("/api", globalLimiter);
 connectDB();

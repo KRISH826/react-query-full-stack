@@ -7,8 +7,8 @@ const PROTECTED_ROUTES = [...ADMIN_ROUTES, ...CUSTOMER_ROUTES, "/dashboard"];
 
 export function proxy(request: NextRequest) {
 
-    // 🔥 CHANGE: refreshToken use karo
-    const token = request.cookies.get("refreshToken")?.value;
+    // 🔥 This cookie is set via document.cookie in frontend after login
+    const token = request.cookies.get("token")?.value;
     const role = request.cookies.get("role")?.value;
 
     const { pathname } = request.nextUrl;

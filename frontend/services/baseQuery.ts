@@ -15,7 +15,11 @@ const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
     credentials: "include", // 🔥 MUST for cookies
     prepareHeaders: (headers, { getState }) => {
-        const token = (getState() as RootState).auth?.accessToken;
+        // Try Redux first, then fallback to localStorage (Redux is empty on page refresh)
+        let token = (getState() as RootState).auth?.accessToken;
+        if (!token && typeof window !== "undefined") {
+            token = localStorage.getItem("token");
+        }
 
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
@@ -53,8 +57,15 @@ const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQuery
                 result = await rawBaseQuery(args, api, extraOptions);
             } else {
                 api.dispatch(clearAccessToken());
-
-                window.location.href = "/login";
+                if (typeof window !== "undefined") {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("user");
+                    // 🔥 MUST clear cookies BEFORE redirect, otherwise proxy.ts sees
+                    // the token cookie and bounces back → infinite loop
+                    document.cookie = "token=; path=/; max-age=0";
+                    document.cookie = "role=; path=/; max-age=0";
+                    window.location.href = "/login";
+                }
             }
         }
 
@@ -64,6 +75,6 @@ const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQuery
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: retry(baseQueryWithAuth, { maxRetries: 0 }),
-    tagTypes: ["User", "Product", "Cart", "Order"],
+    tagTypes: ["User", "Product", "Cart", "Order", "Favourite", "Category", "Reviews"],
     endpoints: () => ({}),
 });
