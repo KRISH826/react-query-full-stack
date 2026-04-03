@@ -1,11 +1,15 @@
 "use client";
 
-import { Menu, Search, User, LayoutDashboard, Package, Tags, ShoppingCart, LogOut } from "lucide-react";
+import { Menu, Search, User, LayoutDashboard, Package, Tags, ShoppingCart, LogOut, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useGetProfileQuery } from "@/services/userApi";
+import { Spinner } from "../ui/spinner";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -16,7 +20,9 @@ const navItems = [
 
 export function AdminHeader() {
   const pathname = usePathname();
-  
+  const { data, isLoading } = useGetProfileQuery();
+  console.log(data);
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-sidebar-border bg-background px-4 shadow-xs sm:px-6 lg:px-8">
       <Sheet>
@@ -79,17 +85,17 @@ export function AdminHeader() {
         <form className="ml-auto flex-1 sm:flex-initial">
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-            <input
-              type="search"
-              placeholder="Search products, orders..."
-              className="peer flex h-9 w-full rounded-full border border-input bg-muted/50 px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-9 sm:w-[300px] md:w-[200px] lg:w-[300px]"
-            />
+            <Input className="w-[270px] pl-8 border border-primary/35" placeholder="Search products, orders..." />
           </div>
         </form>
-        <Button variant="outline" size="icon" className="rounded-full shrink-0">
-          <User className="size-5" />
-          <span className="sr-only">Toggle user menu</span>
-        </Button>
+        {
+          isLoading ? <Spinner className="size-5" /> : <>
+            <Avatar>
+              <AvatarImage src={data?.profileimage} />
+              <AvatarFallback>{data?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)}</AvatarFallback>
+            </Avatar>
+          </>
+        }
       </div>
     </header>
   );
