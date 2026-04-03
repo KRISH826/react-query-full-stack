@@ -3,13 +3,13 @@ import { AuthService } from "./user.service";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
 
-export async function registerController(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) {
+const isProduction = process.env.NODE_ENV === "production";
+
+// ✅ REGISTER
+export async function registerController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
         const user = await AuthService.register(req.body);
+
         return res.status(201).json({
             user,
             message: "User registered successfully",
@@ -19,15 +19,23 @@ export async function registerController(
     }
 }
 
-export async function loginController(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) {
+// ✅ LOGIN (FIXED)
+export async function loginController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-        const data = await AuthService.login(req.body);
+        const { accessToken, refreshToken, user } = await AuthService.login(req.body);
+
+        // 🔥 httpOnly refresh token
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        });
+
         return res.status(200).json({
-            ...data,
+            user,
+            accessToken, // only accessToken frontend ko
             message: "User logged in successfully",
         });
     } catch (error) {
@@ -35,107 +43,41 @@ export async function loginController(
     }
 }
 
-export async function verifyEmailController(req: AuthRequest, res: Response, next: NextFunction) {
+// ✅ REFRESH (FIXED)
+export async function refreshAccessTokenController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-        const { email, code } = req.body;
-        if (!email || !code) {
-            throw new HttpError("Email and code are required", 400);
+        const refreshToken = req.cookies.refreshToken;
+        const email = req.cookies.email;
+
+        if (!refreshToken || !email) {
+            throw new HttpError("Unauthorized", 401);
         }
-        await AuthService.verifyEmail(email, code);
+
+        const accessToken = await AuthService.refreshAccessToken(refreshToken, email);
+
+        if (!accessToken) {
+            throw new HttpError("Failed to refresh access token", 401);
+        }
+
         return res.status(200).json({
-            message: "Email verified successfully",
+            accessToken,
+            message: "Access token refreshed successfully",
         });
+
     } catch (error) {
-        next(error)
+        next(error);
     }
 }
 
-export async function resendVerificationController(req: AuthRequest, res: Response, next: NextFunction) {
+// ✅ LOGOUT (FIXED)
+export async function logOutController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-        const { email } = req.body;
-        if (!email) {
-            throw new HttpError("Email is required", 400);
-        }
-        await AuthService.resenedVerification(email);
-        return res.status(200).json({
-            message: "Verification email sent successfully",
-        });
-    } catch (error) {
-        next(error)
-    }
-}
-
-export async function forgetPasswordController(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        const { email } = req.body;
-        if (!email) {
-            throw new HttpError("Email is required", 400);
-        }
-        await AuthService.forgetPassword(email);
-        return res.status(200).json({
-            message: "Forget password email sent successfully",
-        });
-    } catch (error) {
-        next(error)
-    }
-}
-
-export async function resetPasswordController(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        const { email, code, newPassword } = req.body;
-        if (!email || !code || !newPassword) {
-            throw new HttpError("Email, code and new password are required", 400);
-        }
-        await AuthService.resetPassword(email, code, newPassword);
-        return res.status(200).json({
-            message: "Password reset successfully",
-        });
-    } catch (error) {
-        next(error)
-    }
-}
-
-export async function logOutController(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) {
-    try {
-        // 🔥 TRUST JWT, NOT PARAMS
         await AuthService.logOut(req.user!.id);
+
+        res.clearCookie("refreshToken");
 
         return res.status(200).json({
             message: "User logged out successfully",
-        });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function getUserController(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) {
-    try {
-        const user = await AuthService.findUserById(req.user!.id);
-
-        return res.status(200).json({
-            user,
-            message: "User fetched successfully",
-        });
-    } catch (error) {
-        next(error);
-    }
-}
-
-export async function updateProfileController(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-        const files = req.file ? [req.file] : [];
-        const user = await AuthService.updateProfile(req.user!.id, req.body, files);
-        return res.status(200).json({
-            user,
-            message: "User updated successfully",
         });
     } catch (error) {
         next(error);
