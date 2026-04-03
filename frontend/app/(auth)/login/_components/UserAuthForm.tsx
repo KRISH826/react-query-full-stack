@@ -37,15 +37,17 @@ const UserAuthForm = ({
             toast.success("Login successful");
             reset();
             const role = response?.user?.role;
-            if (role === "admin") {
-                router.push("/admin/dashboard");
-            } else {
-                if (callBackUrl.startsWith("/admin")) {
-                    router.push("/product");
+            setTimeout(() => {
+                if (role === "admin") {
+                    router.push("/admin/dashboard");
                 } else {
-                    router.push(callBackUrl);
+                    if (callBackUrl.startsWith("/admin")) {
+                        router.push("/product");
+                    } else {
+                        router.push(callBackUrl);
+                    }
                 }
-            }
+            }, 300);
         } catch (error: any) {
             const errorMessage = error?.data?.message || "Login failed";
             toast.error(errorMessage);

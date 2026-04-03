@@ -13,10 +13,15 @@ export const userApi = baseApi.injectEndpoints({
                 try {
                     const { data } = await queryFulfilled;
                     if (data.accessToken) {
+                        const role = data.user?.role;
+                        const maxAge = 60 * 60 * 24 * 7;
+
+                        // cookies (middleware ke liye)
+                        document.cookie = `token=${data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+                        document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
                         localStorage.setItem("token", data.accessToken);
                         localStorage.setItem("user", JSON.stringify(data.user));
-
-                        document.cookie = `token=${data.accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
                     }
 
                 } catch (error) {
@@ -36,10 +41,14 @@ export const userApi = baseApi.injectEndpoints({
                 try {
                     const { data } = await queryFulfilled;
                     if (data.accessToken) {
+                        const role = data.user?.role;
+                        const maxAge = 60 * 60 * 24 * 7;
+
+                        document.cookie = `token=${data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
+                        document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
                         localStorage.setItem("token", data.accessToken);
                         localStorage.setItem("user", JSON.stringify(data.user));
-
-                        document.cookie = `token=${data.accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
                     }
 
                 } catch (error) {
@@ -72,10 +81,13 @@ export const userApi = baseApi.injectEndpoints({
             async onQueryStarted(arg, { queryFulfilled }) {
                 try {
                     await queryFulfilled;
-                    document.cookie = "token=; path=/; max-age=0"
                 } finally {
                     localStorage.removeItem("token");
                     localStorage.removeItem("user");
+                    document.cookie = "token=; path=/; max-age=0";
+                    document.cookie = "role=; path=/; max-age=0";
+
+                    window.location.href = "/login";
                 }
             },
         }),
@@ -95,14 +107,14 @@ export const userApi = baseApi.injectEndpoints({
                 body: credentials,
             }),
         }),
-        forgotPassword: builder.mutation<void, {email: string}>({
+        forgotPassword: builder.mutation<void, { email: string }>({
             query: (credentials) => ({
                 url: "users/forget-password",
                 method: "POST",
                 body: credentials,
             }),
         }),
-        resetPassword: builder.mutation<void, {email: string, code: string, newPassword: string}>({
+        resetPassword: builder.mutation<void, { email: string, code: string, newPassword: string }>({
             query: (credentials) => ({
                 url: "users/reset-password",
                 method: "POST",
