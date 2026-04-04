@@ -17,7 +17,6 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
         conditions.push(`p.search_vector @@ websearch_to_tsquery('english', $${i})`);
         scoreSelect = `ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) AS score`;
 
-        // Dono clauses ko score ke hisaab se update kiya
         cteOrderClause = "ORDER BY score DESC, p.created_at DESC";
         mainOrderClause = "ORDER BY score DESC, mp.created_at DESC";
 

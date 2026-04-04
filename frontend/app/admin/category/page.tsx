@@ -1,7 +1,8 @@
+import CategoryPage from "./_components/common/CategoryPage"
 
 const page = () => {
     return (
-        <div>page</div>
+        <CategoryPage />
     )
 }
 
