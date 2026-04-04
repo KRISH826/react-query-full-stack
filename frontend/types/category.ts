@@ -9,6 +9,7 @@ export interface Category {
 }
 
 export interface CategoryCreatePayload {
+    id: string;
     name: string;
     slug: string;
     parent_id?: string | null;

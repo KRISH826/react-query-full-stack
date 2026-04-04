@@ -4,6 +4,7 @@ import {
     getUserController,
     logOutController,
     loginController,
+    refreshAccessTokenController,
     registerController,
     resendVerificationController,
     resetPasswordController,
@@ -29,5 +30,6 @@ router.post("/verify-email", verifyEmailController);
 router.post("/resend-mail", resendVerificationController);
 router.post("/forget-password", forgetPasswordController);
 router.post("/reset-password", resetPasswordController);
+router.post("/refresh", refreshAccessTokenController);
 
 export default router;

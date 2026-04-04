@@ -1,10 +1,12 @@
 import { baseApi } from "@/services/baseQuery";
 import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./slice/userSlice";
 
 export const makeStore = () =>
     configureStore({
         reducer: {
             [baseApi.reducerPath]: baseApi.reducer,
+            auth: authReducer,
         },
         middleware: (gdm) =>
             gdm({ serializableCheck: false }).concat(baseApi.middleware),

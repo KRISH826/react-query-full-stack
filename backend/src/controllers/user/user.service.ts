@@ -263,6 +263,22 @@ export class AuthService {
         }
     }
 
+    static async refreshAccessToken(refreshToken: string, email: string) {
+        const response = await cognitoClient.send(
+            new InitiateAuthCommand({
+                AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
+                ClientId: config.cognito.client_id,
+                AuthParameters: {
+                    REFRESH_TOKEN: refreshToken,
+                    SECRET_HASH: computeSecretHash(email),
+                    USERNAME: email,
+                },
+            })
+        )
+
+        return response.AuthenticationResult?.AccessToken;
+    }
+
     static async updateProfile(id: string, data: ProfileDto, files: Express.Multer.File[]): Promise<UserResponseDTO | null> {
         const client = await pool.connect();
         try {
