@@ -2,7 +2,7 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, saveProductAITags, topProducts, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
@@ -109,7 +109,8 @@ export class ProductService {
 
             await client.query('COMMIT');
             await this.invalidateProductCache(created.id);
-
+            await refreshProductDetailMV();
+            await refreshProductFullMV();
             return await findProductWithImagesById(created.id);
         } catch (error) {
             await client.query('ROLLBACK');

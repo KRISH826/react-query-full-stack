@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "nodejs-bucket-s3.s3.ap-southeast-2.amazonaws.com",
+        hostname: "s3-ecomkp16.s3.ap-south-1.amazonaws.com",
       },
       {
         protocol: "https",
