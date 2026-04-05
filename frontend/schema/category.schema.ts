@@ -3,10 +3,10 @@ import z from "zod";
 const categoryFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   slug: z.string().min(2, "Slug is required."),
-  isParent: z.boolean().default(true),
+  is_parent: z.boolean().default(true),
   parent_id: z.string().nullable().optional(),
 }).refine((data) => {
-  if (!data.isParent && !data.parent_id) {
+  if (!data.is_parent && !data.parent_id) {
     return false;
   }
   return true;

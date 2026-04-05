@@ -102,6 +102,7 @@ export interface CategoryDB {
     name: string;
     slug?: string | null;
     parent_id?: string | null;
+    is_parent: boolean;
     created_at: Date;
 }
 

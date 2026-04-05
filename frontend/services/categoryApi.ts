@@ -5,10 +5,10 @@ import { Category, CategoryCreatePayload } from "@/types/category";
 export const categoryApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         createCategory: builder.mutation<Category, CategoryCreatePayload>({
-            query: (payload: CategoryCreatePayload) => ({
+            query: (payload) => ({
                 url: "categories",
                 method: "POST",
-                body: payload
+                body: payload,
             }),
             invalidatesTags: [{ type: "Category", id: "LIST" }],
         }),
@@ -22,12 +22,15 @@ export const categoryApi = baseApi.injectEndpoints({
             providesTags: ["Category"],
         }),
 
-         deleteCategory: builder.mutation<{ success: boolean; message: string }, string>({
+        deleteCategory: builder.mutation<{ success: boolean; message: string }, string>({
             query: (id: string) => ({
                 url: `categories/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["Category"],
+            invalidatesTags: (result, error, id) => [
+                { type: "Category", id },
+                { type: "Category", id: "LIST" },
+            ],
         }),
 
         updateCategory: builder.mutation<Category, { id: string; data: Partial<CategoryCreatePayload> }>({
@@ -36,7 +39,10 @@ export const categoryApi = baseApi.injectEndpoints({
                 method: "PUT",
                 body: data,
             }),
-            invalidatesTags: ["Category"],
+            invalidatesTags: (result, error, { id }) => [
+                { type: "Category", id },
+                { type: "Category", id: "LIST" },
+            ],
         }),
 
         getAllCategories: builder.query<Category[], void>({
@@ -45,7 +51,13 @@ export const categoryApi = baseApi.injectEndpoints({
                 method: "GET",
             }),
             transformResponse: (response: { categories: Category[] }) => response.categories,
-            providesTags: ["Category"],
+            providesTags: (result) =>
+                result
+                    ? [
+                        ...result.map(({ id }) => ({ type: "Category" as const, id })),
+                        { type: "Category", id: "LIST" },
+                    ]
+                    : [{ type: "Category", id: "LIST" }],
         }),
         getProductsByCategories: builder.query<{ data: Product[]; total: number },
             { categoryId: string; slug: string; limit: number; page: number }>({
@@ -53,7 +65,7 @@ export const categoryApi = baseApi.injectEndpoints({
                 transformResponse: (response: { products: { data: Product[]; total: number } }) => response.products,
                 providesTags: ["Product"],
             })
-        }),
+    }),
 })
 
 export const { useGetAllCategoriesQuery, useGetProductsByCategoriesQuery, useDeleteCategoryMutation, useCreateCategoryMutation, useGetCategoriesByIdQuery, useUpdateCategoryMutation } = categoryApi;
