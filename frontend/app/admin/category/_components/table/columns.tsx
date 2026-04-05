@@ -5,6 +5,9 @@ import { Category } from "@/types/category"
 import { ColumnDef } from "@tanstack/react-table"
 import { Pencil, Trash2, ChevronRight, ChevronDown } from "lucide-react"
 import { DeleteCategoryDialog } from "../common/DeleteCategory"
+import AddEditCategory from "../common/AddEditCategory"
+import { useState } from "react"
+import { set } from "zod/v3"
 
 export const columns: ColumnDef<Category>[] = [
   {
@@ -52,17 +55,23 @@ export const columns: ColumnDef<Category>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const category = row.original;
-      
+      const [dialogOpen, setDialogOpen] = useState(false);
+      const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+      const handleEdit = () => {
+        setSelectedCategory(category);
+        setDialogOpen(true);
+      }
       // FIX: Seedha return karo, kisi function ke andar wrap mat karo
       return (
         <div className="flex items-center gap-2">
           <Button 
             size="icon" 
             className="h-8 w-8 cursor-pointer"
-            onClick={() => console.log("Edit ID:", category.id)}
+            onClick={handleEdit}
           >
             <Pencil size={14} />
           </Button>
+          <AddEditCategory onOpenChange={setDialogOpen} open={dialogOpen} initialData={selectedCategory} />
           {/* Delete Dialog yahan render hoga */}
           <DeleteCategoryDialog id={category.id} />
         </div>

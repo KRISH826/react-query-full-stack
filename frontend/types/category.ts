@@ -4,6 +4,7 @@ export interface Category {
     name: string;
     slug: string;
     parent_id: string | null;
+    is_parent: boolean;
     created_at?: string;
     children?: Category[];
 }
@@ -11,12 +12,14 @@ export interface Category {
 export interface CategoryCreatePayload {
     id: string;
     name: string;
+    is_parent: boolean;
     slug: string;
     parent_id?: string | null;
 }
 export interface CategoryUpdatePayload {
     id: string;
     name?: string;
+    is_parent?: boolean;
     slug?: string;
     parent_id?: string | null;
 }
