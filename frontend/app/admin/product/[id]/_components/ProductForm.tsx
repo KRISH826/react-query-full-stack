@@ -4,11 +4,12 @@ import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import productSchema, { ProductFormSubmitValues, ProductFormValues } from '@/schema/product.schema';
 import { useCreateProductMutation } from '@/services/productApi';
-import { Product, ProductStatus } from '@/types/product';
+import { ProductStatus } from '@/types/product';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { BasicInfo } from './BasicInfo';
 
 const ProductForm = () => {
     const router = useRouter();
@@ -61,6 +62,7 @@ const ProductForm = () => {
                     </Button>
                 </div>
                 <Card className='lg:mt-6 mt-4'>
+                    <BasicInfo form={form} />
                 </Card>
             </form>
         </Form>
