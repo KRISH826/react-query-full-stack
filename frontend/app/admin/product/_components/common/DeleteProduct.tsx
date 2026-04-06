@@ -5,7 +5,7 @@ import React from 'react'
 import { toast } from 'sonner'
 
 type props = {
-    id: string;
+    id: string | number;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }

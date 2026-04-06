@@ -35,14 +35,14 @@ export const productApi = baseApi.injectEndpoints({
             transformResponse: (response: ProductResponse) => response.data,
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
-        deleteProduct: builder.mutation<{ success: boolean; message: string }, string>({
+        deleteProduct: builder.mutation<{ success: boolean; message: string }, string | number>({
             query: (id) => ({
                 url: `products/${id}`,
                 method: "DELETE",
             }),
             invalidatesTags: [{ type: "Product", id: "LIST" }],
         }),
-        createProduct: builder.mutation<Product, Partial<Product>>({
+        createProduct: builder.mutation<Product, FormData | Partial<Product>>({
             query: (data) => ({
                 url: "products",
                 method: "POST",
