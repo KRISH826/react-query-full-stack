@@ -1,6 +1,6 @@
 import { Product } from "@/types/product";
 import { baseApi } from "./baseQuery";
-import { Category, CategoryCreatePayload } from "@/types/category";
+import { Category, CategoryCreatePayload, CategoryUpdatePayload } from "@/types/category";
 
 export const categoryApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
@@ -33,7 +33,7 @@ export const categoryApi = baseApi.injectEndpoints({
             ],
         }),
 
-        updateCategory: builder.mutation<Category, { id: string; data: Partial<CategoryCreatePayload> }>({
+        updateCategory: builder.mutation<Category, { id: string; data: CategoryUpdatePayload }>({
             query: ({ id, data }) => ({
                 url: `categories/${id}`,
                 method: "PUT",

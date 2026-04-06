@@ -35,13 +35,28 @@ export const productApi = baseApi.injectEndpoints({
             transformResponse: (response: ProductResponse) => response.data,
             providesTags: (result, error, id) => [{ type: "Product", id }],
         }),
+        deleteProduct: builder.mutation<{ success: boolean; message: string }, string>({
+            query: (id) => ({
+                url: `products/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [{ type: "Product", id: "LIST" }],
+        }),
+        createProduct: builder.mutation<Product, Partial<Product>>({
+            query: (data) => ({
+                url: "products",
+                method: "POST",
+                body: data,
+            }),
+            invalidatesTags: [{ type: "Product", id: "LIST" }],
+        }),
         getSearchProducts: builder.query<ProductsResponse, SearchProductsParams>({
             query: ({ query, limit = 10 }) =>
                 `search-products/search?q=${query}&limit=${limit}`,
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
-        })
+        }),
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery, useDeleteProductMutation, useCreateProductMutation } = productApi;

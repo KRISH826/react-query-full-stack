@@ -10,14 +10,12 @@ export interface Category {
 }
 
 export interface CategoryCreatePayload {
-    id: string;
     name: string;
     is_parent: boolean;
     slug: string;
     parent_id?: string | null;
 }
 export interface CategoryUpdatePayload {
-    id: string;
     name?: string;
     is_parent?: boolean;
     slug?: string;
