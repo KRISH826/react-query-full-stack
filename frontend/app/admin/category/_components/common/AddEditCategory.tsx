@@ -142,7 +142,7 @@ const AddEditCategory = ({ initialData, onOpenChange, open }: props) => {
                             )
                         }
                         <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isCreating || isUpdating}>
+                            <Button type='button' variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={isCreating || isUpdating}>
