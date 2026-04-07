@@ -190,3 +190,64 @@
       max-width: 100%;
     }
 }
+
+
+/* ---- DESCRIPTION VIEWER CSS ---- */
+.product-desc-viewer {
+  line-height: 1.6;
+  font-size: 0.875rem; /* Equivalent to text-sm */
+  color: #4b5563; /* Gray 600 */
+}
+
+.product-desc-viewer h1, 
+.product-desc-viewer h2, 
+.product-desc-viewer h3, 
+.product-desc-viewer h4 {
+  font-weight: 700;
+  color: #1e293b; /* Slate 800 */
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.product-desc-viewer h1 { font-size: 1.5rem; }
+.product-desc-viewer h2 { font-size: 1.25rem; }
+.product-desc-viewer h3 { font-size: 1.125rem; }
+.product-desc-viewer h4 { font-size: 1rem; }
+
+.product-desc-viewer p {
+  margin-bottom: 1em;
+  color: #4b5563; /* Gray 600 */
+}
+
+.product-desc-viewer strong,
+.product-desc-viewer b {
+  font-weight: 700;
+  color: #1e293b; /* Slate 800 */
+}
+
+/* Fix for Bullet Points (Ul) and Numbers (Ol) */
+.product-desc-viewer ul {
+  list-style-type: disc !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 1em !important;
+  color: #4b5563; /* Gray 600 */
+}
+
+.product-desc-viewer ol {
+  list-style-type: decimal !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 1em !important;
+  color: #4b5563; /* Gray 600 */
+}
+
+.product-desc-viewer li {
+  margin-bottom: 0.5em !important;
+  padding-left: 0.25em !important;
+  display: list-item !important; /* Force bullets to show */
+  color: #4b5563; /* Gray 600 */
+}
+
+.product-desc-viewer em, 
+.product-desc-viewer i {
+  font-style: italic;
+}

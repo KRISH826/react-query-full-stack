@@ -10,15 +10,16 @@ const productSchema = z.object({
   is_track_inventory: z.boolean().default(true),
   category_names: z.array(z.string()).min(1, "At least one category is required"),
   images: z.array(z.object({
-    file: z.any().refine((file) => file instanceof File, "Image is required"),
+    file: z.any().optional().nullable(),
+    url: z.string().optional(),
     isprimary: z.boolean()
   })).min(1, "At least one image is required"),
   variants: z.array(z.object({
-    size: z.string().optional(),
-    price_override: z.coerce.number().optional(),
-    offer_price_override: z.coerce.number().optional(),
-    stock_quantity: z.coerce.number().optional(),
-    sku: z.string().optional()
+    size: z.string().optional().nullable(),
+    price_override: z.coerce.number().optional().nullable(),
+    offer_price_override: z.coerce.number().optional().nullable(),
+    stock_quantity: z.coerce.number().optional().nullable(),
+    sku: z.string().optional().nullable()
   })).min(1, "At least one variant is required")
 })
 

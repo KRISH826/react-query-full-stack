@@ -50,7 +50,7 @@ const ProductVariants = ({ form }: { form: UseFormReturn<ProductFormValues> }) =
                                                         <FormItem>
                                                             <FormLabel>SKU</FormLabel>
                                                             <FormControl>
-                                                                <Input placeholder="SKU" {...field} />
+                                                                <Input placeholder="SKU" value={field.value ?? ""} onChange={e => field.onChange(e.target.value)} />
                                                             </FormControl>
                                                             <FormMessage />
                                                         </FormItem>
@@ -64,7 +64,7 @@ const ProductVariants = ({ form }: { form: UseFormReturn<ProductFormValues> }) =
                                                     render={({ field }) => (
                                                         <FormItem className='w-full'>
                                                             <FormLabel>Size</FormLabel>
-                                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                            <Select onValueChange={field.onChange} value={field.value ?? ""} defaultValue={field.value ?? ""}>
                                                                 <FormControl className='w-full'>
                                                                     <SelectTrigger className='w-full'>
                                                                         <SelectValue placeholder="Select Size" />
