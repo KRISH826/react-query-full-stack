@@ -9,6 +9,36 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import DeleteProduct from "../common/DeleteProduct"
 
+const ActionCell = ({ product }: { product: Product }) => {
+  const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button size="icon" className="h-8 w-8" asChild>
+        <Link href={`/admin/product/${product.id}`}>
+          <Pencil size={14} />
+        </Link>
+      </Button>
+
+      <Button
+        size="icon"
+        variant="destructive"
+        className="h-8 w-8"
+        onClick={() => setDeleteDialogOpen(true)}
+      >
+        <Trash2 size={14} />
+      </Button>
+
+      <DeleteProduct
+        name={product.productname}
+        id={product.id}
+        open={isDeleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      />
+    </div>
+  )
+}
+
 export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "productname",
@@ -47,35 +77,6 @@ export const columns: ColumnDef<Product>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
-      const product = row.original
-      const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
-      return (
-        <div className="flex items-center gap-2">
-          <Button size="icon" className="h-8 w-8" asChild>
-            <Link href={`/admin/products/edit/${product.id}`}>
-              <Pencil size={14} />
-            </Link>
-          </Button>
-
-          <Button
-            size="icon"
-            variant="destructive"
-            className="h-8 w-8"
-            onClick={() => setDeleteDialogOpen(true)}
-          >
-            <Trash2 size={14} />
-          </Button>
-
-          <DeleteProduct
-            name={product.productname}
-            id={product.id}
-            open={isDeleteDialogOpen}
-            onOpenChange={setDeleteDialogOpen}
-          />
-        </div>
-      )
-    }
+    cell: ({ row }) => <ActionCell product={row.original} />
   }
 ]

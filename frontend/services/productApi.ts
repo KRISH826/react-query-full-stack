@@ -57,7 +57,17 @@ export const productApi = baseApi.injectEndpoints({
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
         }),
+        // update product
+        updateProduct: builder.mutation<Product, { id: string; data: FormData | Partial<Product> }>({
+            query: ({ id, data }) => ({
+                url: `products/${id}`,
+                method: "PUT",
+                body: data,
+                formData: true,
+            }),
+            invalidatesTags: (result, error, { id }) => [{ type: "Product", id }, { type: "Product", id: "LIST" }],
+        }),
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery, useDeleteProductMutation, useCreateProductMutation } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation } = productApi;
