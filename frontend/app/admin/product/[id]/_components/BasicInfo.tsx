@@ -7,7 +7,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { useGetAllCategoriesQuery } from "@/services/categoryApi";
 import { ProductStatus } from "@/types/product";
 import 'react-quill-new/dist/quill.snow.css';
@@ -26,9 +26,9 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
   })) || [];
 
   return (
-    <Card className="py-0! shadow-none! border-0">
+    <Card className="py-0! mb-0! shadow-none! border-0">
       <CardHeader>
-        <CardTitle>Basic Details</CardTitle>
+        <CardTitle className="lg:text-2xl text-xl">Basic Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -138,6 +138,24 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
                   />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="is_track_inventory"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border py-2 px-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel className="font-semibold">Track Inventory</FormLabel>
+                  <p className="text-sm text-muted-foreground">Automatically track stock levels</p>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
               </FormItem>
             )}
           />

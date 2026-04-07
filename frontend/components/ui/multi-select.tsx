@@ -43,14 +43,16 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
         const [open, setOpen] = React.useState(false);
         const [inputValue, setInputValue] = React.useState("");
 
+        const safeSelected = Array.isArray(selected) ? selected : [];
+
         React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
 
         const handleUnselect = React.useCallback(
             (value: string) => {
                 if (disabled) return;
-                onChange(selected.filter((s) => s !== value));
+                onChange(safeSelected.filter((s) => s !== value));
             },
-            [onChange, selected, disabled]
+            [onChange, safeSelected, disabled]
         );
 
         const handleKeyDown = React.useCallback(
@@ -58,26 +60,28 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                 const input = inputRef.current;
                 if (input) {
                     if (e.key === "Delete" || e.key === "Backspace") {
-                        if (input.value === "" && selected.length > 0) {
-                            onChange(selected.slice(0, -1));
+                        if (input.value === "" && safeSelected.length > 0) {
+                            onChange(safeSelected.slice(0, -1));
                         }
                     }
                     if (e.key === "Escape") {
                         input.blur();
+                        setOpen(false);
                     }
                 }
             },
-            [onChange, selected]
+            [onChange, safeSelected]
         );
 
         const selectables = options.filter(
-            (option) => !selected.includes(option.value)
+            (option) => !safeSelected.includes(option.value)
         );
 
         return (
             <Command
                 onKeyDown={handleKeyDown}
-                className={cn("overflow-visible bg-transparent", className)}
+                // Root container relative kiya hai taaki dropdown iske bahar na bhage
+                className={cn("relative overflow-visible bg-transparent", className)}
                 {...props}
             >
                 <div
@@ -87,15 +91,14 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                         }
                     }}
                     className={cn(
-                        // EXPLICIT MATCH: Copied your exact SelectTrigger classes + flex-wrap + focus-within instead of focus-visible
+                        // Tumhare Select component ki EXACT styling copy
                         "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-full items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none disabled:cursor-not-allowed disabled:opacity-50 min-h-9 flex-wrap",
-                        // Focus states (handled via focus-within so the inner input triggers it)
-                        "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+                        "focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[1px]",
                         disabled ? "cursor-not-allowed opacity-50" : "cursor-text"
                     )}
                 >
                     <div className="flex flex-1 flex-wrap gap-1 items-center">
-                        {selected.map((val) => {
+                        {safeSelected.map((val) => {
                             const option = options.find((o) => o.value === val);
                             if (!option) return null;
 
@@ -118,7 +121,10 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                                             e.preventDefault();
                                             e.stopPropagation();
                                         }}
-                                        onClick={() => handleUnselect(option.value)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleUnselect(option.value);
+                                        }}
                                     >
                                         <X className="size-3 text-muted-foreground hover:text-foreground" />
                                     </button>
@@ -130,9 +136,10 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                             value={inputValue}
                             disabled={disabled}
                             onValueChange={setInputValue}
-                            onBlur={() => setOpen(false)}
                             onFocus={() => setOpen(true)}
-                            placeholder={selected.length === 0 ? placeholder : undefined}
+                            // Native focus management - Click bahar jayega toh hi close hoga
+                            onBlur={() => setOpen(false)}
+                            placeholder={safeSelected.length === 0 ? placeholder : undefined}
                             className="ml-1 flex-1 bg-transparent outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed min-w-[80px]"
                         />
                     </div>
@@ -141,44 +148,41 @@ export const MultiSelect = React.forwardRef<HTMLInputElement, MultiSelectProps>(
                     </div>
                 </div>
 
-                <div className="relative mt-2">
-                    {open && selectables.length > 0 ? (
-                        <div
-                            className={cn(
-                                // EXPLICIT MATCH: Copied your exact SelectContent classes
-                                "bg-popover text-popover-foreground animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 absolute top-0 z-50 min-w-[8rem] w-full overflow-hidden rounded-md border shadow-md"
-                            )}
-                        >
-                            <CommandList>
-                                <CommandGroup className="h-full overflow-auto max-h-60 p-1">
-                                    {selectables.map((option) => {
-                                        return (
-                                            <CommandItem
-                                                key={option.value}
-                                                value={option.value}
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                }}
-                                                onSelect={() => {
-                                                    setInputValue("");
-                                                    onChange([...selected, option.value]);
-                                                    setTimeout(() => inputRef.current?.focus(), 0);
-                                                }}
-                                                className={cn(
-                                                    // EXPLICIT MATCH: Copied your exact SelectItem classes + cmdk selection state
-                                                    "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-pointer items-center gap-2 rounded-sm py-1.5 px-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                                                )}
-                                            >
-                                                {option.label}
-                                            </CommandItem>
-                                        );
-                                    })}
-                                </CommandGroup>
-                            </CommandList>
-                        </div>
-                    ) : null}
-                </div>
+                {/* Dropdown Menu */}
+                {open && selectables.length > 0 ? (
+                    <div
+                        className={cn(
+                            // FIX: top-full mt-1 ensures dropdown opens EXACTLY below the input box
+                            "absolute top-full mt-1 z-50 w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 slide-in-from-top-2"
+                        )}
+                    >
+                        {/* FIX: Tumhare native command.tsx ki styling automatically apply hogi yaha */}
+                        <CommandList>
+                            <CommandGroup className="h-full overflow-auto max-h-60">
+                                {selectables.map((option) => {
+                                    return (
+                                        <CommandItem
+                                            key={option.value}
+                                            value={option.value}
+                                            onMouseDown={(e) => {
+                                                // CRITICAL FIX: Iske bina input blur ho raha tha aur click swallow ho raha tha!
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                            }}
+                                            onSelect={() => {
+                                                setInputValue("");
+                                                onChange([...safeSelected, option.value]);
+                                            }}
+                                            className="cursor-pointer"
+                                        >
+                                            {option.label}
+                                        </CommandItem>
+                                    );
+                                })}
+                            </CommandGroup>
+                        </CommandList>
+                    </div>
+                ) : null}
             </Command>
         );
     }

@@ -10,6 +10,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { BasicInfo } from './BasicInfo';
+import ProductImage from './ProductImage';
+import ProductVariants from './ProductVariants';
 
 const ProductForm = () => {
     const router = useRouter();
@@ -25,7 +27,7 @@ const ProductForm = () => {
             is_track_inventory: true,
             category_ids: [],
             images: [],
-            variants: [{ size: "M", price_override: 0, stock_quantity: 0 }]
+            variants: [{ sku: "", size: "M", price_override: 0, offer_price_override: 0, stock_quantity: 0 }]
         }
     })
     const onSubmit = async (data: ProductFormSubmitValues) => {
@@ -61,8 +63,10 @@ const ProductForm = () => {
                         {isLoading ? 'Creating...' : 'Create Product'}
                     </Button>
                 </div>
-                <Card className='lg:mt-6 mt-4'>
+                <Card className='lg:mt-6 space-y-5 mt-4'>
                     <BasicInfo form={form} />
+                    <ProductImage form={form} />
+                    <ProductVariants form={form} />
                 </Card>
             </form>
         </Form>
