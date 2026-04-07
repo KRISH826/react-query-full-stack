@@ -215,9 +215,10 @@ const ProductContent = ({ product }: { product: Product }) => {
             </div>
 
             {/* Description */}
-            <div className="space-y-2 pt-4">
-                <div className="prose prose-sm text-muted-foreground/90 prose-p:leading-relaxed text-sm">
-                    <p>{product.description}</p>
+            <div className="space-y-2">
+                <div dangerouslySetInnerHTML={{
+                    __html: product.description ? product.description.replace(/&nbsp;/g, ' ') : ''
+                }} className="product-desc-viewer">
                 </div>
             </div>
         </div>

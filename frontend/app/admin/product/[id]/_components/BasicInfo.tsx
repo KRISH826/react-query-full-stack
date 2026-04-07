@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { useGetAllCategoriesQuery } from "@/services/categoryApi";
 import { ProductStatus } from "@/types/product";
+import { Category } from "@/types/category";
 import 'react-quill-new/dist/quill.snow.css';
 import { MultiSelect } from "@/components/ui/multi-select";
 
@@ -20,10 +21,19 @@ const ReactQuill = dynamic(() => import("react-quill-new"), {
 
 export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) {
   const { data: categories } = useGetAllCategoriesQuery();
-  const categoiresData = categories?.map((category) => ({
-    value: category.name,
-    label: category.name,
-  })) || [];
+
+  const flattenCategories = (categories: Category[]): { value: string; label: string }[] => {
+    let flat: { value: string; label: string }[] = [];
+    categories.forEach((category) => {
+      flat.push({ value: category.name, label: category.name });
+      if (category.children && category.children.length > 0) {
+        flat = [...flat, ...flattenCategories(category.children)];
+      }
+    });
+    return flat;
+  };
+
+  const categoiresData = categories ? flattenCategories(categories) : [];
 
   return (
     <Card className="py-0! mb-0! shadow-none! border-0">

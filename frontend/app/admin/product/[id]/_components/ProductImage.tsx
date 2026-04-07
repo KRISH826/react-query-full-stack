@@ -10,19 +10,19 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 
 // 1. Separate Preview Component to handle memory & prevent flickering
-const PreviewItem = memo(({ file }: { file: File }) => {
-    const [preview, setPreview] = useState<string>("");
+const PreviewItem = memo(({ file, url }: { file: File, url?: string }) => {
+    const [preview, setPreview] = useState<string>(url || "");
 
     useEffect(() => {
-        if (!file) return;
         if (file instanceof File) {
-            const url = URL.createObjectURL(file);
+            const objectUrl = URL.createObjectURL(file);
             // eslint-disable-next-line react-hooks/set-state-in-effect
+            setPreview(objectUrl);
+            return () => URL.revokeObjectURL(objectUrl);
+        } else if (url) {
             setPreview(url);
-            return () => URL.revokeObjectURL(url);
         }
-        setPreview(file);
-    }, [file]);
+    }, [file, url]);
 
     if (!preview) return null;
 
@@ -47,6 +47,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         const file = e.target.files?.[0];
         if (file) {
             form.setValue(`images.${index}.file`, file);
+            form.setValue(`images.${index}.url`, ""); // Clear URL if a new file is uploaded
             if (index === 0) form.setValue(`images.${index}.isprimary`, true);
             toast.success("Image uploaded successfully");
         }
@@ -73,7 +74,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                 <Button
                     type="button"
                     size="sm"
-                    onClick={() => append({ file: null, isprimary: false })}
+                    onClick={() => append({ file: null, isprimary: false, url: "" })}
                 >
                     <Plus className="w-4 h-4" /> Add Slot
                 </Button>
@@ -84,7 +85,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                     {fields.map((field, index) => {
                         const file = form.watch(`images.${index}.file`);
                         const isPrimary = form.watch(`images.${index}.isprimary`);
-
+                        const url = form.watch(`images.${index}.url`);
                         return (
                             <div key={field.id} className="group relative aspect-square border border-dashed rounded-xl bg-muted/20 hover:border-primary/50 transition-all overflow-hidden">
                                 <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -107,8 +108,8 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
-                                {file ? (
-                                    <PreviewItem file={file as File} />
+                                {(file || url) ? (
+                                    <PreviewItem file={file as File} url={url} />
                                 ) : (
                                     <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors">
                                         <ImageIcon className="w-8 h-8 text-muted-foreground/40 mb-2" />
