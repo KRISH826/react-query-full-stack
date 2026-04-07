@@ -23,6 +23,7 @@ import {
 } from "@aws-sdk/client-cognito-identity-provider";
 import { config } from "../../config/config";
 import { computeSecretHash } from "../../helper/user";
+import { signAccessToken } from "../../utils/jwt";
 
 const cognitoClient = new CognitoIdentityProviderClient({
     region: config.cognito.region!,
@@ -106,16 +107,25 @@ export class AuthService {
                 throw new HttpError("Authentication failed", 401);
             }
 
-            const { AccessToken, RefreshToken } = response.AuthenticationResult;
+            const { RefreshToken } = response.AuthenticationResult;
             const user = await findByEmail(payload.email);
             if (!user?.isverified) {
                 throw new HttpError("Please verify your email first", 403);
             }
+            if (!RefreshToken) {
+                throw new HttpError("Authentication failed: refresh token not returned", 401);
+            }
+
+            const accessToken = signAccessToken({
+                id: user.id,
+                role: user.role,
+                token_version: user.token_version,
+            });
 
             return {
                 user: toUserResponse(user),
-                accessToken: AccessToken!,
-                refreshToken: RefreshToken!,
+                accessToken,
+                refreshToken: RefreshToken,
                 // You can also return IdToken if needed
             };
         } catch (error: any) {
@@ -263,7 +273,7 @@ export class AuthService {
         }
     }
 
-    static async refreshAccessToken(refreshToken: string, email: string) {
+    static async refreshAccessToken(refreshToken: string, email: string): Promise<string> {
         const response = await cognitoClient.send(
             new InitiateAuthCommand({
                 AuthFlow: AuthFlowType.REFRESH_TOKEN_AUTH,
@@ -276,7 +286,20 @@ export class AuthService {
             })
         )
 
-        return response.AuthenticationResult?.AccessToken;
+        if (!response.AuthenticationResult?.AccessToken) {
+            throw new HttpError("Invalid or expired refresh token", 401);
+        }
+
+        const user = await findByEmail(email);
+        if (!user) {
+            throw new HttpError("User not found", 404);
+        }
+
+        return signAccessToken({
+            id: user.id,
+            role: user.role,
+            token_version: user.token_version,
+        });
     }
 
     static async updateProfile(id: string, data: ProfileDto, files: Express.Multer.File[]): Promise<UserResponseDTO | null> {

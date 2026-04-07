@@ -211,7 +211,8 @@ export class ProductService {
 
             await client.query('COMMIT');
             await this.invalidateProductCache(id);
-
+            await refreshProductDetailMV();
+            await refreshProductFullMV();
             return await findProductWithImagesById(id);
         } catch (error) {
             await client.query('ROLLBACK');
@@ -277,6 +278,8 @@ export class ProductService {
 
             await client.query('COMMIT');
             await this.invalidateProductCache(id);
+            await refreshProductDetailMV();
+            await refreshProductFullMV();
 
             return deleted;
         } catch (error) {

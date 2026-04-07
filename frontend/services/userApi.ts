@@ -68,6 +68,15 @@ export const userApi = baseApi.injectEndpoints({
             },
         }),
 
+        updateProfile: builder.mutation<User, Partial<User>>({
+            query: (data) => ({
+                url: "users/profile",
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: [{ type: "User", id: "PROFILE" }],
+        }),
+
     }),
 });
 
@@ -75,5 +84,6 @@ export const {
     useLoginMutation,
     useRegisterUserMutation,
     useGetProfileQuery,
+    useUpdateProfileMutation,
     useLogoutMutation
 } = userApi;

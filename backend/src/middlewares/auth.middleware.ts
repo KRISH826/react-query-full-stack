@@ -1,6 +1,6 @@
 import { NextFunction, Response, Request } from "express";
 import { pool } from "../db/db";
-import { verifyCognitoToken } from "../utils/cognito";
+import { verifyAccessToken } from "../utils/jwt";
 
 export interface AuthRequest extends Request {
     user?: {
@@ -22,16 +22,21 @@ export const requireAuth = async (
 
     try {
         const token = authHeader.split(" ")[1];
-        const payload = await verifyCognitoToken(token);
+        const payload = verifyAccessToken(token);
 
         const { rows } = await pool.query(
-            `SELECT id, role FROM users WHERE id = $1`,
+            `SELECT id, role, token_version FROM users WHERE id = $1`,
             [payload.sub]
         );
 
         if (!rows.length) {
             return res.status(401).json({ message: "User not found in local database" });
         }
+
+        if (rows[0].token_version !== payload.token_version) {
+            return res.status(401).json({ message: "Session expired. Please login again." });
+        }
+
         req.user = {
             id: rows[0].id,
             role: rows[0].role,
