@@ -8,16 +8,16 @@ const productSchema = z.object({
   gender: z.string().default("UNISEX"),
   status: z.nativeEnum(ProductStatus).default(ProductStatus.DRAFT),
   is_track_inventory: z.boolean().default(true),
-  category_ids: z.array(z.string()).min(1, "At least one category is required"),
+  category_names: z.array(z.string()).min(1, "At least one category is required"),
   images: z.array(z.object({
     file: z.any().refine((file) => file instanceof File, "Image is required"),
     isprimary: z.boolean()
   })).min(1, "At least one image is required"),
   variants: z.array(z.object({
     size: z.string().optional(),
-    price_override: z.coerce.number().min(0),
+    price_override: z.coerce.number().optional(),
     offer_price_override: z.coerce.number().optional(),
-    stock_quantity: z.coerce.number().min(0),
+    stock_quantity: z.coerce.number().optional(),
     sku: z.string().optional()
   })).min(1, "At least one variant is required")
 })

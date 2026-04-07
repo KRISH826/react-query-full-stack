@@ -58,20 +58,21 @@ export const columns: ColumnDef<Product>[] = [
               <Pencil size={14} />
             </Link>
           </Button>
-          
-          <Button 
-            size="icon" 
-            variant="destructive" 
+
+          <Button
+            size="icon"
+            variant="destructive"
             className="h-8 w-8"
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 size={14} />
           </Button>
 
-          <DeleteProduct 
-            id={product.id} 
-            open={isDeleteDialogOpen} 
-            onOpenChange={setDeleteDialogOpen} 
+          <DeleteProduct
+            name={product.productname}
+            id={product.id}
+            open={isDeleteDialogOpen}
+            onOpenChange={setDeleteDialogOpen}
           />
         </div>
       )

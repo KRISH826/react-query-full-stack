@@ -47,6 +47,7 @@ export const productApi = baseApi.injectEndpoints({
                 url: "products",
                 method: "POST",
                 body: data,
+                formData: true,
             }),
             invalidatesTags: [{ type: "Product", id: "LIST" }],
         }),

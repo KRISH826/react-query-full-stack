@@ -1,30 +1,70 @@
 "use client"
 
-import React from 'react'
+import React, { memo, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { UseFormReturn, useFieldArray } from 'react-hook-form'
 import { ProductFormValues } from '@/schema/product.schema'
 import { Button } from '@/components/ui/button'
 import { Plus, Image as ImageIcon, Trash2, Star } from 'lucide-react'
 import Image from 'next/image'
+import { toast } from 'sonner'
+
+// 1. Separate Preview Component to handle memory & prevent flickering
+const PreviewItem = memo(({ file }: { file: File }) => {
+    const [preview, setPreview] = useState<string>("");
+
+    useEffect(() => {
+        if (!file) return;
+        if (file instanceof File) {
+            const url = URL.createObjectURL(file);
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setPreview(url);
+            return () => URL.revokeObjectURL(url);
+        }
+        setPreview(file);
+    }, [file]);
+
+    if (!preview) return null;
+
+    return (
+        <Image
+            src={preview}
+            alt="preview"
+            fill
+            className="object-cover"
+        />
+    );
+});
+
+PreviewItem.displayName = "PreviewItem";
 
 const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
     const { fields, append, remove } = useFieldArray({
         control: form.control,
         name: "images"
     });
-
     const handleFile = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             form.setValue(`images.${index}.file`, file);
             if (index === 0) form.setValue(`images.${index}.isprimary`, true);
+            toast.success("Image uploaded successfully");
         }
     };
     const makePrimary = (index: number) => {
         const currentImages = form.getValues("images");
         currentImages.forEach((_, i) => form.setValue(`images.${i}.isprimary`, i === index));
     };
+
+    const handleRemove = (index: number) => {
+        const currentImages = form.getValues("images");
+        if (currentImages[index].isprimary) {
+            toast.error("Cannot remove primary image");
+            return;
+        }
+        remove(index);
+        toast.success("Image removed successfully");
+    }
 
     return (
         <Card className="border-0 mb-0! shadow-none bg-transparent">
@@ -62,18 +102,13 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                                         size="icon"
                                         variant="destructive"
                                         className="h-7 w-7"
-                                        onClick={() => remove(index)}
+                                        onClick={() => handleRemove(index)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 {file ? (
-                                    <Image
-                                        src={URL.createObjectURL(file as File)}
-                                        alt="preview"
-                                        fill
-                                        className="object-cover"
-                                    />
+                                    <PreviewItem file={file as File} />
                                 ) : (
                                     <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors">
                                         <ImageIcon className="w-8 h-8 text-muted-foreground/40 mb-2" />

@@ -7,41 +7,42 @@ import { toast } from 'sonner'
 type props = {
     id: string | number;
     open: boolean;
+    name: string;
     onOpenChange: (open: boolean) => void;
 }
 
-const DeleteProduct = ({ id, open, onOpenChange }: props) => {
+const DeleteProduct = ({ id, open, name, onOpenChange }: props) => {
     const [deleteProduct, { isLoading }] = useDeleteProductMutation();
 
     const handleDelete = async () => {
         try {
             await deleteProduct(id).unwrap();
             toast.success("Product deleted successfully");
-        } catch (error) {
-            toast.error("Failed to delete product");
+        } catch (error: any) {
+            toast.error(error.message || "Failed to delete product");
         }
     };
 
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-        <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the product and remove all associated data.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction disabled={isLoading} className="bg-red-600 text-white hover:bg-red-700" onClick={handleDelete}>
-                    {
-                        isLoading ? "Deleting..." : "Delete"
-                    }
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+    return (
+        <AlertDialog open={open} onOpenChange={onOpenChange}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to delete this product?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the product &quot;{name}&quot; and remove all associated data.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction disabled={isLoading} onClick={handleDelete}>
+                        {
+                            isLoading ? "Deleting..." : "Delete"
+                        }
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
         </AlertDialog>
-  )
+    )
 }
 
 export default DeleteProduct

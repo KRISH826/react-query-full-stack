@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import productSchema, { ProductFormSubmitValues, ProductFormValues } from '@/schema/product.schema';
 import { useCreateProductMutation } from '@/services/productApi';
+import { useGetAllCategoriesQuery } from '@/services/categoryApi';
 import { ProductStatus } from '@/types/product';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -16,6 +17,7 @@ import ProductVariants from './ProductVariants';
 const ProductForm = () => {
     const router = useRouter();
     const [createProduct, { isLoading }] = useCreateProductMutation();
+    const { data: categories } = useGetAllCategoriesQuery();
     const form = useForm<ProductFormValues, unknown, ProductFormSubmitValues>({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -25,29 +27,39 @@ const ProductForm = () => {
             gender: 'UNISEX',
             status: ProductStatus.DRAFT,
             is_track_inventory: true,
-            category_ids: [],
+            category_names: [],
             images: [],
-            variants: [{ sku: "", size: "M", price_override: 0, offer_price_override: 0, stock_quantity: 0 }]
+            variants: [{ sku: "", size: "M", price_override: null, offer_price_override: null, stock_quantity: null }] // fix #3
         }
     })
+
     const onSubmit = async (data: ProductFormSubmitValues) => {
         try {
             const formData = new FormData();
             formData.append('productname', data.productname);
             formData.append('description', data.description);
-            formData.append('brand', data.brand || '');
+            if (data.brand) formData.append('brand', data.brand);
             formData.append('gender', data.gender);
             formData.append('status', data.status);
-            formData.append('is_track_inventory', data.is_track_inventory ? "true" : "false");
-            formData.append('category_ids', JSON.stringify(data.category_ids));
+            formData.append('is_track_inventory', String(data.is_track_inventory));
+            data.category_names.forEach((name) => {
+                const original = categories?.find(
+                    (c) => c.name.toLowerCase() === name.toLowerCase()
+                )?.name ?? name;
+                formData.append('category_names', original);
+            });
             formData.append('variants', JSON.stringify(data.variants));
-            data.images.forEach((img, index) => {
-                formData.append(`images[${index}][file]`, img.file);
-                formData.append(`images[${index}][isprimary]`, img.isprimary ? "true" : "false");
+            const sortedImages = [...data.images].sort((a, b) => {
+                if (a.isprimary && !b.isprimary) return -1;
+                if (!a.isprimary && b.isprimary) return 1;
+                return 0;
+            });
+            sortedImages.forEach((img) => {
+                formData.append('images', img.file);
             });
             await createProduct(formData).unwrap();
-            router.push('/admin/product');
             toast.success('Product created successfully!');
+            router.push('/admin/product');
         } catch (error) {
             console.error('Error creating product:', error);
             toast.error('Failed to create product.');

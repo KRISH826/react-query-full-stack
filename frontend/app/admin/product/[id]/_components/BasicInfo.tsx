@@ -21,7 +21,7 @@ const ReactQuill = dynamic(() => import("react-quill-new"), {
 export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) {
   const { data: categories } = useGetAllCategoriesQuery();
   const categoiresData = categories?.map((category) => ({
-    value: category.id,
+    value: category.name,
     label: category.name,
   })) || [];
 
@@ -72,11 +72,10 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
                       <SelectValue placeholder="Select Gender" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="w-full" position="popper">
                     <SelectItem value="MALE">Male</SelectItem>
                     <SelectItem value="FEMALE">Female</SelectItem>
                     <SelectItem value="UNISEX">Unisex</SelectItem>
-                    <SelectItem value="KIDS">Kids</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -95,7 +94,7 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="w-full" position="popper">
                     {Object.values(ProductStatus).map((s) => (
                       <SelectItem key={s} value={s}>{s.toUpperCase()}</SelectItem>
                     ))}
@@ -126,7 +125,7 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="category_ids"
+            name="category_names"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="font-semibold">Assign Categories</FormLabel>
