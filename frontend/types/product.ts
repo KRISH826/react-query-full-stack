@@ -28,6 +28,7 @@ export interface CreateVariantPayload {
 }
 
 export interface Product {
+    gender: string;
     id: string;
     productname: string;
     description: string;
