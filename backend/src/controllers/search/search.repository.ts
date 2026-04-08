@@ -7,10 +7,8 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
     let i = 1;
-
-    // ALAG-ALAG ORDER CLAUSES BANAYE:
-    let cteOrderClause = "ORDER BY p.created_at DESC";      // Andar wali query (p) ke liye
-    let mainOrderClause = "ORDER BY mp.created_at DESC";    // Bahar wali query (mp) ke liye
+    let cteOrderClause = "ORDER BY p.created_at DESC";   
+    let mainOrderClause = "ORDER BY mp.created_at DESC"; 
     let scoreSelect = "0 AS score";
 
     if (keyword) {
