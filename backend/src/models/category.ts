@@ -3,6 +3,7 @@ export interface CategoryDb {
     name: string;
     slug: string;
     parent_id: string;
+    is_parent: boolean;
     created_at: Date;
 }
 
@@ -18,12 +19,14 @@ export interface CategoryResponseDTO {
     name: string;
     slug: string;
     parent_id: string;
+    is_parent: boolean;
 }
 
 export interface CategoryCreateDTO {
     name: string;
     slug: string;
     parent_id: string;
+    is_parent: boolean;
 }
 
 export interface CategoryUpdateDTO {
@@ -31,6 +34,7 @@ export interface CategoryUpdateDTO {
     name: string;
     slug: string;
     parent_id: string;
+    is_parent: boolean;
 }
 
 export interface ProductCategoryDB {
@@ -52,5 +56,6 @@ export interface CategoryTree {
     name: string;
     slug: string;
     parent_id: string | null;
+    is_parent: boolean;
     children: CategoryTree[];
 }

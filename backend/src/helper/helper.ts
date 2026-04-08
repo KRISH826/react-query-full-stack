@@ -19,6 +19,7 @@ export function buildCategoryTree(categories: CategoryDB[]): CategoryTree[] {
             id: category.id,
             name: category.name,
             slug: generateSlug(category.name),
+            is_parent: category.is_parent,
             parent_id: category.parent_id || null,
             children: []
         }

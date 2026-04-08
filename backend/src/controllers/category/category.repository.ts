@@ -30,16 +30,16 @@ export async function findCategoryBySlug(slug: string, db: Pool | PoolClient = p
 
 export async function createCateGory(data: CategoryResponseDTO, db: Pool | PoolClient = pool): Promise<CategoryDb> {
     const { rows } = await db.query(
-        `INSERT INTO categories (name, slug, parent_id) VALUES ($1, $2, $3) RETURNING *`,
-        [data.name, data.slug = generateSlug(data.name), data.parent_id || null]
+        `INSERT INTO categories (name, slug, is_parent, parent_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+        [data.name, data.slug = generateSlug(data.name), data.is_parent, data.parent_id || null]
     )
     return rows[0];
 }
 
 export async function updateCategory(id: string, data: CategoryResponseDTO, db: Pool | PoolClient = pool) {
     const { rows } = await db.query(
-        `UPDATE categories SET name=$1, slug=$2, parent_id=$3 WHERE id=$4 RETURNING *`,
-        [data.name, data.slug = generateSlug(data.name), data.parent_id || null, id]
+        `UPDATE categories SET name=$1, slug=$2, is_parent=$3, parent_id=$4 WHERE id=$5 RETURNING *`,
+        [data.name, data.slug = generateSlug(data.name), data.is_parent, data.parent_id || null, id]
     )
     return rows[0] || null;
 }

@@ -19,21 +19,48 @@ export async function registerController(
     }
 }
 
-export async function loginController(
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) {
+export async function loginController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-        const data = await AuthService.login(req.body);
+        const { accessToken, refreshToken, user } = await AuthService.login(req.body);
+        const isProduction = process.env.NODE_ENV === "production";
+
+        // 🔥 httpOnly refresh token
+        res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        });
+
+        // 🔥 Added email cookie specifically for refresh logic
+        res.cookie("email", user?.email, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        });
+
+        // 🔥 Add role cookie for Next.js Middleware
+        res.cookie("role", user?.role || "customer", {
+            httpOnly: false, // MUST be false if frontend needs to read it from JS, or true if only for middleware. Making it false for flexibility.
+            secure: isProduction,
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            path: "/",
+        });
+
         return res.status(200).json({
-            ...data,
+            user,
+            accessToken, // only accessToken frontend ko
             message: "User logged in successfully",
         });
     } catch (error) {
         next(error);
     }
 }
+
 
 export async function verifyEmailController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -64,7 +91,6 @@ export async function resendVerificationController(req: AuthRequest, res: Respon
         next(error)
     }
 }
-
 export async function forgetPasswordController(req: AuthRequest, res: Response, next: NextFunction) {
     try {
         const { email } = req.body;
@@ -95,6 +121,26 @@ export async function resetPasswordController(req: AuthRequest, res: Response, n
     }
 }
 
+export async function refreshAccessTokenController(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        const email = req.cookies.email;
+
+        if (!refreshToken || !email) {
+            throw new HttpError("Unauthorized", 401);
+        }
+
+        const newAccessToken = await AuthService.refreshAccessToken(refreshToken, email);
+
+        return res.status(200).json({
+            accessToken: newAccessToken,
+            message: "Access token refreshed successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 export async function logOutController(
     req: AuthRequest,
     res: Response,
@@ -103,7 +149,8 @@ export async function logOutController(
     try {
         // 🔥 TRUST JWT, NOT PARAMS
         await AuthService.logOut(req.user!.id);
-
+        res.clearCookie("refreshToken");
+        res.clearCookie("email");
         return res.status(200).json({
             message: "User logged out successfully",
         });
