@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, Image as ImageIcon, Trash2, Star } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { useDeleteProductImageMutation } from '@/services/productApi'
 
 // 1. Separate Preview Component to handle memory & prevent flickering
 const PreviewItem = memo(({ file, url }: { file: File, url?: string }) => {
@@ -43,6 +44,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         control: form.control,
         name: "images"
     });
+    const [deleteProductImage, { isLoading: isDeleting }] = useDeleteProductImageMutation();
     const handleFile = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -57,14 +59,24 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         currentImages.forEach((_, i) => form.setValue(`images.${i}.isprimary`, i === index));
     };
 
-    const handleRemove = (index: number) => {
+    const handleRemove = async (index: number, id?: string) => {
         const currentImages = form.getValues("images");
         if (currentImages[index].isprimary) {
             toast.error("Cannot remove primary image");
             return;
         }
+        if (id) {
+            try {
+                await deleteProductImage(id);
+                toast.success("Image deleted successfully");
+            } catch (error) {
+                toast.error("Failed to delete image");
+                return
+            }
+        } else {
+            toast.success("Image removed successfully");
+        }
         remove(index);
-        toast.success("Image removed successfully");
     }
 
     return (
@@ -79,13 +91,13 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                     <Plus className="w-4 h-4" /> Add Slot
                 </Button>
             </CardHeader>
-
             <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {fields.map((field, index) => {
                         const file = form.watch(`images.${index}.file`);
                         const isPrimary = form.watch(`images.${index}.isprimary`);
                         const url = form.watch(`images.${index}.url`);
+                        const id = form.watch(`images.${index}.id`);
                         return (
                             <div key={field.id} className="group relative aspect-square border border-dashed rounded-xl bg-muted/20 hover:border-primary/50 transition-all overflow-hidden">
                                 <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -102,8 +114,9 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                                         type="button"
                                         size="icon"
                                         variant="destructive"
+                                        disabled={isDeleting}
                                         className="h-7 w-7"
-                                        onClick={() => handleRemove(index)}
+                                        onClick={() => handleRemove(index, id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
