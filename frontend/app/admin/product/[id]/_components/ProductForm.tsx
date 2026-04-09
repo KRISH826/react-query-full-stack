@@ -62,6 +62,7 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                     : [{ sku: "", size: "M", price_override: null, offer_price_override: null, stock_quantity: null }],
                 images: existingProduct.images?.length
                     ? existingProduct.images.map((img) => ({
+                        id: img.id,
                         file: null,
                         url: img.image_url,
                         isprimary: img.isprimary

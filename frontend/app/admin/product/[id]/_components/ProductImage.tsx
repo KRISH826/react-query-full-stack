@@ -64,6 +64,8 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         const currentImages = form.getValues("images");
         const imageToDelete = currentImages[index];
         const imageId = imageToDelete?.id;
+        console.log("Deleting Image Data:", imageToDelete);
+        console.log("Image ID:", imageId);
         if (imageToDelete.isprimary) {
             toast.error("Cannot remove primary image");
             return;
