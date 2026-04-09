@@ -123,8 +123,8 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
             <FormItem>
               <FormLabel className="font-semibold">Description</FormLabel>
               <FormControl>
-                <div className="h-48 mb-0!">
-                  <ReactQuill theme="snow" value={field.value} onChange={field.onChange} className="h-32" />
+                <div className="h-56 mb-0!">
+                  <ReactQuill theme="bubble" value={field.value} onChange={field.onChange} className="h-52" />
                 </div>
               </FormControl>
               <FormMessage />
