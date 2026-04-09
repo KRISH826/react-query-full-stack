@@ -2,7 +2,7 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImageByid, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, getImageById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
@@ -298,5 +298,35 @@ export class ProductService {
             60 * 60 * 24
         );
     }
+
+    static async deleteImageService(imageId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const image = await getImageById(imageId, client);
+            if (!image) {
+                throw new HttpError("Image not found", 404);
+            }
+
+            try {
+                const key = extractKeyFromS3Url(image.image_url);
+                await deleteFromS3(key);
+                await deleteProductImages(imageId, client);
+            } catch (error) {
+                console.error(`S3 deletion failed for key: ${image.image_url}`, error);
+            }
+            await deleteProductImageByid(imageId, client);
+            await client.query('COMMIT');
+            await this.invalidateProductCache(image.product_id);
+            await refreshProductDetailMV();
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
 }
 

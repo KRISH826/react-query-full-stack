@@ -96,6 +96,20 @@ export class ProductController {
         }
     }
 
+    static async deleteImageController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const imageId = req.params.imageId as string;
+            const image = await ProductService.deleteImageService(imageId);
+            return res.status(200).json({
+                success: true,
+                data: image,
+                message: "Image deleted successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async topProductsController(req: Request, res: Response, next: NextFunction) {
         try {
             const products = await ProductService.topProductsService();
