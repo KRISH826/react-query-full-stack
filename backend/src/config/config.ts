@@ -62,6 +62,10 @@ export const config = {
         region: process.env.AWS_REGION || "us-east-1",
         access_key_id: process.env.AWS_COGNITO_ACCESS_KEY,
         secret_access_key: process.env.AWS_COGNITO_ACCESS_SECRET,
+    },
+    gemini: {
+        api_id: process.env.GEMINI_API_KEY,
+        project_id: process.env.GEMINI_PROJECT_ID
     }
 }
 

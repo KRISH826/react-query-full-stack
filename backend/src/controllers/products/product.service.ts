@@ -161,20 +161,13 @@ export class ProductService {
 
             const validFiles = files?.filter((f) => f.size > 0);
             if (validFiles?.length) {
-                if (existingProduct.images?.length) {
-                    for (const image of existingProduct.images) {
-                        const key = extractKeyFromS3Url(image.image_url);
-                        await deleteFromS3(key);
-                    }
-                }
-                await deleteProductImages(id, client);
-
+                const currentImagesCount = existingProduct.images?.length || 0;
                 for (let i = 0; i < validFiles.length; i++) {
                     const uploaded = await uploadSingleImage(validFiles[i]);
                     await addProductImage({
                         product_id: id,
                         image_url: uploaded.url,
-                        isprimary: i === 0,
+                        isprimary: currentImagesCount === 0 && i === 0,
                     }, client);
                 }
             }
