@@ -44,6 +44,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         control: form.control,
         name: "images"
     });
+    console.log(fields);
     const [deleteProductImage, { isLoading: isDeleting }] = useDeleteProductImageMutation();
     const handleFile = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -59,22 +60,24 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         currentImages.forEach((_, i) => form.setValue(`images.${i}.isprimary`, i === index));
     };
 
-    const handleRemove = async (index: number, id?: string) => {
+    const handleRemove = async (index: number) => {
         const currentImages = form.getValues("images");
-        if (currentImages[index].isprimary) {
+        const imageToDelete = currentImages[index];
+        const imageId = imageToDelete?.id;
+        if (imageToDelete.isprimary) {
             toast.error("Cannot remove primary image");
             return;
         }
-        if (id) {
+        if (imageId) {
             try {
-                await deleteProductImage(id);
+                await deleteProductImage(imageId).unwrap();
                 toast.success("Image deleted successfully");
             } catch (error) {
                 toast.error("Failed to delete image");
                 return
             }
         } else {
-            toast.success("Image removed successfully");
+            toast.success("Local Image removed successfully");
         }
         remove(index);
     }
@@ -116,7 +119,7 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
                                         variant="destructive"
                                         disabled={isDeleting}
                                         className="h-7 w-7"
-                                        onClick={() => handleRemove(index, id)}
+                                        onClick={() => handleRemove(index)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
