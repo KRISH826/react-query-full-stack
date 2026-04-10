@@ -90,12 +90,18 @@ export class ProductService {
                     }, client);
                 }
 
+                const firstFile = files[0];
+                const base64ImageString = firstFile.buffer.toString('base64');
+                const imageMimeType = firstFile.mimetype; // e.g., 'image/png' ya 'image/jpeg'
+
                 aiTags = await AiService.generateProductTags({
                     description: product.description,
                     brand: product.brand,
                     gender: product.gender,
                     category_names: product.category_names,
                     productname: product.productname,
+                    imageBase64: base64ImageString,
+                    mimetype: imageMimeType,
                 })
 
                 if (aiTags) {

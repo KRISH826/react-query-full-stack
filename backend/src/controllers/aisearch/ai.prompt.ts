@@ -29,7 +29,8 @@ OUTPUT FORMAT (STRICT JSON ONLY)
   "pattern": "solid | printed | striped | checked | embroidered | textured | graphic | unknown",
   "fabric_hint": "cotton | linen | denim | polyester | wool | silk | chiffon | knit | blend | unknown",
   "vibe": ["max 10 short keywords"],
-  "search_keywords": ["min 15, max 20 realistic queries"]
+  "search_keywords": ["min 15, max 20 realistic queries"],
+  "image_description": "String describing the exact visual elements seen in the image."
 }
 
 -------------------------------
@@ -68,6 +69,17 @@ vibe:
 - Emotional + fashion feel
 - 1–2 words each
 - DO NOT repeat style/fit/pattern words
+
+image_description (NEW):
+- STRICTLY describe ONLY what you can physically see in the image.
+- Include color, garment structure (e.g., V-neck, full sleeves), visible textures, and fit.
+- DO NOT include marketing fluff (e.g., "perfect for parties", "luxurious feel").
+- Keep it objective and visual. Example: "A solid navy-blue V-neck half-sleeve t-shirt with ribbed cuffs and a subtle textured pattern."
+- If no image is provided, leave it empty.
+- i need a big big description of the image. be very detailed. talk about color, texture, fit, pattern, and any visible design elements. be as descriptive as possible without making assumptions about fabric or quality.
+- and the age analysis the age like genz young adult or something like that. be very specific about the age group. if it looks like it's for teenagers, say "teen". if it looks like it's for older adults, say "senior". if it's hard to tell, say "unknown".
+- also analyze the vibe of the product. is it giving off a casual vibe? or is it more formal? is it trendy and streetwear-inspired? or is it more classic and elegant? try to capture the overall fashion feel of the product in a few short keywords. this will help with search and discovery on the ecommerce platform.
+- also like for 30-40 years its for 20 years its for 40-45years thats like thing u have to understand of all that thing take time give me a very good analysis of the product and give me the age group like is it for gen z or is it for millennials or is it for older adults. be very specific about the age group. if it looks like it's for teenagers, say "teen". if it looks like it's for older adults, say "senior". if it's hard to tell, say "unknown". 
 
 -------------------------------
 VISION ANALYSIS (IMPORTANT)
