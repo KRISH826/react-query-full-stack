@@ -11,14 +11,61 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
     let orderClause = "ORDER BY p.created_at DESC";
 
     if (keyword) {
+        // Scoring Logic: Name (25%) + Brand (20%) + Description (10%) + Full Text (35%) + Typo (10%)
         scoreSelect = `(
-            ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.7 + 
-            similarity(p.productname, $${i}) * 0.3
+            CASE 
+                -- Full-text search match (35% weight)
+                WHEN p.search_vector @@ websearch_to_tsquery('english', $${i})
+                THEN ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.35
+                ELSE 0
+            END +
+            
+            -- Exact similarity on Product Name (25% weight)
+            GREATEST(
+                similarity(p.productname, $${i}),
+                word_similarity(p.productname, $${i})
+            ) * 0.25 +
+            
+            -- Exact similarity on Brand (20% weight)
+            GREATEST(
+                similarity(COALESCE(p.brand, ''), $${i}),
+                word_similarity(COALESCE(p.brand, ''), $${i})
+            ) * 0.20 +
+
+            -- Word similarity on Description (10% weight) -> word_similarity is better for long text
+            word_similarity(COALESCE(p.description, ''), $${i}) * 0.10 +
+
+            -- Levenshtein for typo handling on Name ONLY (10% weight)
+            (1 - (levenshtein(LOWER(LEFT(p.productname, 255)), LOWER($${i}))::float / 
+                  GREATEST(LENGTH(p.productname), LENGTH($${i}), 1)::float)) * 0.10
         ) AS score`;
 
         conditions.push(`(
-            p.search_vector @@ websearch_to_tsquery('english', $${i}) 
-            OR p.productname % $${i}
+            -- 1. Full Text Search
+            p.search_vector @@ websearch_to_tsquery('english', $${i})
+            
+            -- 2. Word similarity on Name, Brand, OR Description
+            OR EXISTS (
+                SELECT 1
+                FROM unnest(string_to_array($${i}, ' ')) AS kw
+                WHERE word_similarity(p.productname, kw) > 0.15 
+                   OR word_similarity(COALESCE(p.brand, ''), kw) > 0.15
+                   OR word_similarity(COALESCE(p.description, ''), kw) > 0.15
+            )
+            
+            -- 3. Direct similarity check
+            OR similarity(p.productname, $${i}) > 0.3 
+            OR similarity(COALESCE(p.brand, ''), $${i}) > 0.3
+            OR word_similarity(COALESCE(p.description, ''), $${i}) > 0.3
+            
+            -- 4. Typo tolerance (Levenshtein) on Name and Brand
+            OR (levenshtein(LOWER(LEFT(p.productname, 255)), LOWER($${i})) <= 3) 
+            OR (levenshtein(LOWER(COALESCE(p.brand, '')), LOWER($${i})) <= 2)
+            
+            -- 5. Standard ILIKE fallback for Name, Brand, AND Description
+            OR p.productname ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.brand, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.description, '') ILIKE '%' || $${i} || '%'
         )`);
 
         orderClause = "ORDER BY score DESC, p.created_at DESC";
@@ -49,7 +96,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             SELECT p.*, ${scoreSelect}
             FROM products p
             WHERE ${conditions.join(" AND ")}
-            ${orderClause} -- Yahan 'p' chalega
+            ${orderClause}
             LIMIT $${i}
         )
         SELECT 
