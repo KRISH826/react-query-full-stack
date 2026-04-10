@@ -24,6 +24,7 @@ import {
 import { config } from "../../config/config";
 import { computeSecretHash } from "../../helper/user";
 import { signAccessToken } from "../../utils/jwt";
+import { cache } from "../../utils/cache";
 
 const cognitoClient = new CognitoIdentityProviderClient({
     region: config.cognito.region!,
@@ -33,11 +34,16 @@ const cognitoClient = new CognitoIdentityProviderClient({
     }
 });
 
+const USER_CACHE_KEY = (id: string) => `user:${id}`;
+const USER_EMAIL_CACHE_KEY = (email: string) => `user:email:${email}`;
+
 function toUserResponse(user: UserDB | null): UserResponseDTO | null {
     if (!user) return null;
     const { password, ...safe } = user;
     return safe;
 }
+
+
 
 export class AuthService {
     static async register(payload: RegisterDTO): Promise<UserResponseDTO | null> {
@@ -111,6 +117,9 @@ export class AuthService {
             const user = await findByEmail(payload.email);
             if (!user?.isverified) {
                 throw new HttpError("Please verify your email first", 403);
+            }
+            if(user) {
+                await cache.set(USER_CACHE_KEY(user.id), toUserResponse(user));
             }
             if (!RefreshToken) {
                 throw new HttpError("Authentication failed: refresh token not returned", 401);
@@ -246,13 +255,16 @@ export class AuthService {
     }
 
     static async findUserById(id: string): Promise<UserResponseDTO | null> {
-        const user = await findById(id);
-
-        if (!user) {
-            throw new HttpError("User not found", 404);
-        }
-
-        return toUserResponse(user);
+        return cache.getOrSet(
+            `user:${id}`,
+            async () => {
+                const user = await findById(id);
+                if (!user) {
+                    throw new HttpError("User not found", 404);
+                }
+                return toUserResponse(user);
+            }
+        )
     }
 
     // 🔥 REAL LOGOUT (token invalidation)
@@ -265,6 +277,7 @@ export class AuthService {
                 throw new HttpError("User not found", 404);
             }
             await client.query('COMMIT');
+            await cache.delete(USER_CACHE_KEY(id));
         } catch (error) {
             await client.query('ROLLBACK');
             throw error;
@@ -337,6 +350,10 @@ export class AuthService {
                 throw new HttpError("User not found", 404);
             }
             await client.query('COMMIT');
+            await cache.delete(USER_CACHE_KEY(id));
+            await cache.delete(USER_EMAIL_CACHE_KEY(user.email));
+            await cache.set(USER_CACHE_KEY(id), toUserResponse(user));
+            await cache.set(USER_EMAIL_CACHE_KEY(user.email), toUserResponse(user));
             return toUserResponse(user);
         } catch (error) {
             await client.query('ROLLBACK');

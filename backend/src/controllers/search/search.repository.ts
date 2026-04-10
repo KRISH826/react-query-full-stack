@@ -7,17 +7,21 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
     let i = 1;
-    let cteOrderClause = "ORDER BY p.created_at DESC";   
-    let mainOrderClause = "ORDER BY mp.created_at DESC"; 
     let scoreSelect = "0 AS score";
+    let orderClause = "ORDER BY p.created_at DESC";
 
     if (keyword) {
-        conditions.push(`p.search_vector @@ websearch_to_tsquery('english', $${i})`);
-        scoreSelect = `ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) AS score`;
+        scoreSelect = `(
+            ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.7 + 
+            similarity(p.productname, $${i}) * 0.3
+        ) AS score`;
 
-        cteOrderClause = "ORDER BY score DESC, p.created_at DESC";
-        mainOrderClause = "ORDER BY score DESC, mp.created_at DESC";
+        conditions.push(`(
+            p.search_vector @@ websearch_to_tsquery('english', $${i}) 
+            OR p.productname % $${i}
+        )`);
 
+        orderClause = "ORDER BY score DESC, p.created_at DESC";
         values.push(keyword);
         i++;
     }
@@ -45,7 +49,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             SELECT p.*, ${scoreSelect}
             FROM products p
             WHERE ${conditions.join(" AND ")}
-            ${cteOrderClause} -- Yahan 'p' chalega
+            ${orderClause} -- Yahan 'p' chalega
             LIMIT $${i}
         )
         SELECT 
@@ -76,7 +80,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             FROM product_variants v WHERE v.product_id = mp.id
         ) var ON true
 
-        ${mainOrderClause}; -- Yahan ab 'mp' chalega, koi error nahi aayega!
+        ORDER BY mp.score DESC, mp.created_at DESC;
     `;
 
     const { rows } = await db.query(query, values);
