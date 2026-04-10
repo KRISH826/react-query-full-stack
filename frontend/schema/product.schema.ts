@@ -10,6 +10,7 @@ const productSchema = z.object({
   is_track_inventory: z.boolean().default(true),
   category_names: z.array(z.string()).min(1, "At least one category is required"),
   images: z.array(z.object({
+    id: z.string().optional(),
     file: z.any().optional().nullable(),
     url: z.string().optional(),
     isprimary: z.boolean()

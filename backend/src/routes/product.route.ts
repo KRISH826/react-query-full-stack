@@ -12,6 +12,7 @@ router.get("/top-products", ProductController.topProductsController);
 router.get("/:id", ProductController.getByIdController);
 router.delete("/:id", requireAuth, requireRole("admin"), ProductController.deleteProductController);
 router.put("/:id", requireAuth, requireRole("admin"), upload.array("images"), ProductController.updateProductController);
+router.delete("/image/:id", requireAuth, requireRole("admin"), ProductController.deleteImageController);
 
 
 export default router;

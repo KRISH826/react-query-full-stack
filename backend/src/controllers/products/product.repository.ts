@@ -185,6 +185,20 @@ export async function topProducts(
 
     return rows;
 }
+export async function getImageById(imageId: string, db: Pool | PoolClient = pool): Promise<ProductImageDB | null> {
+    const { rows } = await db.query(
+        `SELECT * FROM product_images WHERE id=$1`,
+        [imageId]
+    );
+    return rows[0] || null;
+}
+
+export async function deleteProductImageByid(imageId: string, db: Pool | PoolClient = pool): Promise<void> {
+    await db.query(
+        `DELETE FROM product_images WHERE id=$1 RETURNING *`,
+        [imageId]
+    )
+}
 
 
 export async function refreshProductFullMV(db: Pool | PoolClient = pool): Promise<void> {

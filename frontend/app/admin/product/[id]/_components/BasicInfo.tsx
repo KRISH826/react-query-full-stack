@@ -33,6 +33,7 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
     return flat;
   };
 
+
   const categoiresData = categories ? flattenCategories(categories) : [];
 
   return (
@@ -123,8 +124,8 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
             <FormItem>
               <FormLabel className="font-semibold">Description</FormLabel>
               <FormControl>
-                <div className="h-48 mb-0!">
-                  <ReactQuill theme="snow" value={field.value} onChange={field.onChange} className="h-32" />
+                <div className="h-96 mb-0!">
+                  <ReactQuill theme="snow" value={field.value} onChange={field.onChange} className="h-80" />
                 </div>
               </FormControl>
               <FormMessage />
