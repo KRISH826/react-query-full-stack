@@ -5,7 +5,7 @@ import { useGetCartQuery } from "@/services/cartApi";
 import CartItems from "./CartItems";
 import { CartItem } from "@/types/cart";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useClearCartMutation } from "@/services/cartApi";
 import { Spinner } from "@/components/ui/spinner";
@@ -14,7 +14,6 @@ import { useRouter } from "next/navigation";
 const CartPage = () => {
     const { data, isLoading } = useGetCartQuery();
     const [clearCart, { isLoading: isClearing }] = useClearCartMutation();
-    console.log(data?.items);
     const router = useRouter();
     const ClearCart = async () => {
         try {

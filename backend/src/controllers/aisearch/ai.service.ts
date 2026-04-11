@@ -14,6 +14,7 @@ interface ProductTagInput {
     gender?: string;
     category_names: string[];
     imageBase64?: string; // Image analysis ke liye base64 string
+    mimetype?: string; // Image ka MIME type (e.g., "image/jpeg")
 }
 
 export class AiService {
@@ -52,7 +53,7 @@ export class AiService {
                 contentParts.push({
                     inlineData: {
                         data: base64Data,
-                        mimeType: "image/jpeg"
+                        mimeType: product.mimetype || "image/jpeg" // <-- Yahan use kiya
                     }
                 });
             }

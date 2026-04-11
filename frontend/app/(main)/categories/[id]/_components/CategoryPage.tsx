@@ -27,8 +27,6 @@ const CategoryPage = () => {
     const totalPages = Math.ceil((data?.total || 0) / 30);
     const pages = usePagination(page, totalPages);
 
-    console.log(data);
-
     if (isLoading) {
         return (
             <div className="flex min-h-[60vh] items-center justify-center">

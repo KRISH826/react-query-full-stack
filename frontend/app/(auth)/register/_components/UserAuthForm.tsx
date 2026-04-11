@@ -37,7 +37,6 @@ const UserAuthForm = ({
     const onSubmit = async (data: RegisterValues) => {
         try {
             await registerUser(data).unwrap();
-            console.log(data);
             toast.success("Email Sent! Please check your inbox to verify your email address.");
             reset();
             router.replace(`/verify-email?email=${encodeURIComponent(data.email)}`);

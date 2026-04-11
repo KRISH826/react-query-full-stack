@@ -8,12 +8,17 @@ import ProductRating from '../../_components/ProductRating'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import ReviewFormDialog from './ReviewFormDialog'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const ProductReviews = () => {
     const params = useParams();
     const id = params.id as string;
-    
-    const { data: userProfile } = useGetProfileQuery();
+
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: userProfile } = useGetProfileQuery(undefined, {
+        skip: !token
+    });
     const { data: reviewsData, isLoading } = useGetProductReviewsQuery({ productId: id });
 
     return (
@@ -65,8 +70,8 @@ const ProductReviews = () => {
                                 .slice(0, 1);
 
                             return (
-                                <div 
-                                    key={review.id} 
+                                <div
+                                    key={review.id}
                                     className={cn(
                                         "p-4 rounded-xl bg-white border border-slate-100/80 transition-all hover:border-slate-200/50 hover:shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]",
                                         isCurrentUser && "bg-slate-50/30 border-primary/10"

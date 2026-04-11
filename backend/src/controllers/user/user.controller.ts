@@ -2,6 +2,7 @@ import { NextFunction, Response } from "express";
 import { AuthService } from "./user.service";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
+import { setCookie } from "../../helper/cookie";
 
 export async function registerController(
     req: AuthRequest,
@@ -28,28 +29,19 @@ export async function loginController(req: AuthRequest, res: Response, next: Nex
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: isProduction,
-            sameSite: "lax",
+            sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",
         });
 
         // 🔥 Added email cookie specifically for refresh logic
-        res.cookie("email", user?.email, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
+        setCookie(res, "email", user?.email as string, {
+            sameSite: "strict",
         });
 
-        // 🔥 Add role cookie for Next.js Middleware
-        res.cookie("role", user?.role || "customer", {
-            httpOnly: false, // MUST be false if frontend needs to read it from JS, or true if only for middleware. Making it false for flexibility.
-            secure: isProduction,
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
-        });
+        setCookie(res, "role", user?.role as string, {
+            sameSite: "strict",
+        })
 
         return res.status(200).json({
             user,

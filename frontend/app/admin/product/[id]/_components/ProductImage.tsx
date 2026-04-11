@@ -44,7 +44,6 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         control: form.control,
         name: "images"
     });
-    console.log(fields);
     const [deleteProductImage, { isLoading: isDeleting }] = useDeleteProductImageMutation();
     const handleFile = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -64,8 +63,6 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         const currentImages = form.getValues("images");
         const imageToDelete = currentImages[index];
         const imageId = imageToDelete?.id;
-        console.log("Deleting Image Data:", imageToDelete);
-        console.log("Image ID:", imageId);
         if (imageToDelete.isprimary) {
             toast.error("Cannot remove primary image");
             return;
