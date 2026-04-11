@@ -13,14 +13,12 @@ import { AuthResponse } from "@/types/user";
 
 const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include", // 🔥 MUST for cookies
+    credentials: "include",
     prepareHeaders: (headers, { getState }) => {
-        // Try Redux first, then fallback to localStorage (Redux is empty on page refresh)
         let token = (getState() as RootState).auth?.accessToken;
         if (!token && typeof window !== "undefined") {
             token = localStorage.getItem("token");
         }
-
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
         }

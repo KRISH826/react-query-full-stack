@@ -44,7 +44,6 @@ const ProductImage = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
         control: form.control,
         name: "images"
     });
-    console.log(fields);
     const [deleteProductImage, { isLoading: isDeleting }] = useDeleteProductImageMutation();
     const handleFile = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

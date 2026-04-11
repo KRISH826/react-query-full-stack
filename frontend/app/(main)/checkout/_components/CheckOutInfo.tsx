@@ -14,7 +14,6 @@ import { useGetProfileQuery } from "@/services/userApi"
 const CheckOutInfo = () => {
     const [checkout] = useCheckOutMutation();
     const { data: user } = useGetProfileQuery();
-    console.log(user);
     const {
         register,
         handleSubmit,

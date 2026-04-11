@@ -2,10 +2,14 @@
 import ProfileForm from './_components/ProfileForm'
 import { useGetProfileQuery } from '@/services/userApi'
 import { Spinner } from '@/components/ui/spinner'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const ProfilePage = () => {
-    const { data: user, isLoading } = useGetProfileQuery();
-    console.log(user);
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: user, isLoading } = useGetProfileQuery(undefined, {
+        skip: !token
+    });
 
     if (isLoading) {
         return (

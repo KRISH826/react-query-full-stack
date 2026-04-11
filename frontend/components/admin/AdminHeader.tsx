@@ -10,6 +10,8 @@ import { Input } from "../ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useGetProfileQuery } from "@/services/userApi";
 import { Spinner } from "../ui/spinner";
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -20,8 +22,10 @@ const navItems = [
 
 export function AdminHeader() {
   const pathname = usePathname();
-  const { data, isLoading } = useGetProfileQuery();
-  console.log(data);
+  const token = useSelector((state: RootState) => state.auth.accessToken);
+  const { data, isLoading } = useGetProfileQuery(undefined, {
+    skip: !token
+  });
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-sidebar-border bg-background px-4 shadow-xs sm:px-6 lg:px-8">

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// 1. Define Routes Correctly
 const ADMIN_ROUTES = ["/admin", "/admin/dashboard"];
-const CUSTOMER_ROUTES = ["/product", "/carts", "/checkout", "/orders", "/favourites"];
+const CUSTOMER_ROUTES = ["/carts", "/checkout", "/orders", "/favourites", "/profile"];
 const AUTH_ROUTES = ["/login", "/register", "/forget-password", "/reset-password", "/verify-email"];
+
 const PROTECTED_ROUTES = [...ADMIN_ROUTES, ...CUSTOMER_ROUTES, "/dashboard"];
 
 export function proxy(request: NextRequest) {
 
-    // 🔥 This cookie is set via document.cookie in frontend after login
     const token = request.cookies.get("token")?.value;
     const role = request.cookies.get("role")?.value;
 
@@ -31,45 +32,35 @@ export function proxy(request: NextRequest) {
     }
 
     if (token) {
-
-        // login page block
         if (isAuthRoute) {
-            const redirectUrl =
-                role === "admin" ? "/admin/dashboard" : "/product";
-
+            const redirectUrl = role === "admin" ? "/admin/dashboard" : "/product";
             return NextResponse.redirect(new URL(redirectUrl, request.url));
         }
-
-        // admin protection
         if (isAdminRoute && role !== "admin") {
             return NextResponse.redirect(new URL("/product", request.url));
         }
-
-        // customer protection
-        const isCustomerOnly = ["/carts", "/checkout"].some((r) =>
+        const isCustomerOnly = ["/carts", "/checkout", "/orders"].some((r) =>
             pathname.startsWith(r)
         );
 
         if (isCustomerOnly && role === "admin") {
-            return NextResponse.redirect(
-                new URL("/admin/dashboard", request.url)
-            );
+            return NextResponse.redirect(new URL("/admin/dashboard", request.url));
         }
     }
-
     return NextResponse.next();
 }
 
 export const config = {
     matcher: [
         "/admin/:path*",
-        "/product/:path*",
         "/carts/:path*",
         "/checkout/:path*",
         "/dashboard",
         "/orders/:path*",
         "/favourites/:path*",
+        "/profile/:path*", // Added profile here
         "/login",
         "/register",
+        // 🔥 Removed "/product/:path*" from matcher. Ab middleware product pages par run hi nahi hoga, making it super fast!
     ],
 };

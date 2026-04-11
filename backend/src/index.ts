@@ -20,10 +20,15 @@ import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
 import { startProductScheduler } from "./corn/product/product.scheduler";
 import "./corn/product/product.worker"
+import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json(
+    {
+        limit: "3mb"
+    }
+));
 app.use(cors({
     origin: [
         "http://localhost:3000",
@@ -34,6 +39,7 @@ app.use(cors({
     allowedHeaders: "Content-Type,Authorization"
 }));
 app.use(helmet());
+app.use(cookieParser());
 app.use(morgan("dev"));
 app.use("/api", globalLimiter);
 connectDB();
