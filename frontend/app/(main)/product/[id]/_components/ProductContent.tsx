@@ -9,6 +9,8 @@ import Buynow from "./Buynow";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import ProductRating from "../../_components/ProductRating";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -23,10 +25,11 @@ function findVariant(
 // ─── component ────────────────────────────────────────────────────────────────
 
 const ProductContent = ({ product }: { product: Product }) => {
+    const token = useSelector((state: RootState) => state.auth.accessToken);
     const quantity = 1;
     const [addToCart, { isLoading }] = useAddToCartMutation();
     const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
-    const { data: cart } = useGetCartQuery();
+    const { data: cart } = useGetCartQuery(undefined, { skip: !token });
     const router = useRouter();
 
     const variants = useMemo(() => product.variants ?? [], [product.variants]);

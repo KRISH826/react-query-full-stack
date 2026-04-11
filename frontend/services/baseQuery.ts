@@ -6,70 +6,76 @@ import {
     FetchBaseQueryError,
     retry
 } from "@reduxjs/toolkit/query/react";
-
 import { RootState } from "@/store/store";
 import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
 import { AuthResponse } from "@/types/user";
 
+// 1. Raw API Query with Auth Headers
 const rawBaseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include",
+    credentials: "include", // 🔥 MUST for backend cookies
     prepareHeaders: (headers, { getState }) => {
+        // Fetch from Redux first, fallback to localStorage
         let token = (getState() as RootState).auth?.accessToken;
         if (!token && typeof window !== "undefined") {
             token = localStorage.getItem("token");
         }
+
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
         }
-
         return headers;
     },
 });
 
-const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
-    async (args, api, extraOptions) => {
+// 2. Smart Interceptor for 401 Unauthorized
+const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
+    let result = await rawBaseQuery(args, api, extraOptions);
+    const isRefreshCall = typeof args === "object" && args.url?.includes("/users/refresh");
 
-        let result = await rawBaseQuery(args, api, extraOptions);
+    if (result?.error?.status === 401 && !isRefreshCall) {
+        const refreshResult = await rawBaseQuery(
+            { url: "users/refresh", method: "POST" },
+            api,
+            extraOptions
+        );
 
-        const isRefreshCall =
-            typeof args === "object" &&
-            args.url?.includes("/users/refresh");
+        if (refreshResult.data) {
+            const newAccessToken = (refreshResult.data as AuthResponse).accessToken;
+            api.dispatch(setAccessToken(newAccessToken));
 
-        if (result?.error?.status === 401 && !isRefreshCall) {
+            if (typeof window !== "undefined") {
+                localStorage.setItem("token", newAccessToken);
+                document.cookie = `token=${newAccessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+            }
 
-            const refreshResult = await rawBaseQuery(
-                {
-                    url: "users/refresh",
-                    method: "POST",
-                },
-                api,
-                extraOptions
-            );
+            result = await rawBaseQuery(args, api, extraOptions);
+        } else {
+            api.dispatch(clearAccessToken());
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                document.cookie = "token=; path=/; max-age=0";
+                document.cookie = "role=; path=/; max-age=0";
+                const currentPath = window.location.pathname;
 
-            if (refreshResult.data) {
-                const newAccessToken = (refreshResult.data as AuthResponse).accessToken;
+                const publicRoutes = ["/product", "/categories", "/product-search", "/login", "/register", "/"];
+                const isPublicRoute = publicRoutes.some(route =>
+                    currentPath === route || currentPath.startsWith(`${route}/`)
+                );
 
-                api.dispatch(setAccessToken(newAccessToken));
-
-                result = await rawBaseQuery(args, api, extraOptions);
-            } else {
-                api.dispatch(clearAccessToken());
-                if (typeof window !== "undefined") {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    // 🔥 MUST clear cookies BEFORE redirect, otherwise proxy.ts sees
-                    // the token cookie and bounces back → infinite loop
-                    document.cookie = "token=; path=/; max-age=0";
-                    document.cookie = "role=; path=/; max-age=0";
-                    window.location.href = "/login";
+                // Agar user kisi private page par tha, toh login par bhejo with Callback URL
+                if (!isPublicRoute) {
+                    window.location.href = `/login?callbackUrl=${encodeURIComponent(currentPath)}`;
                 }
             }
         }
+    }
 
-        return result;
-    };
+    return result;
+};
 
+// 3. Create and Export Base API
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: retry(baseQueryWithAuth, { maxRetries: 0 }),
