@@ -301,7 +301,7 @@ export class ProductService {
                 }
                 return products;
             },
-            60 * 60 * 24
+            60 * 60 * 1
         );
     }
 
@@ -316,7 +316,7 @@ export class ProductService {
                 }
                 return products;
             },
-            60 * 60 * 24
+            60 * 60 * 1 // 1 hour cache for search results
         );
     }
 

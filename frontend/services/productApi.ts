@@ -19,7 +19,8 @@ interface ProductResponse {
 }
 
 interface SearchProductsParams {
-    query: string;
+    name?: string;
+    brand?: string;
     limit?: number;
 }
 
@@ -51,12 +52,6 @@ export const productApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Product", id: "LIST" }],
         }),
-        getSearchProducts: builder.query<ProductsResponse, SearchProductsParams>({
-            query: ({ query, limit = 10 }) =>
-                `search-products/search?q=${query}&limit=${limit}`,
-            transformResponse: (response: ProductsResponse) => response,
-            providesTags: [{ type: "Product", id: "LIST" }],
-        }),
         // update product
         updateProduct: builder.mutation<Product, { id: string; data: FormData | Partial<Product> }>({
             query: ({ id, data }) => ({
@@ -74,7 +69,18 @@ export const productApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Product", id: "LIST" }],
         }),
+        searchProducts: builder.query<ProductsResponse, SearchProductsParams>({
+            query: ({ name, brand, limit = 10 }) => {
+                const params = new URLSearchParams();
+                if (name) params.append("name", name);
+                if (brand) params.append("brand", brand);
+                params.append("limit", limit.toString());
+                return `search-products/search?${params.toString()}`;
+            },
+            transformResponse: (response: ProductsResponse) => response,
+            providesTags: [{ type: "Product", id: "LIST" }],
+        }),
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useGetSearchProductsQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation, useSearchProductsQuery } = productApi;
