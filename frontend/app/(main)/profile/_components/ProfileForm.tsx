@@ -20,7 +20,6 @@ interface ProfileFormProps {
 
 const ProfileForm = ({ user }: ProfileFormProps) => {
     const [updateProfile, { isLoading, data }] = useUpdateProfileMutation();
-    console.log(data);
     const {
         register,
         handleSubmit,

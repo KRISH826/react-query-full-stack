@@ -28,7 +28,6 @@ export const compressImage = async (file: Express.Multer.File) => {
             })
             .webp({ quality: 80 }) // Convert to WebP with 80% quality
             .toBuffer();
-        console.log('🖼️ Compressed image size:', Math.round(compressedBuffer.length / 1024), 'KB');
         return compressedBuffer;
     } catch (error) {
         console.error('❌ Image compression failed:', error);

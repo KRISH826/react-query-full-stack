@@ -8,9 +8,14 @@ import { User } from 'lucide-react'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../dropdown-menu'
 import { useRouter } from 'next/navigation'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const Profile = () => {
-    const { data: user, isLoading } = useGetProfileQuery();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: user, isLoading } = useGetProfileQuery(undefined, {
+        skip: !token
+    });
     const [logout] = useLogoutMutation();
     const router = useRouter();
     const dispatch = useDispatch();

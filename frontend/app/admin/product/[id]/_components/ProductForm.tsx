@@ -62,6 +62,7 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                     : [{ sku: "", size: "M", price_override: null, offer_price_override: null, stock_quantity: null }],
                 images: existingProduct.images?.length
                     ? existingProduct.images.map((img) => ({
+                        id: img.id,
                         file: null,
                         url: img.image_url,
                         isprimary: img.isprimary
@@ -124,15 +125,19 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                 <div className='flex justify-between items-center gap-4'>
                     <h1 className='text-2xl font-semibold'>{isEditMode ? 'Update Product' : 'Create Product'}</h1>
                     <div className='flex items-center gap-2'>
-                        <Button type="button" variant="outline" onClick={() => router.push('/admin/product')}>
+                        <Button type="button" variant="outline" className='cursor-pointer' onClick={() => router.push('/admin/product')}>
                             <ArrowLeft className="w-4 h-4 mr-1" /> Go Back
                         </Button>
-                        <Button type="submit" disabled={isLoading}>
+                        <Button type="submit" disabled={isLoading} className='cursor-pointer'>
                             {
                                 isEditMode ? (
-                                    isLoadingUpdate ? 'Updating...' : 'Update Product'
+                                    isLoadingUpdate ? <>
+                                        <Spinner className='w-4 h-4' /> Updating Product...
+                                    </> : 'Update Product'
                                 ) : (
-                                    isLoading ? 'Creating...' : 'Create Product'
+                                    isLoading ? <>
+                                        <Spinner className='w-4 h-4' /> Creating Product...
+                                    </> : 'Create Product'
                                 )
                             }
                         </Button>

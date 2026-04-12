@@ -6,10 +6,15 @@ import { Heart } from "lucide-react";
 import { useGetProfileQuery } from "@/services/userApi";
 import { Spinner } from "../../spinner";
 import { useGetFavouritesQuery } from "@/services/favouriteApi";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const Favourites = () => {
     const router = useRouter();
-    const { data: user, isLoading } = useGetProfileQuery();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: user, isLoading } = useGetProfileQuery(undefined, {
+        skip: !token
+    });
 
     const navigateFavourites = () => {
         if (!user) {

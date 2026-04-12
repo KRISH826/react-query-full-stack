@@ -6,72 +6,51 @@ import {
     FetchBaseQueryError,
     retry
 } from "@reduxjs/toolkit/query/react";
-
 import { RootState } from "@/store/store";
 import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
 import { AuthResponse } from "@/types/user";
 
-const rawBaseQuery = fetchBaseQuery({
+const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include", // 🔥 MUST for cookies
+    credentials: "include",
     prepareHeaders: (headers, { getState }) => {
-        // Try Redux first, then fallback to localStorage (Redux is empty on page refresh)
-        let token = (getState() as RootState).auth?.accessToken;
-        if (!token && typeof window !== "undefined") {
-            token = localStorage.getItem("token");
-        }
-
+        const token = (getState() as RootState).auth.accessToken;
         if (token) {
             headers.set("Authorization", `Bearer ${token}`);
         }
-
         return headers;
     },
 });
+// 2. Smart Interceptor for 401 Unauthorized
+const baseQueryWithAuth: BaseQueryFn<
+    string | FetchArgs,
+    unknown,
+    FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+    let result = await baseQuery(args, api, extraOptions);
 
-const baseQueryWithAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> =
-    async (args, api, extraOptions) => {
+    if (result.error?.status === 401) {
+        const refreshResult = await baseQuery(
+            { url: "/users/refresh", method: "POST" },
+            api,
+            extraOptions
+        );
 
-        let result = await rawBaseQuery(args, api, extraOptions);
+        if (refreshResult.data) {
+            const data = refreshResult.data as AuthResponse;
 
-        const isRefreshCall =
-            typeof args === "object" &&
-            args.url?.includes("/users/refresh");
+            api.dispatch(setAccessToken(data.accessToken));
 
-        if (result?.error?.status === 401 && !isRefreshCall) {
-
-            const refreshResult = await rawBaseQuery(
-                {
-                    url: "users/refresh",
-                    method: "POST",
-                },
-                api,
-                extraOptions
-            );
-
-            if (refreshResult.data) {
-                const newAccessToken = (refreshResult.data as AuthResponse).accessToken;
-
-                api.dispatch(setAccessToken(newAccessToken));
-
-                result = await rawBaseQuery(args, api, extraOptions);
-            } else {
-                api.dispatch(clearAccessToken());
-                if (typeof window !== "undefined") {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
-                    // 🔥 MUST clear cookies BEFORE redirect, otherwise proxy.ts sees
-                    // the token cookie and bounces back → infinite loop
-                    document.cookie = "token=; path=/; max-age=0";
-                    document.cookie = "role=; path=/; max-age=0";
-                    window.location.href = "/login";
-                }
-            }
+            result = await baseQuery(args, api, extraOptions);
+        } else {
+            api.dispatch(clearAccessToken());
         }
+    }
 
-        return result;
-    };
+    return result;
+};
 
+// 3. Create and Export Base API
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: retry(baseQueryWithAuth, { maxRetries: 0 }),

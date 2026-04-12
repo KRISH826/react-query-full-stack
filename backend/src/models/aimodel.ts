@@ -34,4 +34,5 @@ export interface ProductAITags {
     fabric_hint?: string;
     vibe: string[];
     search_keywords: string[];
+    image_description?: string; // Vision se aane wala description
 }

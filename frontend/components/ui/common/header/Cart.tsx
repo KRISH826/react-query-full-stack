@@ -4,10 +4,15 @@ import { ShoppingBag } from 'lucide-react'
 import { useGetCartQuery } from '@/services/cartApi'
 import { useRouter } from 'next/navigation';
 import { useGetProfileQuery } from '@/services/userApi';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 const Cart = () => {
-    const { data } = useGetCartQuery();
-    const { data: user, isLoading } = useGetProfileQuery();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data } = useGetCartQuery(undefined, { skip: !token });
+    const { data: user, isLoading } = useGetProfileQuery(undefined, {
+        skip: !token
+    });
     const router = useRouter();
     const handleCart = () => {
         if (!user && !isLoading) {

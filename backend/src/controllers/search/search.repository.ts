@@ -7,17 +7,42 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
     let i = 1;
-    let cteOrderClause = "ORDER BY p.created_at DESC";   
-    let mainOrderClause = "ORDER BY mp.created_at DESC"; 
     let scoreSelect = "0 AS score";
+    let orderClause = "ORDER BY p.created_at DESC";
 
     if (keyword) {
-        conditions.push(`p.search_vector @@ websearch_to_tsquery('english', $${i})`);
-        scoreSelect = `ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) AS score`;
+        // Category hata diya, sirf Name, Description aur Brand ko weightage di hai
+        scoreSelect = `(
+            (ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.6) + 
+            (GREATEST(
+                similarity(p.productname, $${i}),
+                similarity(COALESCE(p.description, ''), $${i}),
+                similarity(COALESCE(p.brand, ''), $${i}),
+                word_similarity(p.productname, $${i})
+            ) * 0.4) + 
+            (GREATEST(
+                COALESCE((SELECT MAX(similarity(pi.image_url, $${i})) FROM product_images pi WHERE pi.product_id = p.id), 0),
+                COALESCE((SELECT MAX(similarity(v.sku, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0),
+                COALESCE((SELECT MAX(similarity(v.size, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0)
+            ) * 0.4)
+        ) AS score`;
 
-        cteOrderClause = "ORDER BY score DESC, p.created_at DESC";
-        mainOrderClause = "ORDER BY score DESC, mp.created_at DESC";
+        // Yahan se bhi category ki ILIKE aur similarity conditions hata di
+        conditions.push(`(
+            p.search_vector @@ websearch_to_tsquery('english', $${i})
+            OR EXISTS (
+                SELECT 1
+                FROM unnest(string_to_array($${i}, ' ')) AS kw
+                WHERE word_similarity(p.productname, kw) > 0.15
+                OR word_similarity(COALESCE(p.description, ''), kw) > 0.15
+                OR word_similarity(COALESCE(p.brand, ''), kw) > 0.15
+            )
+            OR p.productname ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.description, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.brand, '') ILIKE '%' || $${i} || '%'
+        )`);
 
+        orderClause = "ORDER BY score DESC, p.created_at DESC";
         values.push(keyword);
         i++;
     }
@@ -45,7 +70,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             SELECT p.*, ${scoreSelect}
             FROM products p
             WHERE ${conditions.join(" AND ")}
-            ${cteOrderClause} -- Yahan 'p' chalega
+            ${orderClause}
             LIMIT $${i}
         )
         SELECT 
@@ -76,7 +101,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             FROM product_variants v WHERE v.product_id = mp.id
         ) var ON true
 
-        ${mainOrderClause}; -- Yahan ab 'mp' chalega, koi error nahi aayega!
+        ORDER BY mp.score DESC, mp.created_at DESC;
     `;
 
     const { rows } = await db.query(query, values);

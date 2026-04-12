@@ -15,8 +15,6 @@ const OrderPage = () => {
     const totalPages = data?.totalPages ?? 1;
     const pages = usePagination(page, totalPages);
 
-    console.log(data);
-
     // ✅ flatten orders → individual items with order info
 
     if (isLoading) {

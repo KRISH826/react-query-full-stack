@@ -2,7 +2,7 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImageByid, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, getImageById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
@@ -90,12 +90,18 @@ export class ProductService {
                     }, client);
                 }
 
+                const firstFile = files[0];
+                const base64ImageString = firstFile.buffer.toString('base64');
+                const imageMimeType = firstFile.mimetype; // e.g., 'image/png' ya 'image/jpeg'
+
                 aiTags = await AiService.generateProductTags({
                     description: product.description,
                     brand: product.brand,
                     gender: product.gender,
                     category_names: product.category_names,
                     productname: product.productname,
+                    imageBase64: base64ImageString,
+                    mimetype: imageMimeType,
                 })
 
                 if (aiTags) {
@@ -161,20 +167,13 @@ export class ProductService {
 
             const validFiles = files?.filter((f) => f.size > 0);
             if (validFiles?.length) {
-                if (existingProduct.images?.length) {
-                    for (const image of existingProduct.images) {
-                        const key = extractKeyFromS3Url(image.image_url);
-                        await deleteFromS3(key);
-                    }
-                }
-                await deleteProductImages(id, client);
-
+                const currentImagesCount = existingProduct.images?.length || 0;
                 for (let i = 0; i < validFiles.length; i++) {
                     const uploaded = await uploadSingleImage(validFiles[i]);
                     await addProductImage({
                         product_id: id,
                         image_url: uploaded.url,
-                        isprimary: i === 0,
+                        isprimary: currentImagesCount === 0 && i === 0,
                     }, client);
                 }
             }
@@ -305,5 +304,35 @@ export class ProductService {
             60 * 60 * 24
         );
     }
+
+    static async deleteImageService(imageId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const image = await getImageById(imageId, client);
+            if (!image) {
+                throw new HttpError("Image not found", 404);
+            }
+
+            try {
+                const key = extractKeyFromS3Url(image.image_url);
+                await deleteFromS3(key);
+                await deleteProductImages(imageId, client);
+            } catch (error) {
+                console.error(`S3 deletion failed for key: ${image.image_url}`, error);
+            }
+            await deleteProductImageByid(imageId, client);
+            await client.query('COMMIT');
+            await this.invalidateProductCache(image.product_id);
+            await refreshProductDetailMV();
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
 }
 
