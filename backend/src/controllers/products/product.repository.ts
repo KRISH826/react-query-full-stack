@@ -209,3 +209,11 @@ export async function refreshProductDetailMV(db: Pool | PoolClient = pool): Prom
     await db.query(`REFRESH MATERIALIZED VIEW CONCURRENTLY product_detail_mv`);
 }
 
+export async function searchProductsByNameAndBrand(name: string, brand: string, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO[]> {
+    const { rows } = await db.query(
+        `SELECT * FROM product_full_mv WHERE productname ILIKE $1 AND brand ILIKE $2`,
+        [`%${name}%`, `%${brand}%`]
+    );
+    return rows;
+}
+
