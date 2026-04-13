@@ -2,7 +2,7 @@ import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import { deleteFromS3, extractKeyFromS3Url, uploadSingleImage } from "../../middlewares/upload";
 import { CreateProductDTO, ProductDB, ProductStatus, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
-import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImageByid, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, getImageById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, topProducts, updateProduct } from "./product.repository";
+import { addProductImage, addProductVariant, createProduct, deleteProduct, deleteProductCategories, deleteProductImageByid, deleteProductImages, deleteProductVariants, findAllProducts, findProductById, findProductByid, findProductWithImagesById, getImageById, refreshProductDetailMV, refreshProductFullMV, saveProductAITags, searchProductsByNameAndBrand, topProducts, updateProduct } from "./product.repository";
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
@@ -301,7 +301,22 @@ export class ProductService {
                 }
                 return products;
             },
-            60 * 60 * 24
+            60 * 60 * 1
+        );
+    }
+
+    static async searchProductsByNameAndBrandService(name: string, brand: string): Promise<ProductWithImagesDTO[]> {
+        const cacheKey = `products:search:name:${name}:brand:${brand}`;
+        return cache.getOrSet(
+            cacheKey,
+            async () => {
+                const products = await searchProductsByNameAndBrand(name, brand);
+                if (!products.length) {
+                    throw new HttpError("No products found", 404);
+                }
+                return products;
+            },
+            60 * 60 * 1 // 1 hour cache for search results
         );
     }
 

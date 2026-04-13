@@ -16,18 +16,19 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { columns } from "./columns"
-import { useGetProductsQuery } from "@/services/productApi"
+import { useGetProductsQuery, useSearchProductsQuery } from "@/services/productApi"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
-export function ProductTable() {
+export function ProductTable({ searchTerm }: { searchTerm: string }) {
   const [page, setPage] = useState(1)
   const limit = 10
-
-  const { data, isLoading, isError } = useGetProductsQuery({ page, limit })
+  const searchString = searchTerm.trim().length > 0;
+  const { data: SearchData, isLoading: SearchLoading, isError: SearchIsError } = useSearchProductsQuery({ name: searchTerm, limit }, { skip: !searchString })
+  const { data, isLoading, isError } = useGetProductsQuery({ page, limit }, { skip: searchString })
 
   const table = useReactTable({
-    data: data?.data ?? [],
+    data: searchString ? SearchData?.data ?? [] : data?.data ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
   })
@@ -50,12 +51,24 @@ export function ProductTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isLoading || SearchLoading ? (
               Array.from({ length: limit }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell colSpan={columns.length}><Skeleton className="h-10 w-full" /></TableCell>
                 </TableRow>
               ))
+            ) : SearchIsError ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                  No products found.
+                </TableCell>
+              </TableRow>
+            ) : SearchIsError ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
+                  No products found.
+                </TableCell>
+              </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow key={row.id}>

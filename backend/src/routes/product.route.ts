@@ -8,6 +8,7 @@ const router = Router();
 
 router.post("/", requireAuth, requireRole("admin"), upload.array("images"), ProductController.createProductController);
 router.get("/", ProductController.getAllController);
+router.get("/search", ProductController.searchProductsController);
 router.get("/top-products", ProductController.topProductsController);
 router.get("/:id", ProductController.getByIdController);
 router.delete("/:id", requireAuth, requireRole("admin"), ProductController.deleteProductController);

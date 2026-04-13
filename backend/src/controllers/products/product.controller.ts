@@ -96,6 +96,21 @@ export class ProductController {
         }
     }
 
+    static async searchProductsController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const name = (req.query.name as string) || '';
+            const brand = (req.query.brand as string) || '';
+            const products = await ProductService.searchProductsByNameAndBrandService(name, brand);
+            return res.status(200).json({
+                success: true,
+                data: products,
+                message: "Products fetched successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async deleteImageController(req: Request, res: Response, next: NextFunction) {
         try {
             const imageId = req.params.imageId as string;
