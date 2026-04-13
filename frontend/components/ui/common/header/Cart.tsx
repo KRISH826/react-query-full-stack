@@ -11,7 +11,8 @@ const Cart = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data } = useGetCartQuery(undefined, { skip: !token });
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
-        skip: !token
+        skip: !token,
+        refetchOnMountOrArgChange: true,
     });
     const router = useRouter();
     const handleCart = () => {

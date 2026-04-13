@@ -14,7 +14,8 @@ import { RootState } from '@/store/store'
 const Profile = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
-        skip: !token
+        skip: !token,
+        refetchOnMountOrArgChange: true,
     });
     const [logout] = useLogoutMutation();
     const router = useRouter();

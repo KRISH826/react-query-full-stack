@@ -9,7 +9,7 @@ const PROTECTED_ROUTES = [...ADMIN_ROUTES, ...CUSTOMER_ROUTES, "/dashboard"];
 
 export function proxy(request: NextRequest) {
 
-    const token = request.cookies.get("token")?.value;
+    const refreshToken = request.cookies.get("refreshToken")?.value;
     const role = request.cookies.get("role")?.value;
 
     const { pathname } = request.nextUrl;
@@ -25,13 +25,13 @@ export function proxy(request: NextRequest) {
     const isAuthRoute = AUTH_ROUTES.some((route) =>
         pathname.startsWith(route)
     );
-    if (isProtected && !token) {
+    if (isProtected && !refreshToken) {
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("callbackUrl", pathname);
         return NextResponse.redirect(loginUrl);
     }
 
-    if (token) {
+    if (refreshToken) {
         if (isAuthRoute) {
             const redirectUrl = role === "admin" ? "/admin/dashboard" : "/product";
             return NextResponse.redirect(new URL(redirectUrl, request.url));

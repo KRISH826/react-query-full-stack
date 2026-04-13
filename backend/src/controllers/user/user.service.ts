@@ -118,7 +118,7 @@ export class AuthService {
             if (!user?.isverified) {
                 throw new HttpError("Please verify your email first", 403);
             }
-            if(user) {
+            if (user) {
                 await cache.set(USER_CACHE_KEY(user.id), toUserResponse(user));
             }
             if (!RefreshToken) {

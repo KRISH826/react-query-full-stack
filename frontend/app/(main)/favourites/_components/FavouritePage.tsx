@@ -9,10 +9,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { usePagination } from "@/hooks/usePagination";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const FavouritePage = () => {
     const [page, setPage] = useState(1);
-    const { data, isLoading, error } = useGetFavouritesQuery({ page: 1, limit: 20 });
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data, isLoading, error } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
     const totalPages = data?.totalPages ?? 1;
     const pages = usePagination(page, totalPages);
     const router = useRouter();

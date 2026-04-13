@@ -13,7 +13,8 @@ const Favourites = () => {
     const router = useRouter();
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
-        skip: !token
+        skip: !token,
+        refetchOnMountOrArgChange: true,
     });
 
     const navigateFavourites = () => {
