@@ -75,7 +75,7 @@ export const productApi = baseApi.injectEndpoints({
                 if (name) params.append("name", name);
                 if (brand) params.append("brand", brand);
                 params.append("limit", limit.toString());
-                return `search-products/search?${params.toString()}`;
+                return `products/search?${params.toString()}`;
             },
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
