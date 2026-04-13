@@ -6,6 +6,7 @@ import { requireRole } from "../middlewares/role.middleware";
 const router = express.Router();
 
 router.post("/", requireAuth, requireRole("admin"), CategoryController.createCategoryController);
+router.get("/search", CategoryController.searchCategoryController);
 router.get("/products", CategoryController.getProductsByCategoryIdController);
 router.get("/:id", requireAuth, requireRole("admin", "customer"), CategoryController.getCategoryByIdController);
 router.get("/", CategoryController.getAllCategoriesController);

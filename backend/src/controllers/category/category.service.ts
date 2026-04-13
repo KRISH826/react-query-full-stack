@@ -3,7 +3,7 @@ import { pool } from "../../db/db";
 import { buildCategoryTree } from "../../helper/helper";
 import { HttpError } from "../../middlewares/error.middleware";
 import { CategoryCreateDTO, CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
-import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, getProductByCategoryId, updateCategory } from "./category.repository";
+import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, getProductByCategoryId, searchCategory, updateCategory } from "./category.repository";
 import { cache } from "../../utils/cache";
 
 export class CategoryService {
@@ -150,6 +150,21 @@ export class CategoryService {
             return deletedCategory;
         } catch (error) {
             await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async searchCategoryService(name: string): Promise<CategoryDb[]> {
+        if (!name) {
+            throw new HttpError("Category name is required", 400);
+        }
+        const client = await pool.connect();
+        try {
+            const categories = await searchCategory(name, client);
+            return categories;
+        } catch (error) {
             throw error;
         } finally {
             client.release();
