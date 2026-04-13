@@ -158,10 +158,10 @@ export async function getProductByCategoryId(slug: string, categoryId: string, p
     return { data: query.rows, total };
 }
 
-export async function searchCategory(slug: string, name: string, db: Pool | PoolClient = pool): Promise<CategoryDb[]> {
+export async function searchCategory(name: string, db: Pool | PoolClient = pool): Promise<CategoryDb[]> {
     const { rows } = await db.query(
-        `SELECT * FROM categories WHERE slug ILIKE $1 AND name ILIKE $2`,
-        [`%${slug}%`, `%${name}%`]
+        `SELECT * FROM categories WHERE name ILIKE $1`,
+        [`%${name}%`]
     );
     return rows;
 }

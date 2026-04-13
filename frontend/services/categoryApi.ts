@@ -59,6 +59,15 @@ export const categoryApi = baseApi.injectEndpoints({
                     ]
                     : [{ type: "Category", id: "LIST" }],
         }),
+        searchCategory: builder.query<Category[], string>({
+            query: (name: string) => {
+                const params = new URLSearchParams();
+                if (name) params.append("name", name);
+                return `categories/search?${params.toString()}`;
+            },
+            transformResponse: (response: { categories: Category[] }) => response.categories,
+            providesTags: ["Category"],
+        }),
         getProductsByCategories: builder.query<{ data: Product[]; total: number },
             { categoryId: string; slug: string; limit: number; page: number }>({
                 query: ({ categoryId, slug, limit, page }) => `categories/products?slug=${slug}&id=${categoryId}&limit=${limit}&page=${page}`,
@@ -68,4 +77,4 @@ export const categoryApi = baseApi.injectEndpoints({
     }),
 })
 
-export const { useGetAllCategoriesQuery, useGetProductsByCategoriesQuery, useDeleteCategoryMutation, useCreateCategoryMutation, useGetCategoriesByIdQuery, useUpdateCategoryMutation } = categoryApi;
+export const { useGetAllCategoriesQuery, useGetProductsByCategoriesQuery, useDeleteCategoryMutation, useCreateCategoryMutation, useGetCategoriesByIdQuery, useUpdateCategoryMutation, useSearchCategoryQuery } = categoryApi;

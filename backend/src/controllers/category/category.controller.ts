@@ -81,4 +81,17 @@ export class CategoryController {
             next(error);
         }
     }
+
+    static async searchCategoryController(req: Request, res: Response, next: NextFunction) {
+        try {
+            const name = req.query.name as string;
+            const categories = await CategoryService.searchCategoryService(name);
+            res.status(200).json({
+                message: "Categories fetched successfully",
+                categories
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
