@@ -38,6 +38,7 @@ const ResetPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDiv
             await resetPassword({ email, code: otp, newPassword: data.password }).unwrap();
             toast.success("Password reset successful!");
             router.push("/login");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to reset password");
         }

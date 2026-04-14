@@ -2,6 +2,26 @@ import { baseApi } from "./baseQuery";
 import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
 import { AuthResponse, LoginRequest, RegisterRequest, User } from "@/types/user";
 
+interface EmailRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    code: string;
+    newPassword: string;
+}
+
+interface VerifyEmailRequest {
+    email: string;
+    code: string;
+}
+
+interface SuccessResponse {
+    success: boolean;
+    message: string;
+}
+
 export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
 
@@ -15,8 +35,8 @@ export const userApi = baseApi.injectEndpoints({
             async onQueryStarted(_arg, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-                    const validToken = data.accessToken || (data as any).token;
-                    
+                    const validToken = data.accessToken || (data as AuthResponse).accessToken;
+
                     if (validToken && validToken !== "undefined") {
                         dispatch(setAccessToken(validToken));
                         localStorage.setItem("token", validToken);
@@ -75,6 +95,38 @@ export const userApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "User", id: "PROFILE" }],
         }),
+        resendVerificationMail: builder.mutation<SuccessResponse, EmailRequest>({
+            query: (data) => ({
+                url: "users/resend-mail",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        verifyEmail: builder.mutation<SuccessResponse, VerifyEmailRequest>({
+            query: (data) => ({
+                url: "users/verify-email",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        forgetPassword: builder.mutation<SuccessResponse, EmailRequest>({
+            query: (data) => ({
+                url: "users/forget-password",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        resetPassword: builder.mutation<SuccessResponse, ResetPasswordRequest>({
+            query: (data) => ({
+                url: "users/reset-password",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
     }),
 });
 
@@ -84,4 +136,8 @@ export const {
     useGetProfileQuery,
     useUpdateProfileMutation,
     useLogoutMutation,
+    useVerifyEmailMutation,
+    useResendVerificationMailMutation,
+    useForgetPasswordMutation,
+    useResetPasswordMutation,
 } = userApi;
