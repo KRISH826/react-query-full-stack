@@ -50,8 +50,8 @@ app.use("/api/orders", orderRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/payments", paymentRouter);
 app.use("/api/search-products", searchRouter);
-app.use("/api/favourites", favouriteRouter)
-app.use("/api/reviews", reviewRouter)
+app.use("/api/favourites", favouriteRouter);
+app.use("/api/reviews", reviewRouter);
 
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is Perfect!")

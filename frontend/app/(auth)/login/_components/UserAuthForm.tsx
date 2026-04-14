@@ -36,17 +36,24 @@ const UserAuthForm = ({
             const response = await login(data).unwrap();
             toast.success("Login successful");
             reset();
+
             const role = response?.user?.role;
+            let destination = "/product"; // Default destination
+
+            // Destination decide kar rahe hain
             if (role === "admin") {
-                router.push("/admin/dashboard");
+                destination = "/admin/dashboard";
             } else {
                 if (callBackUrl.startsWith("/admin")) {
-                    router.push("/product");
+                    destination = "/product";
                 } else {
-                    router.push(callBackUrl);
+                    destination = callBackUrl;
                 }
             }
-        } catch (error: any) {
+
+            window.location.replace(destination);
+
+        } catch (error: unknown) {
             const errorMessage = error?.data?.message || "Login failed";
             toast.error(errorMessage);
         }

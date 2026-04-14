@@ -157,9 +157,6 @@ export class CategoryService {
     }
 
     static async searchCategoryService(name: string): Promise<CategoryDb[]> {
-        if (!name) {
-            throw new HttpError("Category name is required", 400);
-        }
         const client = await pool.connect();
         try {
             const categories = await searchCategory(name, client);

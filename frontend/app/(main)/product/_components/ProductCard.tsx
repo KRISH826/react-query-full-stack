@@ -10,6 +10,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 type Props = {
     product: Product;
@@ -17,7 +19,8 @@ type Props = {
 
 const ProductCard = ({ product }: Props) => {
     const router = useRouter();
-    const { data } = useGetFavouritesQuery({ page: 1, limit: 20 });
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
     const [addFavourite, { isLoading, isSuccess }] = useAddFavouriteMutation();
     const image =
         product.images?.find((img) => img.isprimary)?.image_url ||

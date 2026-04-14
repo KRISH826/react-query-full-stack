@@ -2,10 +2,29 @@ import { baseApi } from "./baseQuery";
 import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
 import { AuthResponse, LoginRequest, RegisterRequest, User } from "@/types/user";
 
+interface EmailRequest {
+    email: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    code: string;
+    newPassword: string;
+}
+
+interface VerifyEmailRequest {
+    email: string;
+    code: string;
+}
+
+interface SuccessResponse {
+    success: boolean;
+    message: string;
+}
+
 export const userApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
 
-        // ✅ LOGIN
         login: builder.mutation<AuthResponse, LoginRequest>({
             query: (credentials) => ({
                 url: "users/login",
@@ -13,23 +32,25 @@ export const userApi = baseApi.injectEndpoints({
                 body: credentials,
             }),
 
-            async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+            async onQueryStarted(_arg, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-                    dispatch(setAccessToken(data.accessToken));
-                    localStorage.setItem("token", data.accessToken);
-                    localStorage.setItem("user", JSON.stringify(data.user));
+                    const validToken = data.accessToken || (data as AuthResponse).accessToken;
 
-                    // 🔥 Set cookies on frontend domain so proxy.ts can read them
-                    const role = data.user?.role || "customer";
+                    if (validToken && validToken !== "undefined") {
+                        dispatch(setAccessToken(validToken));
+                        localStorage.setItem("token", validToken);
+                    }
+
+                    const role = data.user?.role ?? "customer";
                     const maxAge = 60 * 60 * 24 * 7;
-                    document.cookie = `token=${data.accessToken}; path=/; max-age=${maxAge}; SameSite=Lax`;
                     document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
                 } catch (err) {
-                    console.log(err);
+                    console.error("Login failed:", err);
                 }
             },
         }),
+
         registerUser: builder.mutation<AuthResponse, RegisterRequest>({
             query: (credentials) => ({
                 url: "users/register",
@@ -44,24 +65,22 @@ export const userApi = baseApi.injectEndpoints({
             providesTags: [{ type: "User", id: "PROFILE" }],
         }),
 
-        // ✅ LOGOUT
         logout: builder.mutation<void, void>({
             query: () => ({
                 url: "users/logout",
                 method: "POST",
             }),
 
-            async onQueryStarted(arg, { queryFulfilled, dispatch }) {
+            async onQueryStarted(_arg, { queryFulfilled, dispatch }) {
                 try {
                     await queryFulfilled;
+                } catch (err) {
+                    console.error("Logout request failed:", err);
                 } finally {
-                    localStorage.removeItem("token");
-                    localStorage.removeItem("user");
                     dispatch(clearAccessToken());
 
-                    // 🔥 Clear frontend cookies so proxy.ts knows user is logged out
-                    document.cookie = "token=; path=/; max-age=0";
-                    document.cookie = "role=; path=/; max-age=0";
+                    localStorage.removeItem("token");
+                    document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
 
                     window.location.href = "/login";
                 }
@@ -76,6 +95,37 @@ export const userApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "User", id: "PROFILE" }],
         }),
+        resendVerificationMail: builder.mutation<SuccessResponse, EmailRequest>({
+            query: (data) => ({
+                url: "users/resend-mail",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        verifyEmail: builder.mutation<SuccessResponse, VerifyEmailRequest>({
+            query: (data) => ({
+                url: "users/verify-email",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        forgetPassword: builder.mutation<SuccessResponse, EmailRequest>({
+            query: (data) => ({
+                url: "users/forget-password",
+                method: "POST",
+                body: data,
+            }),
+        }),
+
+        resetPassword: builder.mutation<SuccessResponse, ResetPasswordRequest>({
+            query: (data) => ({
+                url: "users/reset-password",
+                method: "POST",
+                body: data,
+            }),
+        }),
 
     }),
 });
@@ -85,5 +135,9 @@ export const {
     useRegisterUserMutation,
     useGetProfileQuery,
     useUpdateProfileMutation,
-    useLogoutMutation
+    useLogoutMutation,
+    useVerifyEmailMutation,
+    useResendVerificationMailMutation,
+    useForgetPasswordMutation,
+    useResetPasswordMutation,
 } = userApi;

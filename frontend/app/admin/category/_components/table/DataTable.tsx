@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import {
-    ExpandedState,
+  ExpandedState,
   flexRender,
   getCoreRowModel,
   getExpandedRowModel,
@@ -10,22 +10,24 @@ import {
 } from "@tanstack/react-table"
 
 import { Skeleton } from "@/components/ui/skeleton"
-import { useGetAllCategoriesQuery } from "@/services/categoryApi"
+import { useGetAllCategoriesQuery, useSearchCategoryQuery } from "@/services/categoryApi"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { columns } from "./columns"
 
-export function CategoryTable() {
+export function CategoryTable({ searchTerm }: { searchTerm: string }) {
   const { data: categories, isLoading, isError } = useGetAllCategoriesQuery()
-  const [expanded, setExpanded] = React.useState<ExpandedState>({})
+  const [expanded, setExpanded] = React.useState<ExpandedState>({});
+  const { data: searchCategories, isLoading: isSearchLoading, isError: isSearchError } = useSearchCategoryQuery(searchTerm);
+  const isSearching = searchTerm.trim().length > 0;
 
   const table = useReactTable({
-    data: categories ?? [],
+    data: (isSearching ? searchCategories : categories) ?? [],
     columns,
     state: {
       expanded,
     },
     onExpandedChange: setExpanded,
-    getSubRows: (row) => row.children, 
+    getSubRows: (row) => row.children,
     getCoreRowModel: getCoreRowModel(),
     getExpandedRowModel: getExpandedRowModel()
   })
@@ -41,8 +43,8 @@ export function CategoryTable() {
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => (
-                <TableHead 
-                  className="bg-secondary/40 border-b border-secondary/70 font-bold text-sm uppercase tracking-wider" 
+                <TableHead
+                  className="bg-secondary/40 border-b border-secondary/70 font-bold text-sm uppercase tracking-wider"
                   key={header.id}
                 >
                   {flexRender(header.column.columnDef.header, header.getContext())}
@@ -52,7 +54,7 @@ export function CategoryTable() {
           ))}
         </TableHeader>
         <TableBody>
-          {isLoading ? (
+          {isLoading || isSearchLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
               <TableRow key={i}>
                 <TableCell colSpan={columns.length} className="py-4">
@@ -62,8 +64,8 @@ export function CategoryTable() {
             ))
           ) : table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow 
-                key={row.id} 
+              <TableRow
+                key={row.id}
                 className={`transition-colors border-b last:border-0 ${row.getIsExpanded() ? 'bg-muted/30' : 'hover:bg-muted/50'}`}
               >
                 {row.getVisibleCells().map((cell) => (

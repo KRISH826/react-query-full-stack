@@ -4,53 +4,60 @@ import {
     fetchBaseQuery,
     FetchArgs,
     FetchBaseQueryError,
-    retry
+    retry,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/store/store";
-import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
-import { AuthResponse } from "@/types/user";
+import { clearAccessToken } from "@/store/slice/userSlice";
 
 const baseQuery = fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
-        const token = (getState() as RootState).auth.accessToken;
-        if (token) {
+        let token = (getState() as RootState).auth.accessToken;
+        if (!token && typeof window !== "undefined") {
+            token = localStorage.getItem("token");
+        }
+        if (token && token !== "undefined" && token !== "null") {
             headers.set("Authorization", `Bearer ${token}`);
         }
         return headers;
     },
 });
-// 2. Smart Interceptor for 401 Unauthorized
+
 const baseQueryWithAuth: BaseQueryFn<
     string | FetchArgs,
     unknown,
     FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-    let result = await baseQuery(args, api, extraOptions);
+    const result = await baseQuery(args, api, extraOptions);
 
     if (result.error?.status === 401) {
-        const refreshResult = await baseQuery(
-            { url: "/users/refresh", method: "POST" },
-            api,
-            extraOptions
-        );
+        const state = api.getState() as RootState;
 
-        if (refreshResult.data) {
-            const data = refreshResult.data as AuthResponse;
+        // Grab token from state OR localStorage
+        const currentToken = state.auth.accessToken ||
+            (typeof window !== "undefined" ? localStorage.getItem("token") : null);
 
-            api.dispatch(setAccessToken(data.accessToken));
+        const isValidToken = currentToken && currentToken !== "undefined" && currentToken !== "null";
 
-            result = await baseQuery(args, api, extraOptions);
-        } else {
+        // 🔥 Only trigger the logout sequence if we actually HAD a token that the server rejected
+        if (isValidToken) {
             api.dispatch(clearAccessToken());
+
+            if (
+                typeof window !== "undefined" &&
+                !window.location.pathname.includes("/login")
+            ) {
+                localStorage.removeItem("token");
+                document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
+                window.location.href = "/login";
+            }
         }
     }
 
     return result;
 };
 
-// 3. Create and Export Base API
 export const baseApi = createApi({
     reducerPath: "api",
     baseQuery: retry(baseQueryWithAuth, { maxRetries: 0 }),

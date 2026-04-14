@@ -24,7 +24,8 @@ export function AdminHeader() {
   const pathname = usePathname();
   const token = useSelector((state: RootState) => state.auth.accessToken);
   const { data, isLoading } = useGetProfileQuery(undefined, {
-    skip: !token
+    skip: !token,
+    refetchOnMountOrArgChange: true,
   });
 
   return (

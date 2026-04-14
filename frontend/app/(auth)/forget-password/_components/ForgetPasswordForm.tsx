@@ -10,13 +10,13 @@ import { Spinner } from '@/components/ui/spinner';
 import { useRouter } from 'next/navigation';
 import { z } from 'zod';
 import { forgotSchema } from '@/schema/auth.schema';
-import { useForgotPasswordMutation, useResendCodeMutation } from '@/services/userApi';
+import { useForgetPasswordMutation } from '@/services/userApi';
 
 type ForgotValues = z.infer<typeof forgotSchema>;
 
 const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     const router = useRouter();
-    const [forgotPassword, {isLoading}] = useForgotPasswordMutation();
+    const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
 
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<ForgotValues>({
         resolver: zodResolver(forgotSchema),
@@ -25,7 +25,7 @@ const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDi
 
     const onSubmit = async (data: ForgotValues) => {
         try {
-            await forgotPassword({ email: data.email }).unwrap();
+            await forgetPassword({ email: data.email }).unwrap();
             toast.success("Reset code sent to your email!");
             router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
         } catch (error: any) {

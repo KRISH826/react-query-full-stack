@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@/components/ui/spinner'
-import { useVerifyEmailMutation, useResendCodeMutation } from '@/services/userApi'
+import { useVerifyEmailMutation, useResendVerificationMailMutation } from '@/services/userApi'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useState } from 'react'
@@ -17,7 +17,7 @@ const VerifyEmailForm = ({
     ...props
 }: React.HTMLAttributes<HTMLDivElement>) => {
     const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
-    const [resendCode, { isLoading: isResending }] = useResendCodeMutation();
+    const [resendVerificationMail, { isLoading: isResending }] = useResendVerificationMailMutation();
     const [otp, setOtp] = useState("");
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -33,6 +33,7 @@ const VerifyEmailForm = ({
             await verifyEmail({ email, code: otp }).unwrap();
             toast.success("Email verified successfully!");
             router.push("/login");
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             toast.error(error?.data?.message || "Verification failed");
         }
@@ -40,7 +41,7 @@ const VerifyEmailForm = ({
 
     const handleResend = async () => {
         try {
-            await resendCode({ email }).unwrap();
+            await resendVerificationMail({ email }).unwrap();
             toast.success("Verification code resent!");
         } catch (error: any) {
             toast.error(error?.data?.message || "Failed to resend code");
