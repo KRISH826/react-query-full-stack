@@ -80,7 +80,13 @@ export const productApi = baseApi.injectEndpoints({
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
         }),
+
+        clientSearchProducts: builder.query<Product[], string>({
+            query: (query) => `search-products/search?q=${query}`,
+            transformResponse: (response: ProductsResponse) => response.data,
+            providesTags: [{ type: "Product", id: "LIST" }],
+        })
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation, useSearchProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation, useSearchProductsQuery, useClientSearchProductsQuery } = productApi;

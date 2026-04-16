@@ -13,8 +13,8 @@ const AiSearch = () => {
         <Dialog>
             <DialogTrigger asChild>
                 <Button
-                    variant="outline"
-                    className="group border-primary/30! relative ml-1 overflow-visible"
+                    variant="secondary"
+                    className="group border-primary! relative overflow-visible"
                     size="icon"
                 >
                     <div className="relative flex items-center justify-center">
