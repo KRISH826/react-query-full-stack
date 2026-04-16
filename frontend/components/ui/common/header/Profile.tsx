@@ -43,9 +43,10 @@ const Profile = () => {
 
     if (!user && !isLoading) {
         return (
-            <Button asChild variant="ghost" size="icon">
+            <Button asChild variant="ghost" className="hidden sm:inline-flex items-center gap-1.5 px-3 h-9">
                 <Link href="/login">
-                    <User className="h-5 w-5" />
+                    <User className="h-4 w-4" />
+                    <span className="text-xs font-medium">Sign In</span>
                 </Link>
             </Button>
         );
@@ -54,9 +55,9 @@ const Profile = () => {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="link" className="gap-1 cursor-pointer bg-transparent border-0! shadow-none! px-1.5! ring-0! outline-none focus:outline-none">
-                        <User className="h-5 w-5" />
-                        <span className="hidden sm:inline">
+                    <Button variant="ghost" className="gap-1.5 cursor-pointer px-3 h-9 ring-0! outline-none focus:outline-none">
+                        <User className="h-4 w-4" />
+                        <span className="hidden sm:inline text-xs font-medium">
                             {user?.name.split(" ")[0]}
                         </span>
                     </Button>

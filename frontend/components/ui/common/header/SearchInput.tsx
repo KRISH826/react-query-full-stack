@@ -3,7 +3,6 @@
 import { Search, TrendingUp, History, Sparkles, X } from 'lucide-react'
 import React, { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Input } from '../../input'
 import AiSearch from './AiSearch'
 import { DropdownItem } from '@/app/(main)/product-search/_components/DropDownItem'
 
@@ -16,7 +15,6 @@ const TRENDING_SEARCHES = [
 
 function generateSuggestions(query: string): string[] {
     const q = query.toLowerCase()
-
     const suggestions: (string | null)[] = [
         query,
         (!q.includes('men') && !q.includes('women')) ? `${query} for Men` : null,
@@ -24,7 +22,6 @@ function generateSuggestions(query: string): string[] {
         (!q.includes('under') && !/\d/.test(query)) ? `${query} under ₹999` : null,
         (!q.includes('kids') && !q.includes('boy') && !q.includes('girl')) ? `${query} for Kids` : null,
     ]
-
     return suggestions.filter(Boolean).slice(0, 4) as string[]
 }
 
@@ -74,14 +71,14 @@ const SearchInput = () => {
                 </defs>
             </svg>
 
-            <div className="hidden md:flex flex-1 max-w-sm relative" ref={wrapperRef}>
-                <div className="relative w-full">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10 pointer-events-none" />
-
-                    <Input
+            <div className="hidden md:flex flex-1 max-w-xl mx-4 relative items-center gap-1.5" ref={wrapperRef}>
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <input
                         ref={inputRef}
-                        placeholder="Search brands and products…"
-                        className="pl-9 pr-8 bg-muted/40 border-primary/40 focus-visible:ring-primary/30 focus-visible:border-primary/60 transition-all duration-200"
+                        type="text"
+                        placeholder="Search for products, brands and more..."
+                        className="w-full h-9 pl-9 pr-8 rounded-md border border-input bg-muted/50 text-sm outline-none transition-colors focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/60"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
@@ -97,10 +94,9 @@ const SearchInput = () => {
                         aria-expanded={showDropdown}
                         autoComplete="off"
                     />
-
                     {query && (
                         <button
-                            className="absolute right-2 top-2 h-5 w-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={handleClear}
                             aria-label="Clear search"
@@ -154,6 +150,16 @@ const SearchInput = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Search button — separate, compact */}
+                <button
+                    type="button"
+                    onClick={() => handleSearch(query)}
+                    className="h-9 w-9 shrink-0 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground inline-flex items-center justify-center transition-colors cursor-pointer"
+                    aria-label="Search"
+                >
+                    <Search className="h-4 w-4" />
+                </button>
 
                 <AiSearch />
             </div>
