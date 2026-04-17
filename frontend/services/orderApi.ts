@@ -77,10 +77,10 @@ export const orderApi = baseApi.injectEndpoints({
         }),
 
         getAllOrders: builder.query<OrderResponseDTO[], void>({
-            query: () => "orders",
+            query: () => "orders/admin",
             transformResponse: (response: OrdersFullResponse) => response.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
-        }),
+        })
     }),
 });
 
@@ -93,5 +93,5 @@ export const {
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
     useCancelOrderItemsMutation,
-    useGetAllOrdersQuery,
+    useGetAllOrdersQuery
 } = orderApi;

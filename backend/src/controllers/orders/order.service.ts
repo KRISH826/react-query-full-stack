@@ -336,33 +336,28 @@ export class OrderService {
         }
     }
 
-    static async adminGetAllOrdersService(page: number = 1,
-        limit: number = 10): Promise<PaginatedOrdersResponseDTO> {
-        const client = await pool.connect();
-        try {
-            await client.query("BEGIN");
-            const orders = await adminGetOrdersAll(page, limit, client);
-            const formattedOrders = orders.data.map((order) => {
-                const { items, ...orderData } = order as any;
-                return this.formatOrderResponse(orderData, items ?? []);
-            });
-            await client.query("COMMIT");
-            return {
-                orders: formattedOrders,
-                page,
-                limit,
-                total: orders.total,
-                totalPages: Math.ceil(orders.total / limit),
-            };
+    static async adminGetAllOrdersService(
+    page: number = 1,
+    limit: number = 10
+): Promise<PaginatedOrdersResponseDTO> {
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.min(50, Math.max(1, limit));
 
+    const { data, total } = await adminGetOrdersAll(safePage, safeLimit);
 
-        } catch (error) {
-            await client.query("ROLLBACK");
-            throw error;
-        } finally {
-            client.release();
-        }
-    }
+    const orders = data.map((order) => {
+        const { items, ...orderData } = order as any;
+        return this.formatOrderResponse(orderData, items ?? []);
+    });
+
+    return {
+        orders,
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+    };
+}
 
     private static formatOrderResponse(
         order: OrderDB,

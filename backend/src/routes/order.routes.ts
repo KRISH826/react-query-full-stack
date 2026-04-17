@@ -6,6 +6,7 @@ import { OrderController } from "../controllers/orders/order.controller";
 const router = express.Router();
 
 router.get("/", requireAuth, OrderController.getUserOrdersController);
+router.get("/admin", requireAuth, requireRole("admin"), OrderController.adminGetAllOrdersController);
 router.post("/checkout", requireAuth, requireRole("customer"), OrderController.createOrderController);
 router.get("/:orderId", requireAuth, OrderController.getOrderByIdController);
 router.delete("/:orderId/items/:itemId", requireAuth, OrderController.cancelOrderItemController);
