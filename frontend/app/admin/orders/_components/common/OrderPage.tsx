@@ -21,7 +21,7 @@ const OrderPage = () => {
                 <h1 className='text-2xl font-semibold'>Orders</h1>
             </div>
             <Card className='lg:mt-6 mt-4'>
-                <div className="px-5 py-4 border-b border-border/40">
+                <div className="px-5">
                     <SearchInput onChange={SetSearchTerm} value={searchTerm} placeholder='Search Order Number or Product...' />
                 </div>
                 <OrderTable searchTerm={debounce} />

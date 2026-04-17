@@ -21,8 +21,8 @@ export const UpdateStatusAction = ({ orderId, itemId, currentStatus }: { orderId
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10">
-                    <RefreshCcw className="h-4 w-4" />
+                <Button size="icon" className="h-8 w-8 cursor-pointer">
+                    <RefreshCcw size={14} />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
