@@ -25,6 +25,7 @@ import {
     findUsersOrders,
     getOrderWithItems,
     markOrderFailed,
+    searchOrdersAdmin,
     updateOrderItemStatus,
     updateOrderStatus,
 } from "./order.repository";
@@ -337,27 +338,46 @@ export class OrderService {
     }
 
     static async adminGetAllOrdersService(
-    page: number = 1,
-    limit: number = 10
-): Promise<PaginatedOrdersResponseDTO> {
-    const safePage = Math.max(1, page);
-    const safeLimit = Math.min(50, Math.max(1, limit));
+        page: number = 1,
+        limit: number = 10
+    ): Promise<PaginatedOrdersResponseDTO> {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(50, Math.max(1, limit));
 
-    const { data, total } = await adminGetOrdersAll(safePage, safeLimit);
+        const { data, total } = await adminGetOrdersAll(safePage, safeLimit);
 
-    const orders = data.map((order) => {
-        const { items, ...orderData } = order as any;
-        return this.formatOrderResponse(orderData, items ?? []);
-    });
+        const orders = data.map((order) => {
+            const { items, ...orderData } = order as any;
+            return this.formatOrderResponse(orderData, items ?? []);
+        });
 
-    return {
-        orders,
-        page: safePage,
-        limit: safeLimit,
-        total,
-        totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
-    };
-}
+        return {
+            orders,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+        };
+    }
+
+    static async searchOrdersService(searhQuery: string, page: number = 1, limit: number = 10): Promise<PaginatedOrdersResponseDTO> {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(50, Math.max(1, limit));
+        const { data, total } = await searchOrdersAdmin(searhQuery, safePage, safeLimit);
+
+        const orders = data.map((order) => {
+            const { items, ...orderData } = order as any;
+            return this.formatOrderResponse(orderData, items ?? []);
+        });
+
+        return {
+            orders,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+        };
+    }
 
     private static formatOrderResponse(
         order: OrderDB,

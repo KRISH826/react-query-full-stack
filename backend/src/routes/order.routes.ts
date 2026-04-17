@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/", requireAuth, OrderController.getUserOrdersController);
 router.get("/admin", requireAuth, requireRole("admin"), OrderController.adminGetAllOrdersController);
+router.get("/search", requireAuth, requireRole("admin"), OrderController.adminOrderSEarchController);
 router.post("/checkout", requireAuth, requireRole("customer"), OrderController.createOrderController);
 router.get("/:orderId", requireAuth, OrderController.getOrderByIdController);
 router.delete("/:orderId/items/:itemId", requireAuth, OrderController.cancelOrderItemController);

@@ -235,4 +235,14 @@ export class OrderController {
             next(error);
         }
     }
+
+    static async adminOrderSEarchController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const query = req.query.q as string;
+            const orders = await OrderService.searchOrdersService(query);
+            return res.status(200).json({ message: "Orders fetched successfully", orders });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

@@ -29,7 +29,7 @@ export const orderApi = baseApi.injectEndpoints({
         }),
         getOrders: builder.query<OrdersFullResponse, { page?: number; limit?: number }>({
             query: ({ page = 1, limit = 10 }) => `orders?page=${page}&limit=${limit}`,
-            transformResponse: (response: OrdersFullResponse) => response,
+            transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
         getOrderById: builder.query<OrderResponseDTO, string>({
@@ -78,7 +78,7 @@ export const orderApi = baseApi.injectEndpoints({
 
         getAllOrders: builder.query<OrderResponseDTO[], void>({
             query: () => "orders/admin",
-            transformResponse: (response: OrdersFullResponse) => response.orders,
+            transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         })
     }),

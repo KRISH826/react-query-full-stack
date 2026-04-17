@@ -1,7 +1,8 @@
+import OrderPage from "./_components/common/OrderPage"
 
 const page = () => {
     return (
-        <div>page</div>
+        <OrderPage />
     )
 }
 
