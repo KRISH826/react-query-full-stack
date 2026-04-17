@@ -300,3 +300,23 @@ export async function cancelOrderItem(
     );
     return rows[0] || null;
 }
+
+export async function adminGetOrdersAll(page: number = 1, limit: number = 10, db: Pool | PoolClient = pool): Promise<{ data: OrderItemDB[], total: number }> {
+    const offset = (page - 1) * limit;
+    const countItems = await db.query(
+        `SELECT COUNT(oi.id) 
+         FROM order_items oi
+         JOIN orders o ON o.id = oi.order_id
+         WHERE o.deleted_at IS NULL`
+    );
+    const total = parseInt(countItems.rows[0].count, 10);
+    const { rows } = await db.query(
+        `SELECT * from order_items oi
+         JOIN orders o ON o.id = oi.order_id
+         WHERE o.deleted_at IS NULL
+         ORDER BY oi.created_at DESC
+         LIMIT $1 OFFSET $2`,
+        [limit, offset]
+    );
+    return { data: rows || [], total };
+}

@@ -14,6 +14,7 @@ import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
 import { sendOrderCancellationMail, sendOrderItemsCancellationMail } from "../email/email.service";
 import {
+    adminGetOrdersAll,
     buyNowProductByid,
     cancelOrderItem,
     createOrder,
@@ -326,6 +327,34 @@ export class OrderService {
             );
 
             return this.formatOrderResponse(updatedOrder!, allItems);
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    static async adminGetAllOrdersService(page: number = 1,
+        limit: number = 10): Promise<PaginatedOrdersResponseDTO> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const orders = await adminGetOrdersAll(page, limit, client);
+            const formattedOrders = orders.data.map((order) => {
+                const { items, ...orderData } = order as any;
+                return this.formatOrderResponse(orderData, items ?? []);
+            });
+            await client.query("COMMIT");
+            return {
+                orders: formattedOrders,
+                page,
+                limit,
+                total: orders.total,
+                totalPages: Math.ceil(orders.total / limit),
+            };
+
 
         } catch (error) {
             await client.query("ROLLBACK");
