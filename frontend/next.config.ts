@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   /* config options here */
   images: {
     remotePatterns: [
@@ -18,14 +19,15 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: "/api/:path*",
-  //       destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
-  //     },
-  //   ];
-  // },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+      },
+    ];
+  },
+
 };
 
 export default nextConfig;
