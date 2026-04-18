@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import ProductSearchPage from './_components/ProductSearchPage'
+import Loading from '@/components/ui/common/Loading'
 
 const page = () => {
     return (
-        <ProductSearchPage />
+        <Suspense fallback={<Loading />}>
+            <ProductSearchPage />
+        </Suspense>
     )
 }
 

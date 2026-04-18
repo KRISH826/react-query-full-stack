@@ -18,18 +18,14 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  async rewrites() {
-    return [
-      {
-        // All /api/* calls are proxied to your Express backend.
-        // This makes the browser treat them as same-origin, so
-        // SameSite=Lax cookies (refreshToken, email) are sent
-        // on POST requests without needing SameSite=None + Secure.
-        source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
-      },
-    ];
-  },
+  // async rewrites() {
+  //   return [
+  //     {
+  //       source: "/api/:path*",
+  //       destination: `${process.env.NEXT_PUBLIC_API_URL}/:path*`,
+  //     },
+  //   ];
+  // },
 };
 
 export default nextConfig;
