@@ -54,7 +54,8 @@ const UserAuthForm = ({
             window.location.replace(destination);
 
         } catch (error: unknown) {
-            const errorMessage = error?.data?.message || "Login failed";
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Login failed";
             toast.error(errorMessage);
         }
     }
