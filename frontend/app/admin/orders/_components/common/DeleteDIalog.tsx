@@ -2,30 +2,31 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash2 } from "lucide-react";
-import { useCancelOrderItemsMutation } from "@/services/orderApi";
+import { useDeleteOrderItemMutation } from "@/services/orderApi";
 import { toast } from "sonner";
 // shadcn dialog
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 export const DeleteAction = ({ orderId, itemId }: { orderId: string, itemId: string }) => {
-    const [cancelItem, { isLoading }] = useCancelOrderItemsMutation();
+    const [deleteOrderItem, { isLoading }] = useDeleteOrderItemMutation();
     const [open, setOpen] = React.useState(false);
 
     const handleDelete = async () => {
         try {
-            await cancelItem({ orderId, itemsId: itemId }).unwrap();
+            await deleteOrderItem({ orderId, itemId }).unwrap();
             toast.success("Item deleted successfully");
             setOpen(false);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             console.error("Delete Error:", error);
             toast.error("Failed to delete item", {

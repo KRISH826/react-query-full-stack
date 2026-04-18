@@ -10,6 +10,11 @@ interface OrdersFullResponse {
     totalPages: number;
 }
 
+interface SuccessResponse {
+    success: boolean;
+    message: string;
+}
+
 interface OrderDetailResponse {
     order: OrderResponseDTO;
 }
@@ -80,7 +85,17 @@ export const orderApi = baseApi.injectEndpoints({
             query: () => "orders/admin",
             transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
-        })
+        }),
+        deleteOrderItem: builder.mutation<{ success: boolean; message: string }, { orderId: string; itemId: string }>({
+            query: ({ orderId, itemId }) => ({
+                url: `orders/${orderId}/items/${itemId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
     }),
 });
 
@@ -93,5 +108,6 @@ export const {
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
     useCancelOrderItemsMutation,
-    useGetAllOrdersQuery
+    useGetAllOrdersQuery,
+    useDeleteOrderItemMutation
 } = orderApi;

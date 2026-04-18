@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "preview": "opennextjs-cloudflare build && wrangler dev",
     "lint": "eslint"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
