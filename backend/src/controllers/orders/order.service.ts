@@ -14,6 +14,7 @@ import { getCartItems } from "../cart/cart.repository";
 import { CartService } from "../cart/cart.service";
 import { sendOrderCancellationMail, sendOrderItemsCancellationMail } from "../email/email.service";
 import {
+    adminGetOrdersAll,
     buyNowProductByid,
     cancelOrderItem,
     createOrder,
@@ -24,6 +25,7 @@ import {
     findUsersOrders,
     getOrderWithItems,
     markOrderFailed,
+    searchOrdersAdmin,
     updateOrderItemStatus,
     updateOrderStatus,
 } from "./order.repository";
@@ -333,6 +335,48 @@ export class OrderService {
         } finally {
             client.release();
         }
+    }
+
+    static async adminGetAllOrdersService(
+        page: number = 1,
+        limit: number = 10
+    ): Promise<PaginatedOrdersResponseDTO> {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(50, Math.max(1, limit));
+
+        const { data, total } = await adminGetOrdersAll(safePage, safeLimit);
+
+        const orders = data.map((order) => {
+            const { items, ...orderData } = order as any;
+            return this.formatOrderResponse(orderData, items ?? []);
+        });
+
+        return {
+            orders,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+        };
+    }
+
+    static async searchOrdersService(searhQuery: string, page: number = 1, limit: number = 10): Promise<PaginatedOrdersResponseDTO> {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(50, Math.max(1, limit));
+        const { data, total } = await searchOrdersAdmin(searhQuery, safePage, safeLimit);
+
+        const orders = data.map((order) => {
+            const { items, ...orderData } = order as any;
+            return this.formatOrderResponse(orderData, items ?? []);
+        });
+
+        return {
+            orders,
+            page: safePage,
+            limit: safeLimit,
+            total,
+            totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
+        };
     }
 
     private static formatOrderResponse(

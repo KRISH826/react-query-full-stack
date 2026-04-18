@@ -67,36 +67,10 @@ export async function findUsersOrders(
     const total = parseInt(countResult.rows[0].count, 10);
 
     const { rows } = await db.query(
-        `SELECT 
-            o.*,
-            COALESCE(items.items, '[]') AS items
-        FROM orders o
-        LEFT JOIN LATERAL (
-            SELECT json_agg(
-                    json_build_object(
-                        'id',                       oi.id,
-                        'order_id',                 oi.order_id,
-                        'product_id',               oi.product_id,
-                        'variant_id',               oi.variant_id,
-                        'product_name',             oi.product_name,
-                        'product_brand',            oi.product_brand,
-                        'quantity',                 oi.quantity,
-                        'price_at_purchase',        oi.price_at_purchase,
-                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
-                        'subtotal',                 oi.subtotal,
-                        'size',                     oi.size,
-                        'status',                   oi.status,
-                        'image_url',                oi.image_url,
-                        'created_at',               oi.created_at
-                    ) ORDER BY oi.created_at ASC
-                ) AS items
-            FROM order_items oi
-            WHERE oi.order_id = o.id
-        ) items ON true
-        WHERE o.user_id = $1
-          AND o.deleted_at IS NULL
-        ORDER BY o.created_at DESC
-        LIMIT $2 OFFSET $3`,
+        `SELECT * FROM orders_with_items
+     WHERE user_id = $1
+     ORDER BY created_at DESC
+     LIMIT $2 OFFSET $3`,
         [userId, limit, offset]
     );
     return { data: rows, total };
@@ -196,34 +170,7 @@ export async function getOrderWithItems(
     db: Pool | PoolClient = pool
 ): Promise<{ order: OrderDB | null; items: OrderItemDB[] }> {
     const { rows } = await db.query(
-        `SELECT 
-            o.*,
-            COALESCE(items.items, '[]') AS items
-        FROM orders o
-        LEFT JOIN LATERAL (
-            SELECT json_agg(
-                    json_build_object(
-                        'id',                       oi.id,
-                        'order_id',                 oi.order_id,
-                        'product_id',               oi.product_id,
-                        'variant_id',               oi.variant_id,
-                        'product_name',             oi.product_name,
-                        'product_brand',            oi.product_brand,
-                        'quantity',                 oi.quantity,
-                        'price_at_purchase',        oi.price_at_purchase,
-                        'offer_price_at_purchase',  oi.offer_price_at_purchase,
-                        'subtotal',                 oi.subtotal,
-                        'size',                     oi.size,
-                        'status',                   oi.status,
-                        'image_url',                oi.image_url,
-                        'created_at',               oi.created_at
-                    ) ORDER BY oi.created_at ASC
-                ) AS items
-            FROM order_items oi
-            WHERE oi.order_id = o.id
-        ) items ON true
-        WHERE o.id = $1
-          AND o.deleted_at IS NULL`,
+        `SELECT * FROM orders_with_items WHERE id = $1`,
         [orderId]
     );
 
@@ -299,4 +246,60 @@ export async function cancelOrderItem(
         [orderItemId]
     );
     return rows[0] || null;
+}
+
+export async function adminGetOrdersAll(page: number = 1, limit: number = 10, db: Pool | PoolClient = pool): Promise<{ data: OrderItemDB[], total: number }> {
+    const offset = (page - 1) * limit;
+    const countResult = await db.query(
+        `SELECT COUNT(*) FROM orders WHERE deleted_at IS NULL`
+    );
+    const total = parseInt(countResult.rows[0].count, 10);
+    const { rows } = await db.query(
+        `SELECT * FROM orders_with_items
+     ORDER BY created_at DESC
+     LIMIT $1 OFFSET $2`,
+        [limit, offset]
+    );
+    return { data: rows || [], total };
+}
+
+export async function searchOrdersAdmin(
+    search: string,
+    page: number = 1,
+    limit: number = 10,
+    db: Pool | PoolClient = pool
+): Promise<{ data: (OrderDB & { items: OrderItemDB[] })[]; total: number }> {
+    const offset = (page - 1) * limit;
+    const searchPattern = `%${search}%`;
+
+    const countResult = await db.query(
+        `SELECT COUNT(DISTINCT o.id)
+         FROM orders o
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.deleted_at IS NULL
+           AND (
+               o.order_number ILIKE $1
+               OR oi.product_name ILIKE $1
+           )`,
+        [searchPattern]
+    );
+    const total = parseInt(countResult.rows[0].count, 10);
+
+    const { rows } = await db.query(
+    `SELECT *, COUNT(*) OVER() AS total_count
+     FROM orders_with_items
+     WHERE (
+         order_number ILIKE $1  
+         OR EXISTS (
+             SELECT 1 FROM order_items oi
+             WHERE oi.order_id = orders_with_items.id
+               AND oi.product_name ILIKE $1 
+         )
+     )
+     ORDER BY created_at DESC
+     LIMIT $2 OFFSET $3`,
+    [searchPattern, limit, offset]
+);
+
+    return { data: rows || [], total };
 }

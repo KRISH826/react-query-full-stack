@@ -222,4 +222,27 @@ export class OrderController {
             next(error)
         }
     }
+
+    static async adminGetAllOrdersController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const rawPage = Number(req.query.page ?? 1);
+            const rawLimit = Number(req.query.limit ?? 10);
+            const page = Number.isNaN(rawPage) ? 1 : Math.max(1, rawPage);
+            const limit = Number.isNaN(rawLimit) ? 10 : Math.min(10, Math.max(1, rawLimit));
+            const orders = await OrderService.adminGetAllOrdersService(page, limit);
+            return res.status(200).json({ message: "Orders fetched successfully", orders });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async adminOrderSEarchController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const query = req.query.q as string;
+            const orders = await OrderService.searchOrdersService(query);
+            return res.status(200).json({ message: "Orders fetched successfully", orders });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

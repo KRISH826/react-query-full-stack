@@ -1,6 +1,7 @@
 "use client"
 
-import { useGetSearchProductsQuery } from '@/services/productApi';
+import { useClientSearchProductsQuery } from '@/services/productApi';
+import { Product } from '@/types/product';
 import { useSearchParams } from 'next/navigation';
 import ProductCard from '../../product/_components/ProductCard';
 import { Spinner } from '@/components/ui/spinner';
@@ -8,8 +9,8 @@ import { Spinner } from '@/components/ui/spinner';
 const ProductSearchPage = () => {
     const params = useSearchParams();
     const query = params.get("q") || "";
-    const { data, isLoading, error } = useGetSearchProductsQuery(
-        { query },
+    const { data, isLoading, error } = useClientSearchProductsQuery(
+        query,
         { skip: !query }
     )
     if (isLoading) {
@@ -35,7 +36,7 @@ const ProductSearchPage = () => {
                     <h1 className="text-xl font-bold">Search Results for {query}</h1>
                 </div>
                 <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {data?.data?.map((product) => (
+                    {data?.map((product: Product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>

@@ -39,9 +39,9 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
 
     return (
         <div className="group flex flex-col sm:flex-row items-center gap-6 p-5 bg-background rounded-2xl border border-border transition-all hover:shadow-sm w-full">
-            
+
             {/* Image Box */}
-            <div 
+            <div
                 className="relative h-40 w-40 shrink-0 overflow-hidden rounded-xl bg-secondary/20 cursor-pointer border border-border/50"
                 onClick={() => router.push(`/product/${item.product_id}`)}
             >
@@ -60,7 +60,7 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
                             {product.brand}
                         </span>
-                        <h2 
+                        <h2
                             onClick={() => router.push(`/product/${item.product_id}`)}
                             className="text-xl font-semibold text-foreground cursor-pointer hover:underline underline-offset-4"
                         >
@@ -72,9 +72,6 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                 </div>
 
                 {/* Description */}
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-2 max-w-3xl">
-                    {product.description}
-                </p>
 
                 {/* Price & Action Row */}
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-4">

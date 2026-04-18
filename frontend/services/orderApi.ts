@@ -10,6 +10,11 @@ interface OrdersFullResponse {
     totalPages: number;
 }
 
+interface SuccessResponse {
+    success: boolean;
+    message: string;
+}
+
 interface OrderDetailResponse {
     order: OrderResponseDTO;
 }
@@ -29,7 +34,7 @@ export const orderApi = baseApi.injectEndpoints({
         }),
         getOrders: builder.query<OrdersFullResponse, { page?: number; limit?: number }>({
             query: ({ page = 1, limit = 10 }) => `orders?page=${page}&limit=${limit}`,
-            transformResponse: (response: { orders: OrderResponseDTO }) => response.orders,
+            transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
         getOrderById: builder.query<OrderResponseDTO, string>({
@@ -75,6 +80,22 @@ export const orderApi = baseApi.injectEndpoints({
                 { type: "Order", id: "ORDER_DETAIL" },
             ],
         }),
+
+        getAllOrders: builder.query<OrderResponseDTO[], void>({
+            query: () => "orders/admin",
+            transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
+            providesTags: [{ type: "Order", id: "LIST" }],
+        }),
+        deleteOrderItem: builder.mutation<{ success: boolean; message: string }, { orderId: string; itemId: string }>({
+            query: ({ orderId, itemId }) => ({
+                url: `orders/${orderId}/items/${itemId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
     }),
 });
 
@@ -87,4 +108,6 @@ export const {
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
     useCancelOrderItemsMutation,
+    useGetAllOrdersQuery,
+    useDeleteOrderItemMutation
 } = orderApi;
