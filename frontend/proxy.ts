@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "edge"  // ← YEH TOP MEIN ADD KAR
+
 // 1. Define Routes Correctly
 const ADMIN_ROUTES = ["/admin", "/admin/dashboard"];
 const CUSTOMER_ROUTES = ["/carts", "/checkout", "/orders", "/favourites", "/profile"];
