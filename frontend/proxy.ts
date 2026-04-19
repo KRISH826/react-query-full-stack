@@ -34,25 +34,17 @@ export function proxy(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
     }
 
-    if (role) {
-        if (isAuthRoute) {
-            const redirectUrl = role === "admin" ? "/admin/dashboard" : "/product";
-            return NextResponse.redirect(new URL(redirectUrl, request.url));
-        }
-
-        if (isAdminRoute && role !== "admin") {
-            return NextResponse.redirect(new URL("/product", request.url));
-        }
-
-        const isCustomerOnly = ["/carts", "/checkout", "/orders"].some((r) =>
-            pathname.startsWith(r)
-        );
-
-        if (isCustomerOnly && role === "admin") {
-            return NextResponse.redirect(new URL("/admin/dashboard", request.url));
-        }
+    if (isAdminRoute && role !== "admin") {
+        return NextResponse.redirect(new URL("/product", request.url));
     }
 
+    const isCustomerOnly = ["/carts", "/checkout", "/orders"].some((r) =>
+        pathname.startsWith(r)
+    );
+
+    if (isCustomerOnly && role === "admin") {
+        return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+    }
     return NextResponse.next();
 }
 
