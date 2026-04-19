@@ -66,16 +66,27 @@ const UserAuthForm = ({
                     <div className='flex flex-col gap-2'>
                         <Label className='mb-1' htmlFor="email">Email</Label>
                         <Input id="email" className='h-10 text-base!' type="email" placeholder="name@example.com" {...register("email")} />
-                        <p className='text-red-600 text-sm'>{errors.email?.message}</p>
+                        {
+                            errors.email?.message && <p className='text-red-600 text-sm min-h-[20px]'>{errors.email?.message}</p>
+                        }
                     </div>
                     <div className='flex flex-col gap-2'>
                         <Label className='mb-1' htmlFor="password">Password</Label>
-                        <Input id="password" className='h-10 text-base!' type="password" placeholder="name@example.com" {...register("password")} />
-                        <p className='text-red-600 text-sm'>{errors.password?.message}</p>
+                        <Input id="password" className='h-10 text-base!' type="password" placeholder="********" {...register("password")} />
+                        {
+                            errors.password?.message && <p className='text-red-600 text-sm min-h-[20px]'>{errors.password?.message}</p>
+                        }
                         <div className='w-full flex justify-end'>
-                            <Link href="/forget-password" className='text-sm hover:text-primary underline underline-offset-4'>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.push("/forget-password");
+                                }}
+                                className='text-sm hover:text-primary underline underline-offset-4 bg-transparent border-none p-0 cursor-pointer'
+                            >
                                 Forgot password?
-                            </Link>
+                            </button>
                         </div>
                     </div>
                     <Button type="submit" disabled={isLoading}>

@@ -8,7 +8,7 @@ export default function Page() {
         <div className="relative flex-1 shrink-0 items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="text-primary relative hidden h-full flex-col p-10 lg:flex dark:border-r">
                 <div className="absolute w-full inset-0">
-                    <Image src="/images/login2.jpg" width={1080} height={1080} alt="Fashion" className="h-full w-full object-cover" />
+                    <Image src="/images/login2.webp" width={1080} height={1080} alt="Fashion" className="h-full w-full object-cover" />
                     <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
                 </div>
                 <div className="relative z-20 flex items-center text-lg font-medium text-white/80">

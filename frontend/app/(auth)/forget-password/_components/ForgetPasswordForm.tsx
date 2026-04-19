@@ -28,8 +28,10 @@ const ForgotPasswordForm = ({ className, ...props }: React.HTMLAttributes<HTMLDi
             await forgetPassword({ email: data.email }).unwrap();
             toast.success("Reset code sent to your email!");
             router.push(`/reset-password?email=${encodeURIComponent(data.email)}`);
-        } catch (error: any) {
-            toast.error(error?.data?.message || "Failed to send reset code");
+        } catch (error: unknown) {
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Login failed";
+            toast.error(errorMessage);
         }
     };
 
