@@ -10,8 +10,8 @@ const PROTECTED_ROUTES = [...ADMIN_ROUTES, ...CUSTOMER_ROUTES, "/dashboard"];
 
 export function proxy(request: NextRequest) {
 
-    const refreshToken = request.cookies.get("refreshToken")?.value;
     const role = request.cookies.get("role")?.value;
+    const refreshToken = request.cookies.get("refreshToken")?.value;
 
     const { pathname } = request.nextUrl;
 
@@ -26,20 +26,24 @@ export function proxy(request: NextRequest) {
     const isAuthRoute = AUTH_ROUTES.some((route) =>
         pathname.startsWith(route)
     );
-    if (isProtected && !refreshToken) {
+    const isLoggedIn = role || refreshToken;
+
+    if (isProtected && !isLoggedIn) {
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set("callbackUrl", pathname);
         return NextResponse.redirect(loginUrl);
     }
 
-    if (refreshToken) {
+    if (role) {
         if (isAuthRoute) {
             const redirectUrl = role === "admin" ? "/admin/dashboard" : "/product";
             return NextResponse.redirect(new URL(redirectUrl, request.url));
         }
+
         if (isAdminRoute && role !== "admin") {
             return NextResponse.redirect(new URL("/product", request.url));
         }
+
         const isCustomerOnly = ["/carts", "/checkout", "/orders"].some((r) =>
             pathname.startsWith(r)
         );
@@ -48,9 +52,11 @@ export function proxy(request: NextRequest) {
             return NextResponse.redirect(new URL("/admin/dashboard", request.url));
         }
     }
+
     return NextResponse.next();
 }
 
+// matcher
 export const config = {
     matcher: [
         "/admin/:path*",
