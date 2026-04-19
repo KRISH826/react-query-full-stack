@@ -8,7 +8,7 @@ export default function Page() {
             <div className="text-primary relative hidden h-full flex-col p-10 lg:flex dark:border-r">
                 <div className="absolute w-full inset-0">
                     <Image
-                        src="/images/login.jpg"
+                        src="/images/login.webp"
                         width={1080}
                         height={1080}
                         alt="Fashion"
