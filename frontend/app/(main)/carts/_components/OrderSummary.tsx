@@ -6,8 +6,9 @@ import { useRazorpay } from '@/hooks/useRazorpay';
 import { PaymentSuccessDialog } from '@/components/payment/PaymentSuccessDialog';
 import { OrderResponseDTO } from '@/types/order';
 
+
 const OrderSummary = () => {
-    const { data } = useGetCartQuery();
+    const { data, isLoading } = useGetCartQuery();
     const router = useRouter();
     const pathname = usePathname();
     const isCheckoutPage = pathname === "/checkout";
@@ -76,9 +77,10 @@ const OrderSummary = () => {
             ) : (
                 <button
                     onClick={() => router.push("/checkout")}
-                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90"
+                    disabled={isLoading || !data?.items || data.items.length === 0}
+                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Proceed to Checkout
+                    {isLoading ? "Checking cart..." : "Proceed to Checkout"}
                 </button>
             )}
 
