@@ -14,12 +14,15 @@ const baseQuery = fetchBaseQuery({
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
         let token = (getState() as RootState).auth.accessToken;
+
         if (!token && typeof window !== "undefined") {
             token = localStorage.getItem("token");
         }
+
         if (token && token !== "undefined" && token !== "null") {
             headers.set("Authorization", `Bearer ${token}`);
         }
+
         return headers;
     },
 });
@@ -34,23 +37,22 @@ const baseQueryWithAuth: BaseQueryFn<
     if (result.error?.status === 401) {
         const state = api.getState() as RootState;
 
-        // Grab token from state OR localStorage
-        const currentToken = state.auth.accessToken ||
-            (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+        const token =
+            state.auth.accessToken ||
+            (typeof window !== "undefined"
+                ? localStorage.getItem("token")
+                : null);
 
-        const isValidToken = currentToken && currentToken !== "undefined" && currentToken !== "null";
-
-        // 🔥 Only trigger the logout sequence if we actually HAD a token that the server rejected
-        if (isValidToken) {
+        // ✅ sirf tab logout jab actual token tha
+        if (token && token !== "undefined" && token !== "null") {
             api.dispatch(clearAccessToken());
 
-            if (
-                typeof window !== "undefined" &&
-                !window.location.pathname.includes("/login")
-            ) {
+            if (typeof window !== "undefined") {
                 localStorage.removeItem("token");
-                document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
-                window.location.href = "/login";
+
+                if (!window.location.pathname.includes("/login")) {
+                    window.location.href = "/login";
+                }
             }
         }
     }

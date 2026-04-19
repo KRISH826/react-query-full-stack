@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "./provider";
 import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script"; // ✅ import karo
+import AuthProvider from "@/provider/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,8 +37,10 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          {children}
-          <Toaster />
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
         </Providers>
       </body>
     </html>
