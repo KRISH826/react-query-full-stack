@@ -8,9 +8,9 @@ const Collections = () => {
             <div className="container">
 
                 {/* Header */}
-                <div className="flex justify-between items-end mb-12">
+                <div className="flex justify-between items-end mb-8 sm:mb-12">
                     <div>
-                        <h2 className="text-3xl font-bold text-primary dark:text-secondary mb-2">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-primary dark:text-secondary mb-2">
                             Curated Collections
                         </h2>
                         <p className="text-muted-foreground">
@@ -20,10 +20,10 @@ const Collections = () => {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
 
                     {/* CARD 1 */}
-                    <a className="group relative h-96 rounded-2xl overflow-hidden shadow-md" href="#">
+                    <a className="group relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md" href="#">
                         <Image width={500}
                             height={500}
                             src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzDZUtJZkaCflkHCrhhC3_mGhJvUjFWZe_7jWq1QoH8QdDIIMv0MMA3IvLwvzmekChycIRHMvnprzIXryL0H2c04UI3QLICmi-vj1HpJRcai-SKRsCzvLwjLLHfRdBGP5-taG352fVonx2UxtDEb-Zqh84dfoMrXuBYHPmKeltwoAZNyZ4nNXqaRVxwoUDi4nVhuSWUgTnBJcJZ79YknLvK0HgtLcpK_HdZr2O82QHNCy-mvynC1VgDbsglbOryfq0cqyCZfzBl93b"
@@ -33,12 +33,12 @@ const Collections = () => {
                         {/* Overlay */}
                         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
                         {/* Content */}
-                        <div className="absolute bottom-0 left-0 p-8 w-full">
+                        <div className="absolute bottom-0 left-0 p-5 sm:p-8 w-full">
                             <span className="text-white/80 text-sm font-semibold uppercase mb-2 block">
                                 Trending Now
                             </span>
                             <div className="flex justify-between items-center">
-                                <h3 className="text-3xl font-bold text-white">GenZ</h3>
+                                <h3 className="text-2xl sm:text-3xl font-bold text-white">GenZ</h3>
                                 <span className="material-icons text-white bg-white/20 p-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-all">
                                     <ArrowRight />
                                 </span>
@@ -47,7 +47,7 @@ const Collections = () => {
                     </a>
 
                     {/* CARD 2 */}
-                    <a className="group relative h-96 rounded-2xl overflow-hidden shadow-md" href="#">
+                    <a className="group relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md" href="#">
                         <Image
                             width={500}
                             height={500}
@@ -58,13 +58,13 @@ const Collections = () => {
 
                         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
-                        <div className="absolute bottom-0 left-0 p-8 w-full">
+                        <div className="absolute bottom-0 left-0 p-5 sm:p-8 w-full">
                             <span className="text-white/80 text-sm font-semibold uppercase mb-2 block">
                                 Light & Breezy
                             </span>
 
                             <div className="flex justify-between items-center">
-                                <h3 className="text-3xl font-bold text-white">Summer</h3>
+                                <h3 className="text-2xl sm:text-3xl font-bold text-white">Summer</h3>
                                 <span className="material-icons text-white bg-white/20 p-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-all">
                                     <ArrowRight />
                                 </span>
@@ -73,7 +73,7 @@ const Collections = () => {
                     </a>
 
                     {/* CARD 3 */}
-                    <a className="group relative h-96 rounded-2xl overflow-hidden shadow-md" href="#">
+                    <a className="group relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md" href="#">
                         <Image
                             width={500}
                             height={500}
@@ -84,13 +84,13 @@ const Collections = () => {
 
                         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
-                        <div className="absolute bottom-0 left-0 p-8 w-full">
+                        <div className="absolute bottom-0 left-0 p-5 sm:p-8 w-full">
                             <span className="text-white/80 text-sm font-semibold uppercase mb-2 block">
                                 Cozy & Warm
                             </span>
 
                             <div className="flex justify-between items-center">
-                                <h3 className="text-3xl font-bold text-white">Winter</h3>
+                                <h3 className="text-2xl sm:text-3xl font-bold text-white">Winter</h3>
                                 <span className="material-icons text-white bg-white/20 p-2 rounded-full backdrop-blur-sm group-hover:bg-white group-hover:text-primary transition-all">
                                     <ArrowRight />
                                 </span>
