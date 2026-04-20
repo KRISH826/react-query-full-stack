@@ -3,25 +3,54 @@
 import React from "react";
 import Link from "next/link";
 import {
-    Search,
     ShoppingBag,
     User,
     Heart,
     Menu,
+    ShoppingCart,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     Sheet,
+    SheetClose,
     SheetContent,
     SheetTrigger,
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
 import MobileCategoryList from "./MobileCategoryList";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useGetProfileQuery } from "@/services/userApi";
+import { useGetCartQuery } from "@/services/cartApi";
 
 const MobileMenu = () => {
+    const router = useRouter();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: user, isLoading } = useGetProfileQuery(undefined, {
+        skip: !token,
+        refetchOnMountOrArgChange: true,
+    });
+    const { data: cartData } = useGetCartQuery(undefined, { skip: !token });
+
+    const cartCount = cartData?.items?.length ?? 0;
+
+    const handleProtectedNavigate = (path: string) => {
+        if (!user && !isLoading) {
+            router.push("/login");
+            return;
+        }
+        router.push(path);
+    };
+
+    const navLinks = [
+        { label: "Home", href: "/" },
+        { label: "Products", href: "/product" },
+        { label: "Categories", href: "/categories" },
+    ];
+
     return (
         <Sheet>
             <SheetTrigger asChild>
@@ -40,34 +69,52 @@ const MobileMenu = () => {
                 <div className="mt-6 space-y-6">
                     {/* Mobile Nav */}
                     <nav className="flex flex-col gap-1">
-                        {["Home", "Products", "About"].map((item) => (
-                            <Link
-                                key={item}
-                                href={`/${item.toLowerCase() === "home" ? "" : item.toLowerCase()}`}
-                                className="rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors"
-                            >
-                                {item}
-                            </Link>
+                        {navLinks.map((item) => (
+                            <SheetClose key={item.label} asChild>
+                                <Link
+                                    href={item.href}
+                                    className="rounded-lg px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors"
+                                >
+                                    {item.label}
+                                </Link>
+                            </SheetClose>
                         ))}
                         <MobileCategoryList />
                     </nav>
 
                     {/* Mobile Actions */}
                     <div className="flex flex-col gap-2 pt-4 border-t">
-                        <Button variant="outline" className="justify-start gap-2">
-                            <Heart className="h-4 w-4" />
-                            Wishlist
-                        </Button>
+                        <SheetClose asChild>
+                            <Button
+                                variant="outline"
+                                className="justify-start gap-2"
+                                onClick={() => handleProtectedNavigate("/favourites")}
+                            >
+                                <Heart className="h-4 w-4" />
+                                Wishlist
+                            </Button>
+                        </SheetClose>
 
-                        <Button variant="outline" className="justify-start gap-2">
-                            <ShoppingBag className="h-4 w-4" />
-                            Cart (3)
-                        </Button>
+                        <SheetClose asChild>
+                            <Button
+                                variant="outline"
+                                className="justify-start gap-2"
+                                onClick={() => handleProtectedNavigate("/carts")}
+                            >
+                                <ShoppingCart className="h-4 w-4" />
+                                Cart ({cartCount})
+                            </Button>
+                        </SheetClose>
 
-                        <Button className="justify-start gap-2">
-                            <User className="h-4 w-4" />
-                            Account
-                        </Button>
+                        <SheetClose asChild>
+                            <Button
+                                className="justify-start gap-2"
+                                onClick={() => handleProtectedNavigate("/profile")}
+                            >
+                                <User className="h-4 w-4" />
+                                {user ? "Account" : "Sign In"}
+                            </Button>
+                        </SheetClose>
                     </div>
                 </div>
             </SheetContent>

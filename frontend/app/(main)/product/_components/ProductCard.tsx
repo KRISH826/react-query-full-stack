@@ -151,7 +151,6 @@ const ProductCard = ({ product }: Props) => {
                             <Heart className={`h-4 w-4 ${addedWishList ? "fill-current" : ""}`} />
                         )}
                     </Button>
-
                     <Button
                         className="flex-1 cursor-pointer h-9 md:h-10 text-[10px] md:text-sm font-semibold gap-2"
                         disabled={isCartLoading || isOutOfStock}
