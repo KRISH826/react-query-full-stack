@@ -8,16 +8,25 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "cdn.rareblocks.xyz",
+        pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "s3-ecomkp16.s3.ap-south-1.amazonaws.com",
+        hostname: "*.s3.ap-south-1.amazonaws.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
-        hostname: "e-com-s3.s3.ap-south-1.amazonaws.com",
+        hostname: "e-com-s3.ap-south-1.amazonaws.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+        pathname: "/**",
       }
     ],
+    // unoptimized: true, // Set to true if upstream continues to return 400 errors
   },
   async rewrites() {
     return [
