@@ -71,14 +71,14 @@ const SearchInput = () => {
                 </defs>
             </svg>
 
-            <div className="hidden md:flex flex-1 max-w-xl mx-4 relative items-center gap-1.5" ref={wrapperRef}>
+            <div className="flex flex-1 max-w-xl mx-0 md:mx-4 relative items-center gap-1.5" ref={wrapperRef}>
                 <form className="relative flex-1" onSubmit={(e) => { e.preventDefault(); handleSearch(query); }}>
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="Search for products, brands and more..."
-                        className="w-full h-9 pl-9 pr-8 rounded-md border border-input bg-muted/50 text-sm outline-none transition-colors focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/60"
+                        placeholder="Search for products..."
+                        className="w-full h-10 md:h-9 pl-9 pr-8 rounded-md border border-input bg-muted/50 text-sm outline-none transition-colors focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/60"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
@@ -156,7 +156,7 @@ const SearchInput = () => {
                 <button
                     type="button"
                     onClick={() => handleSearch(query)}
-                    className="h-9 w-9 shrink-0 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground inline-flex items-center justify-center transition-colors cursor-pointer"
+                    className="h-10 w-10 md:h-9 md:w-9 shrink-0 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground inline-flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Search"
                 >
                     <Search className="h-4 w-4" />

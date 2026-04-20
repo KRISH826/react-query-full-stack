@@ -35,55 +35,55 @@ const ProductPage = () => {
     return (
         <section className="py-10 bg-white">
             <div className="container mx-auto px-4">
-                <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid gap-3 sm:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {data?.data.map((product: Product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </div>
-                <div className="flex gap-4 w-full justify-between md:mt-10 mt-6 items-center">
-                    <p className="text-xs flex-1 text-muted-foreground">
+                <div className="flex flex-col sm:flex-row gap-4 w-full justify-between md:mt-12 mt-8 items-center border-t border-gray-100 pt-8">
+                    <p className="text-[10px] md:text-xs text-muted-foreground order-2 sm:order-1 font-medium">
                         Page {page} of {totalPages} — {data?.total} products
                     </p>
                     {
-                        totalPages > 1 && <>
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                            className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
+                        totalPages > 1 && (
+                            <div className="order-1 sm:order-2 w-full sm:w-auto overflow-x-auto">
+                                <Pagination>
+                                    <PaginationContent className="flex-nowrap">
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
 
-                                    {pages.map((p, idx) =>
-                                        p === "ellipsis" ? (
-                                            <PaginationItem key={`ellipsis-${idx}`}>
-                                                <PaginationEllipsis />
-                                            </PaginationItem>
-                                        ) : (
-                                            <PaginationItem key={p}>
-                                                <PaginationLink
-                                                    isActive={p === page}
-                                                    onClick={() => setPage(p)}
-                                                    className="cursor-pointer"
-                                                >
-                                                    {p}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        )
-                                    )}
+                                        {pages.map((p, idx) =>
+                                            p === "ellipsis" ? (
+                                                <PaginationItem key={`ellipsis-${idx}`}>
+                                                    <PaginationEllipsis />
+                                                </PaginationItem>
+                                            ) : (
+                                                <PaginationItem key={p}>
+                                                    <PaginationLink
+                                                        isActive={p === page}
+                                                        onClick={() => setPage(p)}
+                                                        className="cursor-pointer text-xs sm:text-sm"
+                                                    >
+                                                        {p}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            )
+                                        )}
 
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                            className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-
-
-                        </>
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )
                     }
                 </div>
             </div>

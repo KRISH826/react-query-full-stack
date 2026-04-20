@@ -43,7 +43,7 @@ const OrderSummary = () => {
 
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">
-            <h2 className="text-lg font-medium text-gray-900 mb-6">
+            <h2 className="text-base md:text-lg font-medium text-gray-900 mb-6">
                 Order Summary
             </h2>
             <div className="space-y-4 text-sm">
@@ -59,7 +59,7 @@ const OrderSummary = () => {
                         Free
                     </span>
                 </div>
-                <div className="border-t pt-4 flex justify-between text-base font-semibold text-gray-900">
+                <div className="border-t pt-4 flex justify-between text-sm md:text-base font-semibold text-gray-900">
                     <span>Total</span>
                     <span>₹{data?.total}</span>
                 </div>
@@ -84,7 +84,7 @@ const OrderSummary = () => {
                 </button>
             )}
 
-            <p className="text-sm text-gray-500 mt-4 text-center">
+            <p className="text-[11px] md:text-sm text-gray-500 mt-4 text-center">
                 Taxes calculated at checkout.
             </p>
 

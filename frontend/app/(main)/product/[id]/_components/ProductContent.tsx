@@ -98,14 +98,14 @@ const ProductContent = ({ product }: { product: Product }) => {
                         {product.brand}
                     </p>
                 )}
-                <h1 className="text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+                <h1 className="text-xl md:text-3xl font-medium tracking-tight text-foreground">
                     {product.productname}
                 </h1>
             </div>
 
             {/* Price section */}
             <div className="flex items-end gap-3 pb-4 border-b border-border/40">
-                <span className="text-2xl font-semibold text-foreground">
+                <span className="text-xl md:text-2xl font-semibold text-foreground">
                     ₹{displayPrice?.toLocaleString()}
                 </span>
 
@@ -131,7 +131,7 @@ const ProductContent = ({ product }: { product: Product }) => {
                     </span>
                 )}
             </div>
-            <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={18} fontSizeClass="text-base" />
+            <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={14} fontSizeClass="text-xs md:text-base" />
             {/* Sizes section */}
             {hasSizes && (
                 <div className="space-y-3 pt-2">

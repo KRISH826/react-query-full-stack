@@ -38,15 +38,6 @@ const MobileMenu = () => {
                 </SheetHeader>
 
                 <div className="mt-6 space-y-6">
-                    {/* Mobile Search */}
-                    <div className="relative">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search products..."
-                            className="pl-9"
-                        />
-                    </div>
-
                     {/* Mobile Nav */}
                     <nav className="flex flex-col gap-1">
                         {["Home", "Products", "About"].map((item) => (

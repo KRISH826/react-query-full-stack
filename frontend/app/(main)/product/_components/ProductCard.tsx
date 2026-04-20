@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useAddFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
+import { useAddToCartMutation } from "@/services/cartApi";
 import { Product } from "@/types/product";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import ProductRating from "./ProductRating";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -20,8 +21,10 @@ type Props = {
 const ProductCard = ({ product }: Props) => {
     const router = useRouter();
     const token = useSelector((state: RootState) => state.auth.accessToken);
-    const { data } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
-    const [addFavourite, { isLoading, isSuccess }] = useAddFavouriteMutation();
+    const { data: favouritesData } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
+    const [addFavourite, { isLoading: isFavLoading }] = useAddFavouriteMutation();
+    const [addToCart, { isLoading: isCartLoading }] = useAddToCartMutation();
+
     const image =
         product.images?.find((img) => img.isprimary)?.image_url ||
         "/placeholder.png";
@@ -29,23 +32,51 @@ const ProductCard = ({ product }: Props) => {
     const isOutOfStock =
         product.is_track_inventory && product.stock_quantity <= 0;
 
-    const addedWishList = data?.data?.some((fav) => fav.product_id === product.id);    
+    const addedWishList = favouritesData?.data?.some((fav) => fav.product_id === product.id);
 
     const handlerProductDetails = (id: string) => {
         router.push(`/product/${id}`);
     };
 
-    const handleWishList = async (productId: string) => {
+    const handleWishList = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!token) {
+            toast.error("Please login to add favourites");
+            return;
+        }
         try {
-            await addFavourite({ productId }).unwrap();
+            await addFavourite({ productId: product.id }).unwrap();
             toast.success("Favourites Added SuccessFully")
         } catch {
             toast.error("Failed To Add Favourites");
         }
     }
 
+    const handleAddToCart = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!token) {
+            toast.error("Please login to add to bag");
+            return;
+        }
+        const variantId = product.variants?.[0]?.id;
+        if (!variantId) {
+            toast.error("Product variant not found");
+            return;
+        }
+        try {
+            await addToCart({
+                product_id: product.id,
+                variant_id: variantId,
+                quantity: 1
+            }).unwrap();
+            toast.success("Added to Bag successfully");
+        } catch {
+            toast.error("Failed to add to bag");
+        }
+    }
+
     return (
-        <div className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-lg">
+        <div className="group flex h-full flex-col overflow-hidden rounded-xl md:rounded-2xl border bg-white shadow-sm transition hover:shadow-lg">
 
             {/* Image */}
             <div className="relative aspect-square w-full overflow-hidden bg-gray-100">
@@ -73,50 +104,69 @@ const ProductCard = ({ product }: Props) => {
             </div>
 
             {/* Content */}
-            <div className="flex flex-1 flex-col p-4">
-                <h2 className="line-clamp-2 text-base font-semibold text-slate-800">
+            <div className="flex flex-1 flex-col p-3 md:p-4">
+                <h2 className="line-clamp-1 text-[13px] md:text-base font-bold text-slate-800">
                     {product.brand}
                 </h2>
 
-                <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                <p className="mt-0.5 line-clamp-1 text-[10px] md:text-sm text-gray-500">
                     {product.productname}
                 </p>
 
-                <ProductRating
-                    rating={product.avg_rating}
-                    reviewCount={product.total_reviews}
-                />
+                <div className="scale-90 origin-left md:scale-100">
+                    <ProductRating
+                        rating={product.avg_rating}
+                        reviewCount={product.total_reviews}
+                    />
+                </div>
 
                 {/* Spacer */}
                 <div className="flex-1" />
 
                 {/* Footer */}
-                <div className="mt-4 flex items-center justify-between">
-                    <span className="text-lg font-bold text-gray-900">
+                <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm md:text-lg font-bold text-gray-900">
                         {
-                            product.variants?.[1]?.offer_price_override ? <>
-                                ₹{product.variants?.[1]?.offer_price_override.toLocaleString()} <span className="text-gray-400 line-through">₹{product.variants?.[1]?.price_override?.toLocaleString()}</span>
+                            product.variants?.[0]?.offer_price_override ? <>
+                                ₹{product.variants?.[0]?.offer_price_override.toLocaleString()} <span className="text-[9px] md:text-xs text-gray-400 line-through ml-1">₹{product.variants?.[0]?.price_override?.toLocaleString()}</span>
                             </> : <>
-                                ₹{product.variants?.[1]?.price_override?.toLocaleString()}
+                                ₹{product.variants?.[0]?.price_override?.toLocaleString() || product.variants?.[1]?.price_override?.toLocaleString()}
                             </>
                         }
                     </span>
                 </div>
-                <Button
-                className="cursor-pointer mt-3"
-                disabled={isLoading || isSuccess || addedWishList}
-                    onClick={() => handleWishList(product.id)}>
-                    {
-                        isLoading ? <Spinner className="h-4 w-4" /> : <>
-                            {
-                                !addedWishList && <Heart className="h-4 w-4" />
-                            }
-                        </>
-                    }
-                    {
-                        isSuccess || addedWishList ? "Added to Wishlist" : "Add to Wishlist"
-                    }
-                </Button>
+
+                {/* Actions Row */}
+                <div className="mt-4 flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className={`h-9 w-9 shrink-0 cursor-pointer transition-all ${addedWishList ? "text-red-500 border-red-200 bg-red-50" : ""}`}
+                        disabled={isFavLoading}
+                        onClick={handleWishList}
+                    >
+                        {isFavLoading ? (
+                            <Spinner className="h-4 w-4" />
+                        ) : (
+                            <Heart className={`h-4 w-4 ${addedWishList ? "fill-current" : ""}`} />
+                        )}
+                    </Button>
+
+                    <Button
+                        className="flex-1 cursor-pointer h-9 md:h-10 text-[10px] md:text-sm font-semibold gap-2"
+                        disabled={isCartLoading || isOutOfStock}
+                        onClick={handleAddToCart}
+                    >
+                        {isCartLoading ? (
+                            <Spinner className="h-3 w-3 md:h-4 md:w-4" />
+                        ) : (
+                            <>
+                                <ShoppingBag className="h-3 w-3 md:h-4 md:w-4" />
+                                <span>Add to Bag</span>
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
         </div>
     );

@@ -26,31 +26,34 @@ const Header = () => {
     return (
         <header ref={scrollHeader} className="sticky top-0 z-50 w-full bg-background transition-all duration-300">
             <div className="container">
+                {/* Top Row: Logo + Actions */}
                 <div className="flex h-16 items-center justify-between gap-4">
                     <Link href="/" className="flex items-center gap-2 group shrink-0">
                         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-105">
                             <ShoppingBag className="h-5 w-5" />
                         </div>
-                        <span className="text-lg md:text-xl font-semibold tracking-tight">
+                        <span className="text-base md:text-xl font-semibold tracking-tight">
                             ShopNova
                         </span>
                     </Link>
 
-                    {/* Search — takes up the center */}
-                    <SearchInput />
+                    {/* Search — hidden on mobile in this row, visible in bottom row */}
+                    <div className="hidden md:flex flex-1">
+                        <SearchInput />
+                    </div>
 
-                    {/* Actions — icon + label like Amazon */}
+                    {/* Actions */}
                     <div className="flex items-center gap-1">
-                        {/* Wishlist */}
                         <Favourites />
-                        {/* Cart */}
                         <Cart />
-                        {/* Profile */}
                         <Profile />
-
-                        {/* Mobile Menu */}
                         <MobileMenu />
                     </div>
+                </div>
+
+                {/* Bottom Row: Search (Mobile Only) */}
+                <div className="pb-3 md:hidden">
+                    <SearchInput />
                 </div>
             </div>
         </header>

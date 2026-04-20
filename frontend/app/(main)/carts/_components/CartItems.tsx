@@ -34,8 +34,8 @@ const CartItems = ({ cart }: cart) => {
         }, 200);
     }
     return (
-        <div className="flex gap-6 rounded-xl bg-linear-to-l from-primary/2 shadow-sm to-secondary/15 border border-gray-200 p-4">
-            <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 rounded-xl bg-linear-to-l from-primary/2 shadow-sm to-secondary/15 border border-gray-200 p-4">
+            <div className="relative h-28 w-full sm:w-28 shrink-0 overflow-hidden rounded-lg bg-gray-100">
                 <Image
                     src={cart.imageUrl || '/placeholder.png'}
                     alt="product"
@@ -46,10 +46,10 @@ const CartItems = ({ cart }: cart) => {
 
             <div className="flex flex-1 flex-col justify-between">
                 <div>
-                    <h2 className="text-lg font-medium text-gray-900">
+                    <h2 className="text-base md:text-lg font-medium text-gray-900">
                         {cart.productName}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs md:text-sm text-gray-500 mt-1">
                         {cart.brand}
                     </p>
                     {cart.size && (
@@ -58,20 +58,20 @@ const CartItems = ({ cart }: cart) => {
                         </span>
                     )}
                 </div>
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-wrap items-center justify-between mt-4 gap-4">
                     <div className="flex items-center rounded-lg border border-gray-300 overflow-hidden">
-                        <button onClick={() => handleUpdateCart(quantity - 1)} disabled={quantity === 1} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
-                            <Minus size={16} />
+                        <button onClick={() => handleUpdateCart(quantity - 1)} disabled={quantity === 1} className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center hover:bg-gray-100 transition">
+                            <Minus size={14} className="sm:size-4" />
                         </button>
-                        <span className="h-10 w-12 flex items-center justify-center text-sm font-medium">
+                        <span className="h-9 w-10 sm:h-10 sm:w-12 flex items-center justify-center text-xs md:text-sm font-medium">
                             {quantity}
                         </span>
-                        <button onClick={() => handleUpdateCart(quantity + 1)} className="h-10 w-10 flex items-center justify-center hover:bg-gray-100 transition">
-                            <Plus size={16} />
+                        <button onClick={() => handleUpdateCart(quantity + 1)} className="h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center hover:bg-gray-100 transition">
+                            <Plus size={14} className="sm:size-4" />
                         </button>
                     </div>
-                    <div className="flex items-center gap-6">
-                        <span className="text-lg font-semibold text-gray-900">
+                    <div className="flex items-center gap-4 sm:gap-6">
+                        <span className="text-[15px] md:text-lg font-semibold text-gray-900">
                             ₹{cart.offerPrice}
                         </span>
                         <DeleteCartProduct id={cart.variantId} />

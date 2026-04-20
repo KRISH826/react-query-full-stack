@@ -38,7 +38,7 @@ export default function Page() {
                     </blockquote>
                 </div>
             </div>
-            <div className="flex items-center justify-center lg:h-screen lg:p-8">
+            <div className="flex items-center justify-center p-4 py-12 md:py-0 lg:h-screen lg:p-8">
                 <div className="mx-auto flex w-full flex-col justify-center gap-4 sm:w-[350px]">
                     <div className="flex flex-col mb-4 gap-2 text-start">
                         <h1 className="text-2xl font-semibold tracking-tight">Verify Email</h1>
