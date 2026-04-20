@@ -1,5 +1,6 @@
 import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
 const BannerSection = () => {
@@ -34,9 +35,9 @@ const BannerSection = () => {
                         </p>
 
                         <div className="flex flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">
-                            <button className="bg-primary text-white px-4 sm:px-8 py-3 sm:py-4 rounded-full font-medium text-sm sm:text-base hover:bg-primary/90 transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2 uppercase tracking-widest">
+                            <Link href="/product" className="bg-primary text-white px-4 sm:px-8 py-3 sm:py-4 rounded-full font-medium text-sm sm:text-base hover:bg-primary/90 transition-all shadow-lg hover:-translate-y-0.5 flex items-center gap-2 uppercase tracking-widest">
                                 Shop Now <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-                            </button>
+                            </Link>
                             <button className="bg-white/95 text-primary border border-white/80 px-4 sm:px-8 py-3 sm:py-4 rounded-full font-medium text-sm sm:text-base hover:bg-white transition-all flex items-center gap-2 uppercase tracking-widest">
                                 View Lookbook
                             </button>
