@@ -37,14 +37,14 @@ const FavouritePage = () => {
     return (
         <section className="py-10 bg-background/30">
             <div className="container mx-auto">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground">My Wishlist</h1>
-                        <p className="text-muted-foreground mt-1">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Wishlist</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
                             {hasItems ? `You have ${data.total} items saved.` : "Your wishlist is empty."}
                         </p>
                     </div>
-                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border">
+                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border w-full sm:w-auto">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Shopping
                     </Button>
@@ -69,50 +69,50 @@ const FavouritePage = () => {
                     </div>
                 )}
 
-                <div className="flex gap-4 w-full justify-between md:mt-10 mt-6 items-center">
-                    <p className="text-xs flex-1 text-muted-foreground">
+                <div className="flex flex-col sm:flex-row gap-4 w-full justify-between md:mt-10 mt-8 items-center">
+                    <p className="text-xs text-muted-foreground order-2 sm:order-1">
                         Page {page} of {totalPages} — {data?.total} products
                     </p>
                     {
-                        totalPages > 1 && <>
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                            className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
+                        totalPages > 1 && (
+                            <div className="order-1 sm:order-2 w-full sm:w-auto overflow-x-auto">
+                                <Pagination>
+                                    <PaginationContent className="flex-nowrap">
+                                        <PaginationItem>
+                                            <PaginationPrevious
+                                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
 
-                                    {pages.map((p, idx) =>
-                                        p === "ellipsis" ? (
-                                            <PaginationItem key={`ellipsis-${idx}`}>
-                                                <PaginationEllipsis />
-                                            </PaginationItem>
-                                        ) : (
-                                            <PaginationItem key={p}>
-                                                <PaginationLink
-                                                    isActive={p === page}
-                                                    onClick={() => setPage(p)}
-                                                    className="cursor-pointer"
-                                                >
-                                                    {p}
-                                                </PaginationLink>
-                                            </PaginationItem>
-                                        )
-                                    )}
+                                        {pages.map((p, idx) =>
+                                            p === "ellipsis" ? (
+                                                <PaginationItem key={`ellipsis-${idx}`}>
+                                                    <PaginationEllipsis />
+                                                </PaginationItem>
+                                            ) : (
+                                                <PaginationItem key={p}>
+                                                    <PaginationLink
+                                                        isActive={p === page}
+                                                        onClick={() => setPage(p)}
+                                                        className="cursor-pointer text-xs sm:text-sm"
+                                                    >
+                                                        {p}
+                                                    </PaginationLink>
+                                                </PaginationItem>
+                                            )
+                                        )}
 
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                            className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-
-
-                        </>
+                                        <PaginationItem>
+                                            <PaginationNext
+                                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                            />
+                                        </PaginationItem>
+                                    </PaginationContent>
+                                </Pagination>
+                            </div>
+                        )
                     }
                 </div>
             </div>

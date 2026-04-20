@@ -96,7 +96,7 @@ const Footer = () => {
                         © {new Date().getFullYear()} ShopNova. All rights reserved.
                     </p>
 
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">
                         <Link href="#" className="hover:text-foreground">Privacy Policy</Link>
                         <Link href="#" className="hover:text-foreground">Terms</Link>
                         <Link href="#" className="hover:text-foreground">Cookies</Link>

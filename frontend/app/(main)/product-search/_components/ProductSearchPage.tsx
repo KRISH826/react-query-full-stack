@@ -32,10 +32,13 @@ const ProductSearchPage = () => {
 
         <div className="py-10 bg-white">
             <div className="container">
-                <div className="flex items-center mb-6 justify-between">
-                    <h1 className="text-xl font-bold">Search Results for {query}</h1>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                    <h1 className="text-lg md:text-2xl font-bold text-foreground">Search Results for "{query}"</h1>
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                        Found {data?.length || 0} items
+                    </p>
                 </div>
-                <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid gap-3 sm:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {data?.map((product: Product) => (
                         <ProductCard key={product.id} product={product} />
                     ))}

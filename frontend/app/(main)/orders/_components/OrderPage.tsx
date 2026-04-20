@@ -53,9 +53,9 @@ const OrderPage = () => {
                 data?.orders?.map((order) => {
                     return (
                         <div key={order.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-gray-50 border-b border-gray-200">
-                                <div className="flex flex-wrap items-center gap-5">
-                                    <div>
+                            <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 sm:py-3 bg-gray-50 border-b border-gray-200">
+                                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                                    <div className="min-w-[80px]">
                                         <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
                                             Order
                                         </p>
@@ -66,7 +66,7 @@ const OrderPage = () => {
 
                                     <div className="w-px h-7 bg-gray-200 hidden sm:block" />
 
-                                    <div>
+                                    <div className="min-w-[100px]">
                                         <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
                                             Placed On
                                         </p>
@@ -82,7 +82,7 @@ const OrderPage = () => {
 
                                     <div className="w-px h-7 bg-gray-200 hidden sm:block" />
 
-                                    <div>
+                                    <div className="min-w-[80px]">
                                         <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">
                                             Order Total
                                         </p>
@@ -119,50 +119,50 @@ const OrderPage = () => {
             }
 
             {/* pagination */}
-            <div className="flex gap-4 w-full justify-between md:mt-10 mt-6 items-center">
-                <p className="text-xs flex-1 text-muted-foreground">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-between md:mt-10 mt-8 items-center">
+                <p className="text-xs text-muted-foreground order-2 sm:order-1">
                     Page {page} of {totalPages} — {data?.total} products
                 </p>
                 {
-                    totalPages > 1 && <>
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious
-                                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                    />
-                                </PaginationItem>
+                    totalPages > 1 && (
+                        <div className="order-1 sm:order-2 w-full sm:w-auto overflow-x-auto">
+                            <Pagination>
+                                <PaginationContent className="flex-nowrap">
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                            className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
 
-                                {pages.map((p, idx) =>
-                                    p === "ellipsis" ? (
-                                        <PaginationItem key={`ellipsis-${idx}`}>
-                                            <PaginationEllipsis />
-                                        </PaginationItem>
-                                    ) : (
-                                        <PaginationItem key={p}>
-                                            <PaginationLink
-                                                isActive={p === page}
-                                                onClick={() => setPage(p)}
-                                                className="cursor-pointer"
-                                            >
-                                                {p}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    )
-                                )}
+                                    {pages.map((p, idx) =>
+                                        p === "ellipsis" ? (
+                                            <PaginationItem key={`ellipsis-${idx}`}>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        ) : (
+                                            <PaginationItem key={p}>
+                                                <PaginationLink
+                                                    isActive={p === page}
+                                                    onClick={() => setPage(p)}
+                                                    className="cursor-pointer text-xs sm:text-sm"
+                                                >
+                                                    {p}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        )
+                                    )}
 
-                                <PaginationItem>
-                                    <PaginationNext
-                                        onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                        className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
-
-
-                    </>
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                            className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )
                 }
             </div>
         </div>

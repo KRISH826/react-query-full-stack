@@ -104,8 +104,8 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                     />
                 </div>
                 <div className="text-center md:text-left space-y-1">
-                    <h2 className="text-2xl font-bold text-gray-900">{user?.name || "Guest User"}</h2>
-                    <p className="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">{user?.name || "Guest User"}</h2>
+                    <p className="text-xs md:text-sm text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2">
                         <Mail size={14} /> {user?.email || "guest@example.com"}
                     </p>
                     <div className="pt-2">
@@ -121,11 +121,11 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                     {/* LEFT COLUMN: Basic Info */}
                     <Card className="lg:col-span-1 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
+                            <CardTitle className="text-base md:text-lg flex items-center gap-2">
                                 <UserIcon size={18} className="text-primary" />
                                 Basic Details
                             </CardTitle>
-                            <CardDescription>Update your public information</CardDescription>
+                            <CardDescription className="text-xs md:text-sm">Update your public information</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
@@ -161,11 +161,11 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                     {/* RIGHT COLUMN: Address Info */}
                     <Card className="lg:col-span-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                         <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
+                            <CardTitle className="text-base md:text-lg flex items-center gap-2">
                                 <MapPin size={18} className="text-primary" />
                                 Delivery Address
                             </CardTitle>
-                            <CardDescription>Your saved shipping information</CardDescription>
+                            <CardDescription className="text-xs md:text-sm">Your saved shipping information</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-5">
                             <div className="space-y-2">
@@ -226,19 +226,19 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                     </Card>
                 </div>
 
-                <div className="flex justify-end gap-2 pt-4">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6">
                     <Button
                         type="button"
                         variant="secondary"
                         onClick={() => window.location.reload()}
-                        className="px-6 h-11"
+                        className="px-6 h-11 w-full sm:w-auto order-2 sm:order-1"
                     >
                         Cancel
                     </Button>
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="px-10 h-11 font-bold bg-primary hover:bg-primary/90 transition-all shadow-lg active:scale-95 flex items-center gap-2"
+                        className="px-10 h-11 font-bold bg-primary hover:bg-primary/90 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto order-1 sm:order-2"
                     >
                         {
                             !isLoading ? <Save size={18} /> : <Loader2 className="animate-spin" size={18} />
