@@ -9,7 +9,7 @@ import { Heart, ShoppingBag } from "lucide-react";
 import ProductRating from "./ProductRating";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useMemo } from "react";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -29,8 +29,12 @@ const ProductCard = ({ product }: Props) => {
         product.images?.find((img) => img.isprimary)?.image_url ||
         "/placeholder.png";
 
-    const isOutOfStock =
-        product.is_track_inventory && product.stock_quantity <= 0;
+    const variants = product.variants || [];
+    const isOutOfStock = useMemo(() => {
+        if (variants.length === 0) return true;
+        return variants.every(variant => variant.stock_quantity === 0);
+    }, [variants]);
+
 
     const addedWishList = favouritesData?.data?.some((fav) => fav.product_id === product.id);
 
