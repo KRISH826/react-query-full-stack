@@ -87,4 +87,51 @@ export class PaymentService {
             client.release();
         }
     }
+
+    static async handleWebHookService(payload: any): Promise<void> {
+        const event = payload.event;
+        const orderId = payload.payload?.payment?.entity?.receipt;
+        if (event === "payment.capture") {
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+                await markPaymentSuccess(
+                    orderId,
+                    payload.payload.payment.entity.id,
+                    payload.payload.payment.entity.signature,
+                    client
+                );
+                await updateStatusConfirmedByOrderId(orderId, client);
+                await client.query("COMMIT");
+                const { order, items } = await getOrderWithItems(orderId);
+                if (order) {
+                    setImmediate(() => {
+                        sendOrderConfirmatinMail(order, items, order.email)
+                            .catch(err => console.error("Email failed:", err));
+                    });
+                }
+            } catch (error) {
+                await client.query("ROLLBACK");
+                throw error;
+            } finally {
+                client.release();
+            }
+        }
+
+        if (event === "payment.failed") {
+            // ✅ Payment failed — order invisible karo
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+                await markPaymentFailed(orderId, client);
+                await markOrderFailed(orderId, client);
+                await client.query("COMMIT");
+            } catch (error) {
+                await client.query("ROLLBACK");
+                throw error;
+            } finally {
+                client.release();
+            }
+        }
+    }
 }

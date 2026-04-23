@@ -45,6 +45,7 @@ export const config = {
     razorpay: {
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_SECRET,
+        webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
     },
     deepseek: {
         api_key: process.env.DEEPSEEK_API_KEY,

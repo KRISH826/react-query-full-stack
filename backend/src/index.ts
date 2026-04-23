@@ -44,6 +44,8 @@ app.use(cookieParser());
 app.use(morgan("dev"));
 app.use("/api", globalLimiter);
 connectDB();
+
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }), paymentRouter); // for razorpay webhook, must be before express.json()
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
