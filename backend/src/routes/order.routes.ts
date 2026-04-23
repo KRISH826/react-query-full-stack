@@ -10,7 +10,7 @@ router.get("/admin", requireAuth, requireRole("admin"), OrderController.adminGet
 router.get("/search", requireAuth, requireRole("admin"), OrderController.adminOrderSEarchController);
 router.post("/checkout", requireAuth, requireRole("customer"), OrderController.createOrderController);
 router.get("/:orderId", requireAuth, OrderController.getOrderByIdController);
-router.delete("/:orderId/items/:itemId", requireAuth, requireRole("admin"), OrderController.cancelOrderItemController);
+router.delete("/:orderId/items/:itemId", requireAuth, requireRole("customer"), OrderController.cancelOrderItemController);
 router.patch("/:orderId/cancel", requireAuth, requireRole("customer"), OrderController.cancelOrderController);
 router.patch("/:orderId/status", requireAuth, requireRole("admin"), OrderController.updateOrderStatusController);
 router.post("/buy-now", requireAuth, requireRole("customer"), OrderController.buyNowController);
