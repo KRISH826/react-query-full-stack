@@ -236,6 +236,24 @@ export class OrderController {
         }
     }
 
+    static async deleteOrderController(req: AuthRequest, res: Response, next: NextFunction) {
+        const userId = req.user?.id;
+        if (!userId) {
+            return next(new HttpError("Unauthorized", 401));
+        }
+        try {
+            const orderId = req.params.orderId as string;
+            if (!orderId) {
+                throw new HttpError("Order Id is Required", 400);
+            }
+            await OrderService.adminDeleteFullOrderItems(orderId);
+            return res.status(200).json({ message: "Order deleted successfully" });
+        }
+        catch (error) {            
+            next(error);
+        }
+    }
+
     static async adminOrderSEarchController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
             const query = req.query.q as string;

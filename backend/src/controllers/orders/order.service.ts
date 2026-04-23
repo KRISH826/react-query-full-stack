@@ -1,3 +1,4 @@
+import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import {
@@ -19,6 +20,7 @@ import {
     cancelOrderItem,
     createOrder,
     createOrderItem,
+    deleteAllOrderItemsByOrderId,
     findOrderById,
     findOrderItemById,
     findOrderItems,
@@ -56,33 +58,6 @@ export class OrderService {
 
             const order = await createOrder(userId, orderData, totalAmount, client);
             if (!order) throw new HttpError("Failed to create order", 500);
-
-            await Promise.all(
-                cartItems.map((cartItem) => {
-                    const price = Number(cartItem.price_at_add);
-                    const offerPrice = cartItem.offer_price_override
-                        ? Number(cartItem.offer_price_override)
-                        : null;
-                    const effectivePrice = offerPrice ?? price;
-                    const subtotal = cartItem.quantity * effectivePrice;
-
-                    return createOrderItem(
-                        order.id,
-                        cartItem.product_id,
-                        cartItem.variant_id,
-                        cartItem.productname,
-                        cartItem.brand,
-                        cartItem.quantity,
-                        price,
-                        offerPrice,
-                        subtotal,
-                        cartItem.size,
-                        order.status,
-                        cartItem.image_url,
-                        client
-                    );
-                })
-            );
 
             await CartService.clearCart(userId);
             await client.query("COMMIT");
@@ -377,6 +352,24 @@ export class OrderService {
             total,
             totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
         };
+    }
+
+    static async adminDeleteFullOrderItems(orderId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+
+            await deleteAllOrderItemsByOrderId(orderId, client);
+            await client.query("COMMIT");
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     private static formatOrderResponse(

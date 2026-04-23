@@ -4,7 +4,7 @@ import { createPayment, markPaymentFailed, markPaymentSuccess, updateStatusConfi
 import crypto from "crypto";
 import { config } from "../../config/config";
 import { pool } from "../../db/db";
-import { getOrderWithItems, markOrderFailed } from "../orders/order.repository";
+import { createOrderItem, getOrderWithItems, markOrderFailed } from "../orders/order.repository";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderService } from "../orders/order.service";
 import { sendOrderConfirmatinMail } from "../email/email.service";
