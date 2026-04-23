@@ -11,6 +11,7 @@ router.get("/search", requireAuth, requireRole("admin"), OrderController.adminOr
 router.post("/checkout", requireAuth, requireRole("customer"), OrderController.createOrderController);
 router.get("/:orderId", requireAuth, OrderController.getOrderByIdController);
 router.delete("/:orderId/items/:itemId", requireAuth, requireRole("customer"), OrderController.cancelOrderItemController);
+router.delete("/:orderId", requireAuth, requireRole("admin"), OrderController.deleteOrderController);
 router.patch("/:orderId/cancel", requireAuth, requireRole("customer"), OrderController.cancelOrderController);
 router.patch("/:orderId/status", requireAuth, requireRole("admin"), OrderController.updateOrderStatusController);
 router.post("/buy-now", requireAuth, requireRole("customer"), OrderController.buyNowController);

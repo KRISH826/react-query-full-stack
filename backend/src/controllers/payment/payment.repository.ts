@@ -24,10 +24,6 @@ export async function markPaymentFailed(orderId: string, db: Pool | PoolClient =
         `UPDATE payments SET status='failed' WHERE order_id=$1 RETURNING *`,
         [orderId]
     );
-    await db.query(
-        `UPDATE order_items SET status='cancelled', updated_at=CURRENT_TIMESTAMP WHERE order_id=$1`,
-        [orderId]
-    );
     return rows[0];
 }
 

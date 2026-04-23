@@ -1,3 +1,4 @@
+import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import {
@@ -19,6 +20,7 @@ import {
     cancelOrderItem,
     createOrder,
     createOrderItem,
+    deleteAllOrderItemsByOrderId,
     findOrderById,
     findOrderItemById,
     findOrderItems,
@@ -236,7 +238,7 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                product.status,
+                "placed",
                 product.size || null,
                 product.image_url || null,
                 client
@@ -377,6 +379,24 @@ export class OrderService {
             total,
             totalPages: total === 0 ? 0 : Math.ceil(total / safeLimit),
         };
+    }
+
+    static async adminDeleteFullOrderItems(orderId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            const order = await findOrderById(orderId, client);
+            if (!order) throw new HttpError("Order not found", 404);
+
+            await deleteAllOrderItemsByOrderId(orderId, client);
+            await client.query("COMMIT");
+
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
     }
 
     private static formatOrderResponse(

@@ -204,6 +204,8 @@ export async function buyNowProductByid(
     return rows[0] || null;
 }
 
+
+
 export async function markOrderFailed(
     orderId: string,
     db: Pool | PoolClient = pool
@@ -212,6 +214,11 @@ export async function markOrderFailed(
         `UPDATE orders 
          SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
          WHERE id = $1`,
+        [orderId]
+    );
+
+    await db.query(
+        `DELETE FROM order_items WHERE order_id = $1`,
         [orderId]
     );
 }
@@ -302,4 +309,11 @@ export async function searchOrdersAdmin(
 );
 
     return { data: rows || [], total };
+}
+
+export async function deleteAllOrderItemsByOrderId(orderId: string, db: Pool | PoolClient = pool) {
+    await db.query(
+        `DELETE FROM order_items WHERE order_id = $1`,
+        [orderId]
+    );
 }
