@@ -83,6 +83,7 @@ const OrderItemCard = ({ item, orderId }: Props) => {
                         )}
                         {item.offerPrice ? (
                             <>
+                            <div className="flex items-center gap-2.5">
                                 <p className="text-xs text-gray-400 line-through">
                                     ₹{Number(item.price).toFixed(0)}
                                 </p>
@@ -92,13 +93,13 @@ const OrderItemCard = ({ item, orderId }: Props) => {
                                 <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                                     {Math.round((1 - item.offerPrice / item.price) * 100)}% off
                                 </span>
+                            </div>
                             </>
                         ) : (
                             <p className="text-sm font-bold text-gray-900">
                                 ₹{Number(item.price).toLocaleString("en-IN")}
                             </p>
                         )}
-                        Everything else — the RTK Query setup, tag invalidation, status config, tracking bar — looks solid.
                     </div>
                 </div>
 
