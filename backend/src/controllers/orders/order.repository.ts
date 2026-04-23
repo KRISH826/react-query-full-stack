@@ -212,11 +212,11 @@ export async function markOrderFailed(
 ): Promise<void> {
     await db.query(
         `UPDATE orders 
-         SET status = 'cancelled', cancelled_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP 
+         SET deleted_at = CURRENT_TIMESTAMP,
+             updated_at = CURRENT_TIMESTAMP 
          WHERE id = $1`,
         [orderId]
     );
-
     await db.query(
         `DELETE FROM order_items WHERE order_id = $1`,
         [orderId]
