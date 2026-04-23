@@ -59,6 +59,33 @@ export class OrderService {
             const order = await createOrder(userId, orderData, totalAmount, client);
             if (!order) throw new HttpError("Failed to create order", 500);
 
+            await Promise.all(
+                cartItems.map((cartItem) => {
+                    const price = Number(cartItem.price_at_add);
+                    const offerPrice = cartItem.offer_price_override
+                        ? Number(cartItem.offer_price_override)
+                        : null;
+                    const effectivePrice = offerPrice ?? price;
+                    const subtotal = cartItem.quantity * effectivePrice;
+
+                    return createOrderItem(
+                        order.id,
+                        cartItem.product_id,
+                        cartItem.variant_id,
+                        cartItem.productname,
+                        cartItem.brand,
+                        cartItem.quantity,
+                        price,
+                        offerPrice,
+                        subtotal,
+                        cartItem.size,
+                        order.status,
+                        cartItem.image_url,
+                        client
+                    );
+                })
+            );
+
             await CartService.clearCart(userId);
             await client.query("COMMIT");
 
@@ -211,7 +238,7 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                product.status,
+                "placed",
                 product.size || null,
                 product.image_url || null,
                 client
