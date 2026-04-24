@@ -15,6 +15,7 @@ import paymentRouter from "./routes/payment.route";
 import searchRouter from "./routes/search.routes";
 import favouriteRouter from "./routes/favourite.route";
 import reviewRouter from "./routes/review.routes";
+import webhookRouter from "./routes/webhook.route";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
@@ -23,6 +24,8 @@ import "./corn/product/product.worker"
 import cookieParser from "cookie-parser";
 
 const app = express();
+
+app.use("/api/payments/webhook", webhookRouter);
 
 app.use(express.json(
     {
@@ -45,7 +48,6 @@ app.use(morgan("dev"));
 app.use("/api", globalLimiter);
 connectDB();
 
-app.use("/api/payments/webhook", express.raw({ type: "application/json" }), paymentRouter); // for razorpay webhook, must be before express.json()
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);

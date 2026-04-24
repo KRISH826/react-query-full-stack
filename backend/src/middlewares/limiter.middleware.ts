@@ -26,12 +26,12 @@ export const createRateLimiter = ({
 // Pre-configured common limiters
 export const globalLimiter = createRateLimiter({
     windowMinutes: 5,
-    maxRequests: 100,
+    maxRequests: 70,
     message: "Too many requests from this IP, please try again after 15 minutes"
 });
 
 export const authLimiter = createRateLimiter({
     windowMinutes: 15,
-    maxRequests: 50,
+    maxRequests: 150,
     message: "Too many login attempts, please try again after 15 minutes"
 });
