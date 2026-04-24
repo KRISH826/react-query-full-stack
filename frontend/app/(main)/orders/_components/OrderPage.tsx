@@ -8,10 +8,16 @@ import { Spinner } from '@/components/ui/spinner'
 import { usePagination } from '@/hooks/usePagination'
 import { useState } from 'react'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 const OrderPage = () => {
     const [page, setPage] = useState(1);
-    const { data, isLoading, isError } = useGetOrdersQuery({ page, limit: 10 });
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data, isLoading, isError } = useGetOrdersQuery(
+        { page, limit: 10 },
+        { skip: !token }
+    );
     const totalPages = data?.totalPages ?? 1;
     const pages = usePagination(page, totalPages);
 

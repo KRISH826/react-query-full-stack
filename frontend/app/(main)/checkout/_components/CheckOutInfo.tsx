@@ -13,6 +13,8 @@ import { useGetProfileQuery } from "@/services/userApi"
 import { CreditCard, Mail, Phone } from "lucide-react"
 import { useEffect, useRef } from "react"
 import { useForm } from "react-hook-form"
+import { useSelector } from "react-redux"
+import { RootState } from "@/store/store"
 import { toast } from "sonner"
 
 const CheckOutInfo = () => {
@@ -20,9 +22,10 @@ const CheckOutInfo = () => {
     const { startPolling, order } = useOrderPolling()
     const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
     const paymentStartedForOrderIdRef = useRef<string | null>(null)
+    const token = useSelector((state: RootState) => state.auth.accessToken)
 
     const { data: user } = useGetProfileQuery(undefined, {
-        refetchOnMountOrArgChange: true,
+        skip: !token,
     })
 
     const {

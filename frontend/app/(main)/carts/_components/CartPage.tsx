@@ -10,9 +10,12 @@ import { toast } from "sonner";
 import { useClearCartMutation } from "@/services/cartApi";
 import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const CartPage = () => {
-    const { data, isLoading } = useGetCartQuery();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data, isLoading } = useGetCartQuery(undefined, { skip: !token });
     const [clearCart, { isLoading: isClearing }] = useClearCartMutation();
     const router = useRouter();
     const ClearCart = async () => {

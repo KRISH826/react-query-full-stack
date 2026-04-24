@@ -3,9 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { useGetCartQuery } from "@/services/cartApi";
 import { usePathname, useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 const OrderSummary = () => {
-    const { data } = useGetCartQuery();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data } = useGetCartQuery(undefined, { skip: !token });
     const router = useRouter();
     const pathname = usePathname();
     const isCheckoutPage = pathname === "/checkout";

@@ -25,8 +25,6 @@ const Profile = () => {
             await logout().unwrap();
             toast.success("Logout successful");
             router.replace("/login");
-
-            // Reset API state after navigation to avoid flash of empty content
             setTimeout(() => {
                 dispatch(baseApi.util.resetApiState());
             }, 100);

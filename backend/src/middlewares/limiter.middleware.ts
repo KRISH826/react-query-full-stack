@@ -1,4 +1,6 @@
+import { Request } from "express";
 import rateLimit from "express-rate-limit";
+import { config } from "../config/config";
 
 interface RateLimitOptions {
     windowMinutes?: number;
@@ -11,9 +13,28 @@ export const createRateLimiter = ({
     maxRequests = 100,
     message = "Too many requests, please try again later."
 }: RateLimitOptions = {}) => {
+    const shouldSkipRateLimit = (req: Request) => {
+        if (config.app.env !== "production") {
+            return true;
+        }
+
+        const forwardedFor = req.headers["x-forwarded-for"];
+        const forwardedIp =
+            typeof forwardedFor === "string"
+                ? forwardedFor.split(",")[0]?.trim()
+                : undefined;
+
+        const ips = [req.ip, req.socket.remoteAddress, forwardedIp]
+            .filter(Boolean)
+            .map((ip) => ip!.replace(/^::ffff:/, ""));
+
+        return ips.some((ip) => ip === "127.0.0.1" || ip === "::1" || ip === "localhost");
+    };
+
     return rateLimit({
         windowMs: windowMinutes * 60 * 1000,
         max: maxRequests,
+        skip: shouldSkipRateLimit,
         message: {
             success: false,
             message

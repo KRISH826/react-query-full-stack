@@ -18,10 +18,14 @@ export default function AuthProvider({
             return;
         }
 
-        const token = localStorage.getItem("token");
+        const localStorageToken = localStorage.getItem("token");
 
-        if (token && token !== "undefined" && token !== "null") {
-            dispatch(setAccessToken(token));
+        if (
+            localStorageToken &&
+            localStorageToken !== "undefined" &&
+            localStorageToken !== "null"
+        ) {
+            dispatch(setAccessToken(localStorageToken));
         }
     }, [dispatch, token]);
 
