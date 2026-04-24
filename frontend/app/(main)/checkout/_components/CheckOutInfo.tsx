@@ -9,6 +9,7 @@ import { useOrderPolling } from "@/hooks/usePolling"
 import { useRazorpay } from "@/hooks/useRazorpay"
 import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
 import { useCheckOutMutation } from "@/services/orderApi"
+import { useGetCartQuery } from "@/services/cartApi"
 import { useGetProfileQuery } from "@/services/userApi"
 import { CreditCard, Mail, Phone } from "lucide-react"
 import { useEffect, useRef } from "react"
@@ -23,6 +24,8 @@ const CheckOutInfo = () => {
     const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
     const paymentStartedForOrderIdRef = useRef<string | null>(null)
     const token = useSelector((state: RootState) => state.auth.accessToken)
+    const { data: cart } = useGetCartQuery(undefined, { skip: !token })
+    const isCartEmpty = (cart?.items?.length ?? 0) === 0
 
     const { data: user } = useGetProfileQuery(undefined, {
         skip: !token,
@@ -66,6 +69,11 @@ const CheckOutInfo = () => {
     }, [initiatePayment, order])
 
     const onSubmit = async (data: CheckOutSchema) => {
+        if (isCartEmpty) {
+            toast.error("Your cart is empty. Add items before placing an order.")
+            return
+        }
+
         try {
             const response = await checkout(data).unwrap()
             startPolling(response.jobId)
