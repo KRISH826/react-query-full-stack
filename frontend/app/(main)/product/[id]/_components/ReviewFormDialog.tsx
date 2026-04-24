@@ -54,7 +54,7 @@ const ReviewFormDialog = ({ productId }: ReviewFormDialogProps) => {
                     Write a Review
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
+            <DialogContent className="sm:max-w-105 p-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl">
                 <DialogHeader className="p-5 flex flex-col gap-1 border-b border-slate-100 bg-white">
                     <DialogTitle className="text-lg mb-0 font-bold text-slate-900">Write your review</DialogTitle>
                     <DialogDescription className="text-slate-500 text-xs mt-0.5">

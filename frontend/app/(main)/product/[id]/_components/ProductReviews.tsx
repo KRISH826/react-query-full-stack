@@ -40,7 +40,12 @@ const ProductReviews = () => {
                     )}
                 </div>
 
-                <ReviewFormDialog productId={id} />
+                {
+                    userProfile && (
+                        <ReviewFormDialog productId={id} />
+                    )
+                }
+                
             </div>
 
             {/* Reviews List */}
