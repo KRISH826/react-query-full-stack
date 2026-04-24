@@ -9,13 +9,18 @@ router.get("/", requireAuth, OrderController.getUserOrdersController);
 router.get("/admin", requireAuth, requireRole("admin"), OrderController.adminGetAllOrdersController);
 router.get("/search", requireAuth, requireRole("admin"), OrderController.adminOrderSEarchController);
 router.post("/checkout", requireAuth, requireRole("customer"), OrderController.createOrderController);
+router.post("/buy-now", requireAuth, requireRole("customer"), OrderController.buyNowController);
+router.get("/job/:jobId", requireAuth, OrderController.getOrderJobStatusController);
+
+// params routes
 router.get("/:orderId", requireAuth, OrderController.getOrderByIdController);
 router.delete("/:orderId/items/:itemId", requireAuth, requireRole("customer"), OrderController.cancelOrderItemController);
 router.delete("/:orderId", requireAuth, requireRole("admin"), OrderController.deleteOrderController);
 router.patch("/:orderId/cancel", requireAuth, requireRole("customer"), OrderController.cancelOrderController);
 router.patch("/:orderId/status", requireAuth, requireRole("admin"), OrderController.updateOrderStatusController);
-router.post("/buy-now", requireAuth, requireRole("customer"), OrderController.buyNowController);
+
 router.patch("/:orderId/items/:itemId/status", requireAuth, requireRole("admin"), OrderController.updateOrderItemStatusController);
+
 
 export default router;
 

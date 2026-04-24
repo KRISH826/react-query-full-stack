@@ -12,6 +12,8 @@ import { pool } from "../../db/db";
 import { getOrderWithItems, markOrderFailed } from "../orders/order.repository";
 import { HttpError } from "../../middlewares/error.middleware";
 import { sendOrderConfirmatinMail } from "../email/email.service";
+import { clearCartItems, findCartByUserId } from "../cart/cart.repository";
+import { cache } from "../../utils/cache";
 
 export class PaymentService {
 
@@ -63,7 +65,18 @@ export class PaymentService {
                 client
             );
             await updateStatusConfirmedByOrderId(data.order_id, client);
+            const confirmedOrderData = await getOrderWithItems(data.order_id, client);
+            const confirmedOrder = confirmedOrderData.order;
+            if (confirmedOrder?.user_id) {
+                const cart = await findCartByUserId(confirmedOrder.user_id, client);
+                if (cart) {
+                    await clearCartItems(cart.id, client);
+                }
+            }
             await client.query("COMMIT");
+            if (confirmedOrder?.user_id) {
+                await cache.delete(`cart:${confirmedOrder.user_id}`);
+            }
 
             // ✅ Fire confirmation email after commit, non-blocking
             const { order, items } = await getOrderWithItems(data.order_id);
@@ -85,6 +98,64 @@ export class PaymentService {
             throw error;
         } finally {
             client.release();
+        }
+    }
+
+    static async handleWebHookService(payload: any): Promise<void> {
+        const event = payload.event;
+        const orderId = payload.payload?.payment?.entity?.receipt;
+        if (event === "payment.capture") {
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+                await markPaymentSuccess(
+                    orderId,
+                    payload.payload.payment.entity.id,
+                    payload.payload.payment.entity.signature,
+                    client
+                );
+                await updateStatusConfirmedByOrderId(orderId, client);
+                const confirmedOrderData = await getOrderWithItems(orderId, client);
+                const confirmedOrder = confirmedOrderData.order;
+                if (confirmedOrder?.user_id) {
+                    const cart = await findCartByUserId(confirmedOrder.user_id, client);
+                    if (cart) {
+                        await clearCartItems(cart.id, client);
+                    }
+                }
+                await client.query("COMMIT");
+                if (confirmedOrder?.user_id) {
+                    await cache.delete(`cart:${confirmedOrder.user_id}`);
+                }
+                const { order, items } = await getOrderWithItems(orderId);
+                if (order) {
+                    setImmediate(() => {
+                        sendOrderConfirmatinMail(order, items, order.email)
+                            .catch(err => console.error("Email failed:", err));
+                    });
+                }
+            } catch (error) {
+                await client.query("ROLLBACK");
+                throw error;
+            } finally {
+                client.release();
+            }
+        }
+
+        if (event === "payment.failed") {
+            // ✅ Payment failed — order invisible karo
+            const client = await pool.connect();
+            try {
+                await client.query("BEGIN");
+                await markPaymentFailed(orderId, client);
+                await markOrderFailed(orderId, client);
+                await client.query("COMMIT");
+            } catch (error) {
+                await client.query("ROLLBACK");
+                throw error;
+            } finally {
+                client.release();
+            }
         }
     }
 }

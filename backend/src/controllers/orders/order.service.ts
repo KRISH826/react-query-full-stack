@@ -86,7 +86,6 @@ export class OrderService {
                 })
             );
 
-            await CartService.clearCart(userId);
             await client.query("COMMIT");
 
             return this.getOrderById(order.id, userId);

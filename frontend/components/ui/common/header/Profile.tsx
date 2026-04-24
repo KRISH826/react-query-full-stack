@@ -15,7 +15,6 @@ const Profile = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
         skip: !token,
-        refetchOnMountOrArgChange: true,
     });
     const [logout] = useLogoutMutation();
     const router = useRouter();
@@ -26,8 +25,6 @@ const Profile = () => {
             await logout().unwrap();
             toast.success("Logout successful");
             router.replace("/login");
-
-            // Reset API state after navigation to avoid flash of empty content
             setTimeout(() => {
                 dispatch(baseApi.util.resetApiState());
             }, 100);

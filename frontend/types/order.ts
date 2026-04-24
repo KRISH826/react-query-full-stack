@@ -49,3 +49,10 @@ export interface CreateOrderRequest {
     phone: string;
     email: string;
 }
+
+export interface OrderJobStatusResponse {
+    state: "waiting" | "active" | "completed" | "failed";
+    order?: OrderResponseDTO;
+    message?: string;
+    reason?: string;
+}

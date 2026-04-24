@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderService } from "./order.service";
 import { OrderStatus } from "../../models/order";
+import { orderQueue } from "../../queue/order/order.queue";
 
 export class OrderController {
     static async createOrderController(
@@ -19,14 +20,17 @@ export class OrderController {
             if (!shippingAddress || !phone || !email) {
                 throw new HttpError("All fields are required", 400);
             }
-            const order = await OrderService.createOrderFromCart(userId as string, {
-                shippingAddress,
-                phone,
-                email,
+           const job = await orderQueue.add("create-order", {
+                type: "cart",
+                userId,
+                orderData: {
+                    shippingAddress,
+                    phone,
+                    email,
+                }
             });
-            return res
-                .status(201)
-                .json({ message: "Order created successfully", order });
+
+            return res.status(202).json({ message: "Order is being processed", jobId: job.id });
         } catch (error) {
             next(error);
         }
@@ -68,14 +72,20 @@ export class OrderController {
                 throw new HttpError('All fields are required', 400)
             }
 
-            const order = await OrderService.buyNowService(productId, {
-                variant_id,
-                quantity: 1,
-                shippingAddress,
-                phone,
-                email,
-            }, userId);
-            return res.status(201).json({ message: 'Order created successfully', order })
+            const job = await orderQueue.add("buy-now", {
+                type: "buy-now",
+                productId,
+                userId,
+                orderData: {
+                    variant_id,
+                    quantity: 1,
+                    shippingAddress,
+                    phone,
+                    email
+                }
+            });
+
+            return res.status(202).json({ message: "Order is being processed", jobId: job.id });
         } catch (error) {
             next(error)
         }
@@ -259,6 +269,31 @@ export class OrderController {
             const query = req.query.q as string;
             const orders = await OrderService.searchOrdersService(query);
             return res.status(200).json({ message: "Orders fetched successfully", orders });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getOrderJobStatusController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+           const { jobId } = req.params;
+           const job = await orderQueue.getJob(jobId as string);
+           if(!job) {
+            throw new HttpError("Job not found", 404);
+           }
+
+           const state = await job.getState();
+
+           if(state === "completed") {
+            const result = await job.returnvalue;
+            return res.status(200).json({ message: "Order processed successfully", order: result });
+           } else if(state === "failed") {
+            const reason = job.failedReason;
+            return res.status(200).json({ message: "Order processing failed", reason });
+           }
+
+           return res.status(200).json({ message: "Order is being processed", state });
+
         } catch (error) {
             next(error);
         }

@@ -1,12 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { useCancelOrderMutation, useCreatePaymentMutation, useVerifyPaymentMutation } from "@/services/orderApi"
+import {
+    useCancelOrderMutation,
+    useCreatePaymentMutation,
+    useVerifyPaymentMutation,
+} from "@/services/orderApi"
 import { toast } from "sonner"
+import { useClearCartMutation } from "@/services/cartApi"
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    interface Window { Razorpay: any }
+    interface Window {
+        Razorpay: new (options: Record<string, unknown>) => {
+            open: () => void
+            on: (event: string, callback: (response: RazorpayErrorResponse) => void) => void
+        }
+    }
 }
 
 interface RazorpayOptions {
@@ -36,12 +45,46 @@ interface RazorpayErrorResponse {
     }
 }
 
+interface RazorpaySuccessResponse {
+    razorpay_order_id: string
+    razorpay_payment_id: string
+    razorpay_signature: string
+}
+
+const waitForRazorpay = (timeoutMs = 10000) =>
+    new Promise<void>((resolve, reject) => {
+        if (typeof window === "undefined") {
+            reject(new Error("Razorpay is only available in the browser"))
+            return
+        }
+
+        if (window.Razorpay) {
+            resolve()
+            return
+        }
+
+        const intervalId = window.setInterval(() => {
+            if (!window.Razorpay) {
+                return
+            }
+
+            window.clearInterval(intervalId)
+            window.clearTimeout(timeoutId)
+            resolve()
+        }, 100)
+
+        const timeoutId = window.setTimeout(() => {
+            window.clearInterval(intervalId)
+            reject(new Error("Razorpay SDK failed to load"))
+        }, timeoutMs)
+    })
+
 export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
-    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation()
+    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
+    const [clearCart] = useClearCartMutation();
     const [cancelOrder] = useCancelOrderMutation()
 
-    // ✅ Modal state hook ke andar
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
     const [isSuccessOpen, setIsSuccessOpen] = useState(false)
 
@@ -58,29 +101,53 @@ export const useRazorpay = () => {
         userPhone,
     }: RazorpayOptions) => {
         try {
-            // Step 1 — Backend pe payment order banao
+            const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+            if (!razorpayKey) {
+                throw new Error("Razorpay key is missing")
+            }
+
+            await waitForRazorpay()
+            await clearCart().unwrap();
+
             const paymentData = await createPayment({
                 order_id: orderId,
                 amount,
             }).unwrap()
 
             const razorpayOrderId = paymentData.payment.razorpay_order_id
-            // Step 2 — Razorpay modal open karo
+            let paymentCompleted = false
+            let cancellationRequested = false
+
+            const cancelPendingOrder = async (message: string, variant: "warning" | "error") => {
+                if (paymentCompleted || cancellationRequested) {
+                    return
+                }
+
+                cancellationRequested = true
+
+                try {
+                    await cancelOrder(orderId).unwrap()
+                } catch {
+                    // Preserve the payment interruption message even if cancellation fails.
+                }
+
+                if (variant === "error") {
+                    toast.error(message)
+                    return
+                }
+
+                toast.warning(message)
+            }
+
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                key: razorpayKey,
                 amount: amount * 100,
                 currency: "INR",
                 name: "ShopNova",
                 description: "Order Payment",
                 order_id: razorpayOrderId,
-
-                handler: async (response: {
-                    razorpay_order_id: string
-                    razorpay_payment_id: string
-                    razorpay_signature: string
-                }) => {
+                handler: async (response: RazorpaySuccessResponse) => {
                     try {
-                        // Step 3 — Verify karo
                         await verifyPayment({
                             order_id: orderId,
                             razorpay_order_id: response.razorpay_order_id,
@@ -88,15 +155,14 @@ export const useRazorpay = () => {
                             razorpay_signature: response.razorpay_signature,
                         }).unwrap()
 
-                        // ✅ Success modal open karo
+                        paymentCompleted = true
+
                         setSuccessData({ orderId, amount })
                         setIsSuccessOpen(true)
-
                     } catch {
                         toast.error("Payment verification failed. Please contact support.")
                     }
                 },
-
                 prefill: {
                     name: userName,
                     email: userEmail,
@@ -106,24 +172,24 @@ export const useRazorpay = () => {
                     color: "#111827",
                 },
                 modal: {
-                    ondismiss: async () => {
-                        await cancelOrder(orderId).unwrap()
-                        toast.warning("Payment cancelled. Order has been cancelled.")
+                    ondismiss: () => {
+                        void cancelPendingOrder("Payment cancelled. Order has been cancelled.", "warning")
                     },
                 },
             }
 
             const rzp = new window.Razorpay(options)
 
-            rzp.on("payment.failed", async (response: RazorpayErrorResponse) => {
-                await cancelOrder(orderId).unwrap()
-                toast.error(`Payment failed: ${response.error.description}. Order has been cancelled.`)
+            rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
+                void cancelPendingOrder(
+                    `Payment failed: ${response.error.description}. Order has been cancelled.`,
+                    "error"
+                )
             })
 
-
             rzp.open()
-
         } catch (error) {
+            console.error("[useRazorpay] Payment initiation failed:", error)
             toast.error("Failed to initiate payment. Please try again.")
             throw error
         }
@@ -132,7 +198,6 @@ export const useRazorpay = () => {
     return {
         initiatePayment,
         isLoading: isCreatingPayment || isVerifyingPayment,
-        // ✅ modal state expose karo
         isSuccessOpen,
         successData,
         closeSuccess,

@@ -12,8 +12,8 @@ export const config = {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        max: 10,
-        min: 1,
+        max: 20,
+        min: 2,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000,
         // connectionString: "postgresql://neondb_owner:npg_lSpAkoNV28QT@ep-billowing-tree-ahpjft4u-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require"
@@ -45,6 +45,7 @@ export const config = {
     razorpay: {
         key_id: process.env.RAZORPAY_KEY_ID,
         key_secret: process.env.RAZORPAY_SECRET,
+        webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
     },
     deepseek: {
         api_key: process.env.DEEPSEEK_API_KEY,

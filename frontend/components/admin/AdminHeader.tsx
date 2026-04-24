@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search, User, LayoutDashboard, Package, Tags, ShoppingCart, LogOut, Loader2 } from "lucide-react";
+import { Menu, Search, LayoutDashboard, Package, Tags, ShoppingCart, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import Link from "next/link";
@@ -12,7 +12,6 @@ import { useGetProfileQuery } from "@/services/userApi";
 import { Spinner } from "../ui/spinner";
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import { useEffect, useState } from "react";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -24,12 +23,9 @@ const navItems = [
 export function AdminHeader() {
   const pathname = usePathname();
   const token = useSelector((state: RootState) => state.auth.accessToken);
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
   const { data, isLoading } = useGetProfileQuery(undefined, {
     skip: !token,
-    refetchOnMountOrArgChange: true,
   });
 
   return (
@@ -98,7 +94,7 @@ export function AdminHeader() {
           </div>
         </form>
         {
-          !mounted || isLoading ? <Spinner className="size-5" /> : <>
+          isLoading ? <Spinner className="size-5" /> : <>
             <Avatar>
               <AvatarImage src={data?.profileimage} />
               <AvatarFallback>{data?.name?.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2)}</AvatarFallback>

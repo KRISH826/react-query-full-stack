@@ -103,3 +103,4 @@ export async function clearCartItems(cartId: string, db: Pool | PoolClient = poo
         [cartId]
     );
 }
+

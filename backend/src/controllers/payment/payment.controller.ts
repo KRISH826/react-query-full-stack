@@ -1,6 +1,8 @@
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { Response, NextFunction } from "express";
 import { PaymentService } from "./payment.service";
+import crypto from "crypto";
+import { config } from "../../config/config";
 
 export class PaymentController {
     static async createPaymentController(req: AuthRequest, res: Response, next: NextFunction) {
@@ -23,6 +25,24 @@ export class PaymentController {
                 message: "Payment verified successfully",
                 payment
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async webHookController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const signature = req.headers["x-razorpay-signature"] as string;
+            const expectedSignature = crypto
+                .createHmac("sha256", config.razorpay.key_secret as string)
+                .update(req.body)
+                .digest("hex");
+
+            if(signature !== expectedSignature) {
+                return res.status(400).json({ message: "Invalid webhook signature" });
+            }
+            await PaymentService.handleWebHookService(req.body);
+            res.status(200).json({ message: "Webhook handled successfully" });
         } catch (error) {
             next(error);
         }
