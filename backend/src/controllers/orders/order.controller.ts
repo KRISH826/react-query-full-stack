@@ -3,6 +3,7 @@ import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderService } from "./order.service";
 import { OrderStatus } from "../../models/order";
+import { orderQueue } from "../../queue/order/order.queue";
 
 export class OrderController {
     static async createOrderController(
@@ -259,6 +260,31 @@ export class OrderController {
             const query = req.query.q as string;
             const orders = await OrderService.searchOrdersService(query);
             return res.status(200).json({ message: "Orders fetched successfully", orders });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async getOrderJobStatusController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+           const { jobId } = req.params;
+           const job = await orderQueue.getJob(jobId as string);
+           if(!job) {
+            throw new HttpError("Job not found", 404);
+           }
+
+           const state = await job.getState();
+
+           if(state === "completed") {
+            const result = await job.returnvalue;
+            return res.status(200).json({ message: "Order processed successfully", order: result });
+           } else if(state === "failed") {
+            const reason = job.failedReason;
+            return res.status(200).json({ message: "Order processing failed", reason });
+           }
+
+           return res.status(200).json({ message: "Order is being processed", state });
+
         } catch (error) {
             next(error);
         }
