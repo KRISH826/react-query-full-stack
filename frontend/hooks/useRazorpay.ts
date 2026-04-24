@@ -7,6 +7,7 @@ import {
     useVerifyPaymentMutation,
 } from "@/services/orderApi"
 import { toast } from "sonner"
+import { useClearCartMutation } from "@/services/cartApi"
 
 declare global {
     interface Window {
@@ -80,7 +81,8 @@ const waitForRazorpay = (timeoutMs = 10000) =>
 
 export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
-    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation()
+    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
+    const [clearCart] = useClearCartMutation();
     const [cancelOrder] = useCancelOrderMutation()
 
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
@@ -105,6 +107,7 @@ export const useRazorpay = () => {
             }
 
             await waitForRazorpay()
+            await clearCart().unwrap();
 
             const paymentData = await createPayment({
                 order_id: orderId,
@@ -153,6 +156,7 @@ export const useRazorpay = () => {
                         }).unwrap()
 
                         paymentCompleted = true
+
                         setSuccessData({ orderId, amount })
                         setIsSuccessOpen(true)
                     } catch {

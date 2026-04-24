@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 const OrderSummary = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
-    const [clearCart] = useClearCartMutation();
+    // const [clearCart] = useClearCartMutation();
     const { data } = useGetCartQuery(undefined, { skip: !token });
     const router = useRouter();
     const pathname = usePathname();
@@ -18,14 +18,6 @@ const OrderSummary = () => {
     const isCartEmpty = cartItemsCount === 0;
     const formattedTotal = Number(data?.total ?? 0).toLocaleString("en-IN");
 
-    const handleClearCart = async () => {
-        try {
-            await clearCart().unwrap();
-            toast.success("Cart cleared successfully");
-        } catch (error) {
-            toast.error("Failed to clear cart");
-        }
-    };
 
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">
@@ -51,11 +43,10 @@ const OrderSummary = () => {
                 <Button
                     type="submit"
                     form="checkout-form"
-                    onClick={handleClearCart}
                     disabled={isCartEmpty}
                     className="mt-6 w-full bg-primary text-white rounded-lg py-3 text-sm font-medium"
                 >
-                    {isCartEmpty ? "Cart is Empty" : "Place Order"}
+                    Place Order
                 </Button>
             ) : (
                 <Button

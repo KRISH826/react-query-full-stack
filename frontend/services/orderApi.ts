@@ -73,7 +73,7 @@ export const orderApi = baseApi.injectEndpoints({
 
         getOrderJobStatus: builder.query<OrderJobStatusResponse, string>({
             query: (jobId) => `orders/job/${jobId}`,
-            
+
         }),
 
         // payment
