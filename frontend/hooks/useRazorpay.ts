@@ -107,7 +107,6 @@ export const useRazorpay = () => {
                 },
                 modal: {
                     ondismiss: async () => {
-                        await cancelOrder(orderId).unwrap()
                         toast.warning("Payment cancelled. Order has been cancelled.")
                     },
                 },

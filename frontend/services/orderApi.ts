@@ -21,7 +21,7 @@ interface OrderDetailResponse {
 
 export const orderApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        checkOut: builder.mutation<{ message: string; order: OrderResponseDTO }, CreateOrderRequest>({
+        checkOut: builder.mutation<{ message: string; jobId: string }, CreateOrderRequest>({
             query: (order) => ({
                 url: "orders/checkout",
                 method: "POST",
@@ -62,7 +62,7 @@ export const orderApi = baseApi.injectEndpoints({
                 { type: "Order", id: "ORDER_DETAIL" },
             ],
         }),
-        buyNowOrder: builder.mutation<{ message: string; order: OrderResponseDTO }, CreateOrderRequest>({
+        buyNowOrder: builder.mutation<{ message: string; jobId: string }, CreateOrderRequest>({
             query: (order) => ({
                 url: "orders/buy-now",
                 method: "POST",
@@ -73,6 +73,7 @@ export const orderApi = baseApi.injectEndpoints({
 
         getOrderJobStatus: builder.query<OrderJobStatusResponse, string>({
             query: (jobId) => `orders/job/${jobId}`,
+            
         }),
 
         // payment
@@ -117,5 +118,5 @@ export const {
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
-    useGetOrderJobStatusQuery
+    useLazyGetOrderJobStatusQuery
 } = orderApi;

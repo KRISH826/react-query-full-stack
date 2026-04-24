@@ -1,6 +1,6 @@
 "use client"
 
-import { useCheckOutMutation, useGetOrderJobStatusQuery } from "@/services/orderApi"
+import { useCheckOutMutation } from "@/services/orderApi"
 import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -10,10 +10,14 @@ import { Input } from "@/components/ui/input"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Phone, Mail, CreditCard } from "lucide-react"
 import { useGetProfileQuery } from "@/services/userApi"
+import { useOrderPolling } from "@/hooks/usePolling";
+import { useRazorpay } from "@/hooks/useRazorpay"
+import { useEffect } from "react"
 
 const CheckOutInfo = () => {
     const [checkout] = useCheckOutMutation();
-    const [getOrderJobStatus]  = useGetOrderJobStatusQuery();
+    const { startPolling, order, isPolling } = useOrderPolling();
+    const {initiatePayment} = useRazorpay();
     const { data: user } = useGetProfileQuery(undefined, {
         refetchOnMountOrArgChange: true,
     });
@@ -36,21 +40,25 @@ const CheckOutInfo = () => {
         }
     })
 
+    useEffect(() => {
+      if (!order) return;
+      initiatePayment({
+        orderId: order.id,
+        amount: order.totalamount,
+        userName: order.shippingaddress.shipping_address,
+        userEmail: order.email || "",
+        userPhone: order.phone
+      })
+
+    }, [order]);
+    
+
     const onSubmit = async (data: CheckOutSchema) => {
         try {
             const response = await checkout(data).unwrap()
             // Dispatch custom event to trigger Razorpay in OrderSummary
-            const event = new CustomEvent("ORDER_CREATED", {
-                detail: {
-                    order: response.order,
-                    userData: {
-                        name: data.shippingAddress.shipping_address.split(',')[0], // Extract a name if possible or just use address
-                        email: data.email,
-                        phone: data.phone
-                    }
-                }
-            })
-            window.dispatchEvent(event)
+            startPolling(response.jobId);
+            toast.success("Order is being processed...");
         } catch (error: unknown) {
             const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to place order. Please try again."
             toast.error(errorMessage)

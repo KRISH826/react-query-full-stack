@@ -51,7 +51,7 @@ export interface CreateOrderRequest {
 }
 
 export interface OrderJobStatusResponse {
-    status: "waiting" | "active" | "completed" | "failed";
+    state: "waiting" | "active" | "completed" | "failed";
     order?: OrderResponseDTO;
     message?: string;
 }
