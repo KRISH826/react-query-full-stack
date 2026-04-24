@@ -49,3 +49,9 @@ export interface CreateOrderRequest {
     phone: string;
     email: string;
 }
+
+export interface OrderJobStatusResponse {
+    status: "waiting" | "active" | "completed" | "failed";
+    order?: OrderResponseDTO;
+    message?: string;
+}

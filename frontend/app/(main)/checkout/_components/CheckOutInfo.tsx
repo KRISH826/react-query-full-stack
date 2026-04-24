@@ -1,6 +1,6 @@
 "use client"
 
-import { useCheckOutMutation } from "@/services/orderApi"
+import { useCheckOutMutation, useGetOrderJobStatusQuery } from "@/services/orderApi"
 import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -13,6 +13,7 @@ import { useGetProfileQuery } from "@/services/userApi"
 
 const CheckOutInfo = () => {
     const [checkout] = useCheckOutMutation();
+    const [getOrderJobStatus]  = useGetOrderJobStatusQuery();
     const { data: user } = useGetProfileQuery(undefined, {
         refetchOnMountOrArgChange: true,
     });

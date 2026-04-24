@@ -20,14 +20,17 @@ export class OrderController {
             if (!shippingAddress || !phone || !email) {
                 throw new HttpError("All fields are required", 400);
             }
-            const order = await OrderService.createOrderFromCart(userId as string, {
-                shippingAddress,
-                phone,
-                email,
+           const job = await orderQueue.add("create-order", {
+                type: "cart",
+                userId,
+                orderData: {
+                    shippingAddress,
+                    phone,
+                    email,
+                }
             });
-            return res
-                .status(201)
-                .json({ message: "Order created successfully", order });
+
+            return res.status(202).json({ message: "Order is being processed", jobId: job.id });
         } catch (error) {
             next(error);
         }
@@ -69,14 +72,20 @@ export class OrderController {
                 throw new HttpError('All fields are required', 400)
             }
 
-            const order = await OrderService.buyNowService(productId, {
-                variant_id,
-                quantity: 1,
-                shippingAddress,
-                phone,
-                email,
-            }, userId);
-            return res.status(201).json({ message: 'Order created successfully', order })
+            const job = await orderQueue.add("buy-now", {
+                type: "buy-now",
+                productId,
+                userId,
+                orderData: {
+                    variant_id,
+                    quantity: 1,
+                    shippingAddress,
+                    phone,
+                    email
+                }
+            });
+
+            return res.status(202).json({ message: "Order is being processed", jobId: job.id });
         } catch (error) {
             next(error)
         }

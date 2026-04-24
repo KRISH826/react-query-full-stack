@@ -1,4 +1,4 @@
-import { CreateOrderRequest, OrderResponseDTO } from "@/types/order";
+import { CreateOrderRequest, OrderJobStatusResponse, OrderResponseDTO } from "@/types/order";
 import { baseApi } from "./baseQuery";
 import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } from "@/types/payment";
 
@@ -70,9 +70,16 @@ export const orderApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Order", id: "LIST" }],
         }),
+
+        getOrderJobStatus: builder.query<OrderJobStatusResponse, string>({
+            query: (jobId) => `orders/job/${jobId}`,
+        }),
+
+        // payment
         createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
             query: (body) => ({ url: "payments/create-payment", method: "POST", body }),
         }),
+
         verifyPayment: builder.mutation<{ message: string; payment: boolean }, VerifyPaymentRequest>({
             query: (body) => ({ url: "payments/verify-payment", method: "POST", body }),
             invalidatesTags: [
@@ -109,5 +116,6 @@ export const {
     useVerifyPaymentMutation,
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
-    useDeleteOrderItemMutation
+    useDeleteOrderItemMutation,
+    useGetOrderJobStatusQuery
 } = orderApi;
