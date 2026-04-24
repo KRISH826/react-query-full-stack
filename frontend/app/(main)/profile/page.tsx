@@ -9,7 +9,6 @@ const ProfilePage = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
         skip: !token,
-        refetchOnMountOrArgChange: true,
     });
 
     if (isLoading) {

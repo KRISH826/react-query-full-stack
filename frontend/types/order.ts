@@ -54,4 +54,5 @@ export interface OrderJobStatusResponse {
     state: "waiting" | "active" | "completed" | "failed";
     order?: OrderResponseDTO;
     message?: string;
+    reason?: string;
 }

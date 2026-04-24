@@ -17,7 +17,7 @@ const ProductReviews = () => {
 
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: userProfile } = useGetProfileQuery(undefined, {
-        refetchOnMountOrArgChange: true,
+        skip: !token,
     });
     const { data: reviewsData, isLoading } = useGetProductReviewsQuery({ productId: id });
 

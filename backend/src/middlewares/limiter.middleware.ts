@@ -27,7 +27,7 @@ export const createRateLimiter = ({
 export const globalLimiter = createRateLimiter({
     windowMinutes: 5,
     maxRequests: 70,
-    message: "Too many requests from this IP, please try again after 15 minutes"
+    message: "Too many requests from this IP, please try again after 5 minutes"
 });
 
 export const authLimiter = createRateLimiter({

@@ -12,7 +12,6 @@ const Cart = () => {
     const { data } = useGetCartQuery(undefined, { skip: !token });
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
         skip: !token,
-        refetchOnMountOrArgChange: true,
     });
     const router = useRouter();
     const handleCart = () => {

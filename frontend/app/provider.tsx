@@ -6,11 +6,26 @@ import { useRef } from "react";
 import type { ReactNode } from "react";
 import type { AppStore } from "@/store/store";
 
+let clientStore: AppStore | null = null;
+
+const getStore = () => {
+    if (typeof window === "undefined") {
+        return makeStore();
+    }
+
+    if (clientStore === null) {
+        clientStore = makeStore();
+    }
+
+    return clientStore;
+};
+
 export default function Providers({ children }: { children: ReactNode }) {
     const storeRef = useRef<AppStore | null>(null);
 
     if (storeRef.current === null) {
-        storeRef.current = makeStore();
+        // Reuse the client store so dev remounts don't restart RTK Query requests.
+        storeRef.current = getStore();
     }
 
     return (

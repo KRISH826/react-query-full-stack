@@ -1,30 +1,34 @@
 "use client"
 
-import { useCheckOutMutation } from "@/services/orderApi"
-import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
-import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { toast } from "sonner"
+import { PaymentSuccessDialog } from "@/components/payment/PaymentSuccessDialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
-import { Phone, Mail, CreditCard } from "lucide-react"
-import { useGetProfileQuery } from "@/services/userApi"
-import { useOrderPolling } from "@/hooks/usePolling";
+import { Input } from "@/components/ui/input"
+import { useOrderPolling } from "@/hooks/usePolling"
 import { useRazorpay } from "@/hooks/useRazorpay"
-import { useEffect } from "react"
+import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
+import { useCheckOutMutation } from "@/services/orderApi"
+import { useGetProfileQuery } from "@/services/userApi"
+import { CreditCard, Mail, Phone } from "lucide-react"
+import { useEffect, useRef } from "react"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 const CheckOutInfo = () => {
-    const [checkout] = useCheckOutMutation();
-    const { startPolling, order, isPolling } = useOrderPolling();
-    const {initiatePayment} = useRazorpay();
+    const [checkout] = useCheckOutMutation()
+    const { startPolling, order } = useOrderPolling()
+    const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
+    const paymentStartedForOrderIdRef = useRef<string | null>(null)
+
     const { data: user } = useGetProfileQuery(undefined, {
         refetchOnMountOrArgChange: true,
-    });
+    })
+
     const {
         register,
         handleSubmit,
-        formState: { errors }
+        formState: { errors },
     } = useForm<CheckOutSchema>({
         resolver: zodResolver(checkOutSchema),
         defaultValues: {
@@ -33,43 +37,52 @@ const CheckOutInfo = () => {
                 city: user?.city || "",
                 state: "",
                 postalcode: user?.postcode || "",
-                country: user?.country || ""
+                country: user?.country || "",
             },
             phone: "",
-            email: user?.email || ""
-        }
+            email: user?.email || "",
+        },
     })
 
     useEffect(() => {
-      if (!order) return;
-      initiatePayment({
-        orderId: order.id,
-        amount: order.totalamount,
-        userName: order.shippingaddress.shipping_address,
-        userEmail: order.email || "",
-        userPhone: order.phone
-      })
+        if (!order || paymentStartedForOrderIdRef.current === order.id) {
+            return
+        }
 
-    }, [order]);
-    
+        paymentStartedForOrderIdRef.current = order.id
+
+        void initiatePayment({
+            orderId: order.id,
+            amount: order.totalamount,
+            userName: order.shippingaddress.shipping_address,
+            userEmail: order.email || "",
+            userPhone: order.phone,
+        }).catch(() => {
+            paymentStartedForOrderIdRef.current = null
+        })
+    }, [initiatePayment, order])
 
     const onSubmit = async (data: CheckOutSchema) => {
         try {
             const response = await checkout(data).unwrap()
-            // Dispatch custom event to trigger Razorpay in OrderSummary
-            startPolling(response.jobId);
-            toast.success("Order is being processed...");
+            startPolling(response.jobId)
+            toast.success("Order is being processed...")
         } catch (error: unknown) {
-            const errorMessage = (error as { data?: { message?: string } })?.data?.message || "Failed to place order. Please try again."
+            const errorMessage =
+                (error as { data?: { message?: string } })?.data?.message ||
+                "Failed to place order. Please try again."
             toast.error(errorMessage)
         }
     }
 
     return (
         <div className="mx-auto w-full">
-            <form id="checkout-form" onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-8 lg:grid-cols-12">
+            <form
+                id="checkout-form"
+                onSubmit={handleSubmit(onSubmit)}
+                className="grid grid-cols-1 gap-8 lg:grid-cols-12"
+            >
                 <div className="space-y-6 lg:col-span-12">
-                    {/* Shipping Address Section */}
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                             <div className="flex-1">
@@ -136,7 +149,7 @@ const CheckOutInfo = () => {
                             </div>
                         </CardContent>
                     </Card>
-                    {/* Contact Information Section */}
+
                     <Card>
                         <CardHeader className="flex flex-row items-center gap-4 space-y-0">
                             <div className="flex-1">
@@ -177,16 +190,27 @@ const CheckOutInfo = () => {
                             </div>
                         </CardContent>
                     </Card>
-                    {/* Payment Info Overlay/Note */}
+
                     <div className="rounded-2xl border border-dashed p-6 text-center">
                         <div className="bg-amber-500/10 text-amber-500 mx-auto mb-3 flex size-12 items-center justify-center rounded-full">
                             <CreditCard className="size-6" />
                         </div>
                         <h3 className="font-semibold italic font-mono uppercase">Cash on Delivery Available</h3>
-                        <p className="text-muted-foreground text-sm">Online payment methods will be integrated soon. For now, we only support COD.</p>
+                        <p className="text-muted-foreground text-sm">
+                            Online payment methods will be integrated soon. For now, we only support COD.
+                        </p>
                     </div>
                 </div>
             </form>
+
+            {successData && (
+                <PaymentSuccessDialog
+                    isOpen={isSuccessOpen}
+                    onClose={closeSuccess}
+                    orderId={successData.orderId}
+                    amount={successData.amount}
+                />
+            )}
         </div>
     )
 }

@@ -20,24 +20,30 @@ export const useOrderPolling = () => {
                 if(res.order) {
                     setOrder(res.order);
                     setIsPolling(false);
+                    setJobId(null);
                     clearInterval(interval);
                 } else if(res.state === "failed") {
-                    toast.error(res.message || "Order processing failed");
+                    toast.error(res.reason || res.message || "Order processing failed");
                     setIsPolling(false);
+                    setJobId(null);
                     clearInterval(interval);
                 }
             } catch (error) {
                 toast.error("An error occurred while fetching order status");
                 setIsPolling(false);
+                setJobId(null);
                 clearInterval(interval);
             }
-        }, 2000); // Poll every 2 seconds
+        }, 1000); // Poll every 2 seconds
 
         return () => clearInterval(interval);
-    }, [jobId]);
+    }, [getOrderJobStatus, jobId]);
 
     return {
-        startPolling: (id: string) => setJobId(id),
+        startPolling: (id: string) => {
+            setOrder(null);
+            setJobId(id);
+        },
         order,
         isPolling
     }

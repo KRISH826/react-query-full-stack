@@ -17,10 +17,10 @@ const orderWorker = new Worker<OrderData>('order-queue', async (job: Job<OrderDa
 },
     {
         connection: redisConnection,
-        concurrency: 10,
+        concurrency: 20,
         limiter: {
             max: 100,
-            duration: 2000
+            duration: 1000
         }
     }
 );

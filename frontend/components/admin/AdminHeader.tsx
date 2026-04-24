@@ -29,7 +29,6 @@ export function AdminHeader() {
 
   const { data, isLoading } = useGetProfileQuery(undefined, {
     skip: !token,
-    refetchOnMountOrArgChange: true,
   });
 
   return (

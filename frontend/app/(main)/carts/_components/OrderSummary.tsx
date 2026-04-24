@@ -1,45 +1,14 @@
 "use client";
-import { useGetCartQuery } from '@/services/cartApi'
-import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect } from 'react'
-import { useRazorpay } from '@/hooks/useRazorpay';
-import { PaymentSuccessDialog } from '@/components/payment/PaymentSuccessDialog';
-import { OrderResponseDTO } from '@/types/order';
 
+import { Button } from "@/components/ui/button";
+import { useGetCartQuery } from "@/services/cartApi";
+import { usePathname, useRouter } from "next/navigation";
 
 const OrderSummary = () => {
-    const { data, isLoading } = useGetCartQuery();
+    const { data } = useGetCartQuery();
     const router = useRouter();
     const pathname = usePathname();
     const isCheckoutPage = pathname === "/checkout";
-
-    const {
-        initiatePayment,
-        isLoading: isPaymentLoading,
-        isSuccessOpen,
-        successData,
-        closeSuccess
-    } = useRazorpay();
-
-    useEffect(() => {
-        const handleOrderCreated = (event: Event) => {
-            const customEvent = event as CustomEvent<{
-                order: OrderResponseDTO;
-                userData: { name: string; email: string; phone: string };
-            }>;
-            const { order, userData } = customEvent.detail;
-            initiatePayment({
-                orderId: order.id,
-                amount: order.totalamount,
-                userName: userData.name || "Customer",
-                userEmail: userData.email,
-                userPhone: userData.phone
-            });
-        };
-
-        window.addEventListener('ORDER_CREATED', handleOrderCreated as EventListener);
-        return () => window.removeEventListener('ORDER_CREATED', handleOrderCreated as EventListener);
-    }, [initiatePayment]);
 
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">
@@ -66,39 +35,24 @@ const OrderSummary = () => {
             </div>
 
             {isCheckoutPage ? (
-                <button
+                <Button
                     type="submit"
                     form="checkout-form"
-                    disabled={isPaymentLoading}
-                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="mt-6 w-full bg-primary text-white rounded-lg py-3 text-sm font-medium"
                 >
-                    {isPaymentLoading ? "Processing..." : "Place Order"}
-                </button>
+                    Place Order
+                </Button>
             ) : (
-                <button
-                    onClick={() => router.push("/checkout")}
-                    disabled={isLoading || !data?.items || data.items.length === 0}
-                    className="mt-6 cursor-pointer w-full bg-primary text-white rounded-lg py-3 text-sm font-medium transition hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isLoading ? "Checking cart..." : "Proceed to Checkout"}
-                </button>
+                <Button onClick={() => router.push("/checkout")}>
+                    Proceed to Checkout
+                </Button>
             )}
 
             <p className="text-[11px] md:text-sm text-gray-500 mt-4 text-center">
                 Taxes calculated at checkout.
             </p>
-
-            {/* Success Dialog */}
-            {successData && (
-                <PaymentSuccessDialog
-                    isOpen={isSuccessOpen}
-                    onClose={closeSuccess}
-                    orderId={successData.orderId}
-                    amount={successData.amount}
-                />
-            )}
         </div>
-    )
-}
+    );
+};
 
-export default OrderSummary
+export default OrderSummary;

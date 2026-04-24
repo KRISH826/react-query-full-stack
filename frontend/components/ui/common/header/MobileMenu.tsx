@@ -31,7 +31,6 @@ const MobileMenu = () => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
         skip: !token,
-        refetchOnMountOrArgChange: true,
     });
     const { data: cartData } = useGetCartQuery(undefined, { skip: !token });
 
