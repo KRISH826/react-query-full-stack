@@ -155,7 +155,7 @@ const ProductContent = ({ product }: { product: Product }) => {
                                     onClick={() => !outOfStock && setSelectedSize(v.size)}
                                     disabled={outOfStock}
                                     className={`
-                                        flex h-10 min-w-[3.5rem] px-3 items-center justify-center border text-xs font-medium
+                                        flex h-10 min-w-14 px-3 items-center justify-center border text-xs font-medium
                                         transition-colors duration-200 cursor-pointer select-none
                                         ${isSelected
                                             ? "border-foreground bg-foreground text-background"
@@ -217,11 +217,14 @@ const ProductContent = ({ product }: { product: Product }) => {
                 />
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-                <div dangerouslySetInnerHTML={{
-                    __html: product.description ? product.description.replace(/&nbsp;/g, ' ') : ''
-                }} className="product-desc-viewer">
+            <div className="content">
+                <h2 className="text-primary mb-3.5 lg:text-2xl sm:text-xl text-lg font-semibold">Product Details</h2>
+                {/* Description */}
+                <div className="space-y-2 border border-secondary/85 rounded-xl p-4">
+                    <div dangerouslySetInnerHTML={{
+                        __html: product.description ? product.description.replace(/&nbsp;/g, ' ') : ''
+                    }} className="product-desc-viewer">
+                    </div>
                 </div>
             </div>
         </div>
