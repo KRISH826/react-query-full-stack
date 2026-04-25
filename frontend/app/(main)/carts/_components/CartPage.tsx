@@ -24,6 +24,9 @@ const CartPage = () => {
             toast.success("Cart cleared successfully");
         } catch (error) {
             toast.error("Failed to clear cart");
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Failed to clear cart.";
+            toast.error(errorMessage);
         }
     }
     const backToShopping = () => {

@@ -8,7 +8,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "36", "38", "40", "42", "44", "One Size"];
+const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "28", "30", "32", "34", "36", "38", "40", "42", "5", "6", "7", "8", "9", "10", "11", "12", "One Size"];
 
 const ProductVariants = ({ form }: { form: UseFormReturn<ProductFormValues> }) => {
     const { fields, append, remove } = useFieldArray({

@@ -32,8 +32,11 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                 quantity: 1,
             }).unwrap();
             toast.success("Added to bag");
-        } catch {
+        } catch (error: unknown) {
             toast.error("Failed to add");
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Failed to Add Favourite.";
+            toast.error(errorMessage);
         }
     };
 
