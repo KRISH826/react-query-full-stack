@@ -32,7 +32,7 @@ const CartPage = () => {
     return (
         <section className="py-8">
             <div className="container">
-                <div className="heading flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div className="heading flex flex-wrap items-start sm:items-center justify-between gap-4 mb-6">
                     <div className="title">
                         <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
                             Your Cart
@@ -41,7 +41,7 @@ const CartPage = () => {
                             Review your items before checkout.
                         </p>
                     </div>
-                    <Button onClick={backToShopping} variant={"outline"} className="w-full sm:w-auto"><ArrowLeft /> Back to Shopping</Button>
+                    <Button onClick={backToShopping} variant={"outline"} className="w-auto"><ArrowLeft /> Back to Shopping</Button>
                 </div>
                 <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">

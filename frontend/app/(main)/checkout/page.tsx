@@ -9,7 +9,7 @@ const page = () => {
     return (
         <section className="py-8">
             <div className="container">
-                <div className="heading flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div className="heading flex flex-wrap items-start sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">
                             Checkout

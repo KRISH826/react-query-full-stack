@@ -179,11 +179,11 @@ const ProductContent = ({ product }: { product: Product }) => {
             )}
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 mt-auto">
+            <div className="mt-auto grid w-full grid-cols-2 gap-3 pt-6">
                 <Button
                     onClick={handleAddToCart}
                     disabled={isOutOfStock || isLoading || isBuyNowLoading || addcarted}
-                    className="flex-1 h-12"
+                    className="h-12 w-full"
                 >
                     {
                         addcarted ?
