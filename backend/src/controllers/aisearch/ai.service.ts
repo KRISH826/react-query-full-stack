@@ -26,7 +26,7 @@ export class AiService {
                 model: "gemini-3.1-flash-lite-preview",
                 generationConfig: {
                     responseMimeType: "application/json",
-                    maxOutputTokens: 1000,
+                    maxOutputTokens: 2500,
                 }
             });
             const promptText = `
