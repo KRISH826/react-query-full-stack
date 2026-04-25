@@ -30,28 +30,28 @@ export function DeleteCategoryDialog({ id }: DeleteCategoryProps) {
       await deleteCategory(id).unwrap()
       toast.success("Category deleted successfully")
       setOpen(false) // Modal close kar do success par
-    } catch (error: any) {
-      console.error("Delete Error:", error)
-      toast.error("Failed to delete category", {
-        description: error?.data?.message || "An unexpected error occurred. Please try again.",
-      })
+    } catch (error: unknown) {
+      const err = error as { data?: { message?: string } };
+      const errorMessage = err?.data?.message || "Failed to delete category.";
+      toast.error(errorMessage);
     }
   }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger asChild>
-            <Button
-            size="icon" 
-            variant="destructive" 
-            className="h-8 w-8 cursor-pointer"
-            onClick={(e) => {e.stopPropagation() // Row click event ko rokne ke liye
-              setOpen(true) // Modal open kar do
-            }}
-          >
-            <Trash2 size={14} />
-          </Button>
-        </AlertDialogTrigger>
+      <AlertDialogTrigger asChild>
+        <Button
+          size="icon"
+          variant="destructive"
+          className="h-8 w-8 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation() // Row click event ko rokne ke liye
+            setOpen(true) // Modal open kar do
+          }}
+        >
+          <Trash2 size={14} />
+        </Button>
+      </AlertDialogTrigger>
       <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-lg text-destructive">
@@ -63,7 +63,7 @@ export function DeleteCategoryDialog({ id }: DeleteCategoryProps) {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="mt-4">
-          <AlertDialogCancel 
+          <AlertDialogCancel
             disabled={isLoading}
             className="font-medium"
           >
