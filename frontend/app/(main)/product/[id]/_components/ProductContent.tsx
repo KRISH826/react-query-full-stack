@@ -2,7 +2,7 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useAddToCartMutation, useGetCartQuery } from "@/services/cartApi";
 import { Product, ProductVariant } from "@/types/product";
-import { ShoppingBag } from "lucide-react";
+import { CircleCheck, RotateCcw, ShoppingBag, Truck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
@@ -132,6 +132,22 @@ const ProductContent = ({ product }: { product: Product }) => {
                 )}
             </div>
             <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={14} fontSizeClass="text-xs md:text-base" />
+
+            <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <CircleCheck className="size-4 text-emerald-600" />
+                    <span>100% Original Products</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Truck className="size-4 text-emerald-600" />
+                    <span>Pay on delivery might be available</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <RotateCcw className="size-4 text-emerald-600" />
+                    <span>Easy 14 days returns and exchanges</span>
+                </div>
+            </div>
+
             {/* Sizes section */}
             {hasSizes && (
                 <div className="space-y-3 pt-2">
