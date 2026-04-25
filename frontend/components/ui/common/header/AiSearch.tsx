@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 import { Sparkles, Send, Mic, Image as ImageIcon, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../../dialog'
 import { DialogClose } from '@radix-ui/react-dialog'
@@ -8,60 +8,61 @@ import { Button } from '../../button'
 
 const AiSearch = () => {
     const [query, setQuery] = useState('')
+    const gradientId = useId().replace(/:/g, '')
+    const gradientUrl = `url(#${gradientId})`
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button
-                    variant="secondary"
-                    className="group border-primary! relative overflow-visible"
-                    size="icon"
-                >
-                    <div className="relative flex items-center justify-center">
-                        <Sparkles
-                            className="h-4 w-4 transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
-                            style={{ stroke: "url(#geminiGradient)", fill: "url(#geminiGradient)", fillOpacity: 0.2 }}
-                            strokeWidth={1.5}
-                        />
-                        <div className="absolute inset-0 bg-linear-to-tr from-[#4285f4] via-[#9b72cb] to-[#f49c4f] blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-700 rounded-full scale-150" />
+        <>
+            <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden>
+                <defs>
+                    <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#4285f4" />
+                        <stop offset="30%" stopColor="#9b72cb" />
+                        <stop offset="70%" stopColor="#d96570" />
+                        <stop offset="100%" stopColor="#f49c4f" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <Dialog>
+                <DialogTrigger asChild>
+                    <Button
+                        variant="secondary"
+                        className="group border-primary! h-10 w-10 relative overflow-visible"
+                        size="icon"
+                    >
+                        <div className="relative flex items-center justify-center">
+                            <Sparkles
+                                className="h-4 w-4 transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
+                                style={{ stroke: gradientUrl, fill: gradientUrl, fillOpacity: 0.2 }}
+                                strokeWidth={1.5}
+                            />
+                            <div className="absolute inset-0 bg-linear-to-tr from-[#4285f4] via-[#9b72cb] to-[#f49c4f] blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-700 rounded-full scale-150" />
+                        </div>
+                    </Button>
+                </DialogTrigger>
+
+                {/* Sleek, professional ChatGPT-like layout */}
+                <DialogContent className="max-w-none! w-[95vw]! lg:w-[85vw]! h-[95vh]! m-0 p-0 overflow-hidden rounded-xl md:rounded-2xl border border-border shadow-2xl flex flex-col bg-background/95 backdrop-blur-xl sm:rounded-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-300 [&>button.absolute]:hidden">
+                    <DialogTitle className="sr-only">AI Assistant Search</DialogTitle>
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-border/40 bg-background/80 backdrop-blur-sm z-10 shrink-0">
+                        <div className="flex items-center gap-2">
+                            <Sparkles
+                                className="h-5 w-5"
+                                style={{ stroke: gradientUrl }}
+                            />
+                            <span className="font-medium text-base text-foreground">
+                                AI Assistant
+                            </span>
+                        </div>
+                        <DialogClose asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </Button>
+                        </DialogClose>
                     </div>
-                </Button>
-            </DialogTrigger>
-
-            {/* Sleek, professional ChatGPT-like layout */}
-            <DialogContent className="max-w-none! w-[95vw]! lg:w-[85vw]! h-[95vh]! m-0 p-0 overflow-hidden rounded-xl md:rounded-2xl border border-border shadow-2xl flex flex-col bg-background/95 backdrop-blur-xl sm:rounded-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-300 [&>button.absolute]:hidden">
-                <DialogTitle className="sr-only">AI Assistant Search</DialogTitle>
-
-                {/* SVG definition for the Gemini-style gradient */}
-                <svg width="0" height="0" className="absolute pointer-events-none">
-                    <defs>
-                        <linearGradient id="geminiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#4285f4" />
-                            <stop offset="30%" stopColor="#9b72cb" />
-                            <stop offset="70%" stopColor="#d96570" />
-                            <stop offset="100%" stopColor="#f49c4f" />
-                        </linearGradient>
-                    </defs>
-                </svg>
-
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-3 border-b border-border/40 bg-background/80 backdrop-blur-sm z-10 shrink-0">
-                    <div className="flex items-center gap-2">
-                        <Sparkles
-                            className="h-5 w-5"
-                            style={{ stroke: "url(#geminiGradient)" }}
-                        />
-                        <span className="font-medium text-base text-foreground">
-                            AI Assistant
-                        </span>
-                    </div>
-                    <DialogClose asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Close</span>
-                        </Button>
-                    </DialogClose>
-                </div>
 
                 {/* Main Chat/Conversation Area */}
                 <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-center p-6 md:p-8">
@@ -71,7 +72,7 @@ const AiSearch = () => {
                             <div className="flex items-center justify-center h-16 w-16 mb-2">
                                 <Sparkles
                                     className="h-10 w-10 text-primary"
-                                    style={{ stroke: "url(#geminiGradient)", fill: "url(#geminiGradient)", fillOpacity: 0.1 }}
+                                    style={{ stroke: gradientUrl, fill: gradientUrl, fillOpacity: 0.1 }}
                                     strokeWidth={1.5}
                                 />
                             </div>
@@ -155,8 +156,9 @@ const AiSearch = () => {
                         </p>
                     </div>
                 </div>
-            </DialogContent>
-        </Dialog>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }
 
