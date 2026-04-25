@@ -3,9 +3,10 @@ interface DropdownItemProps {
     label: React.ReactNode
     onClick: () => void
     onMouseDown: (e: React.MouseEvent) => void
+    rightIcon?: React.ReactNode
 }
 
-export const DropdownItem = ({ icon, label, onClick, onMouseDown }: DropdownItemProps) => {
+export const DropdownItem = ({ icon, label, onClick, onMouseDown, rightIcon }: DropdownItemProps) => {
     return (
         <div
             role="option"
@@ -17,7 +18,12 @@ export const DropdownItem = ({ icon, label, onClick, onMouseDown }: DropdownItem
             <span className="text-muted-foreground group-hover:text-foreground transition-colors shrink-0">
                 {icon}
             </span>
-            <span className="truncate">{label}</span>
+            <span className="min-w-0 flex-1 truncate">{label}</span>
+            {rightIcon && (
+                <span className="shrink-0 text-muted-foreground group-hover:text-foreground transition-colors">
+                    {rightIcon}
+                </span>
+            )}
         </div>
     )
 }
