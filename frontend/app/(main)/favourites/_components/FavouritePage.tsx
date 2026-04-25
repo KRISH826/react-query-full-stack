@@ -37,14 +37,14 @@ const FavouritePage = () => {
     return (
         <section className="py-10 bg-background/30">
             <div className="container mx-auto">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
+                <div className="flex flex-wrap items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Wishlist</h1>
                         <p className="text-sm text-muted-foreground mt-1">
                             {hasItems ? `You have ${data.total} items saved.` : "Your wishlist is empty."}
                         </p>
                     </div>
-                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border w-full sm:w-auto">
+                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border w-auto">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back to Shopping
                     </Button>

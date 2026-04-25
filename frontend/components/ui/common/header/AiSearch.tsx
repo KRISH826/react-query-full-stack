@@ -1,28 +1,29 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useId, useState } from 'react'
 import { Sparkles, Send, Mic, Image as ImageIcon, X } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../../dialog'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Button } from '../../button'
 
 const AiSearch = () => {
-    const [query, setQuery] = useState('')
+    const [query, setQuery] = useState('');
+    const gradientId = useId().replace(/:/g, '')
+    const gradientUrl = `url(#${gradientId})`
 
     return (
         <Dialog>
             <DialogTrigger asChild>
                 <Button
                     variant="secondary"
-                    className="group border-primary! relative overflow-visible"
+                    className="group border-primary! h-10 w-10 relative overflow-visible"
                     size="icon"
                 >
                     <div className="relative flex items-center justify-center">
-                        <Sparkles
-                            className="h-4 w-4 transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
-                            style={{ stroke: "url(#geminiGradient)", fill: "url(#geminiGradient)", fillOpacity: 0.2 }}
-                            strokeWidth={1.5}
-                        />
+                            <Sparkles
+                                className="h-4 w-4 text-[#6f56ff] transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
+                                strokeWidth={1.8}
+                            />
                         <div className="absolute inset-0 bg-linear-to-tr from-[#4285f4] via-[#9b72cb] to-[#f49c4f] blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-700 rounded-full scale-150" />
                     </div>
                 </Button>
@@ -110,7 +111,7 @@ const AiSearch = () => {
 
                 {/* ChatGPT Style Input Area */}
                 <div className="shrink-0 py-5 bg-muted/20 relative z-10 border-t border-border/40 shadow-sm">
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-4xl sm:px-0 px-4 mx-auto">
                         <div className="relative flex items-end bg-background/20 backdrop-blur-md rounded-2xl border border-input focus:border-indigo-400 focus:ring-indigo-400 transition-all p-2">
                             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground shrink-0 rounded-full hidden sm:flex h-9 w-9">
                                 <ImageIcon className="h-4 w-4" />

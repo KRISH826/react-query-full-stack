@@ -59,26 +59,14 @@ const SearchInput = () => {
     const showDropdown = isFocused
 
     return (
-        <>
-            <svg width="0" height="0" className="absolute pointer-events-none" aria-hidden>
-                <defs>
-                    <linearGradient id="geminiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#4285f4" />
-                        <stop offset="30%" stopColor="#9b72cb" />
-                        <stop offset="70%" stopColor="#d96570" />
-                        <stop offset="100%" stopColor="#f49c4f" />
-                    </linearGradient>
-                </defs>
-            </svg>
-
-            <div className="flex flex-1 max-w-xl mx-0 md:mx-4 relative items-center gap-1.5" ref={wrapperRef}>
+        <div className="flex flex-1 max-w-xl mx-0 md:mx-4 relative items-center gap-1.5" ref={wrapperRef}>
                 <form className="relative flex-1" onSubmit={(e) => { e.preventDefault(); handleSearch(query); }}>
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <input
                         ref={inputRef}
                         type="text"
                         placeholder="Search for products..."
-                        className="w-full h-10 md:h-9 pl-9 pr-8 rounded-md border border-input bg-muted/50 text-sm outline-none transition-colors focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/60"
+                        className="w-full h-11 md:h-10 pl-9 pr-8 rounded-md border border-input bg-muted/50 text-base outline-none transition-colors focus:bg-background focus:border-primary/50 placeholder:text-muted-foreground/60"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
@@ -115,7 +103,7 @@ const SearchInput = () => {
                         <div className="p-1.5">
                             {!query.trim() ? (
                                 <>
-                                    <div className="flex items-center gap-1.5 px-2 py-1.5 mb-0.5">
+                                    <div className="flex items-center gap-1.5 px-2 py-2 mb-0.5">
                                         <Sparkles className="h-3 w-3 text-muted-foreground" />
                                         <span className="text-xs font-medium text-muted-foreground tracking-wide">
                                             Trending
@@ -156,7 +144,7 @@ const SearchInput = () => {
                 <button
                     type="button"
                     onClick={() => handleSearch(query)}
-                    className="h-10 w-10 md:h-9 md:w-9 shrink-0 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground inline-flex items-center justify-center transition-colors cursor-pointer"
+                    className="h-10 md:h-10 w-10 shrink-0 rounded-md bg-secondary hover:bg-secondary/80 text-secondary-foreground inline-flex items-center justify-center transition-colors cursor-pointer"
                     aria-label="Search"
                 >
                     <Search className="h-4 w-4" />
@@ -164,7 +152,6 @@ const SearchInput = () => {
 
                 <AiSearch />
             </div>
-        </>
     )
 }
 
