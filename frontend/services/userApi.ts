@@ -35,13 +35,15 @@ export const userApi = baseApi.injectEndpoints({
             async onQueryStarted(_arg, { queryFulfilled, dispatch }) {
                 try {
                     const { data } = await queryFulfilled;
-                    const validToken = data.accessToken || (data as AuthResponse).accessToken;
+                    const validToken = data.accessToken;
 
                     if (validToken && validToken !== "undefined") {
                         dispatch(setAccessToken(validToken));
                         localStorage.setItem("token", validToken);
                     }
 
+                    // Set role cookie for server-side auth checks
+                    // (also set by backend, but we set it here too for reliability)
                     const role = data.user?.role ?? "customer";
                     const maxAge = 60 * 60 * 24 * 7;
                     document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;

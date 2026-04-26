@@ -39,8 +39,6 @@ const UserAuthForm = ({
 
             const role = response?.user?.role;
             let destination = "/product"; // Default destination
-
-            // Destination decide kar rahe hain
             if (role === "admin") {
                 destination = "/admin/dashboard";
             } else {

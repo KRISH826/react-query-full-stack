@@ -31,7 +31,7 @@ export async function loginController(
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            domain: isProduction ? ".dropculture.krishnendupan.online" : undefined,
+            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             path: "/",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         };
@@ -161,7 +161,7 @@ export async function logOutController(
             httpOnly: true,
             secure: isProduction,
             sameSite,
-            domain: isProduction ? ".dropculture.krishnendupan.online" : undefined, // 🔥 SAME FIX
+            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined, // 🔥 SAME FIX
             path: "/",
         };
 
