@@ -33,7 +33,6 @@ export async function loginController(
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",
         });
@@ -44,7 +43,6 @@ export async function loginController(
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",
         });
@@ -55,7 +53,6 @@ export async function loginController(
             httpOnly: false,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             maxAge: 7 * 24 * 60 * 60 * 1000,
             path: "/",
         });
@@ -175,7 +172,6 @@ export async function logOutController(
             httpOnly: true,
             secure: isProduction,
             sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
-            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             path: "/",
         };
 
