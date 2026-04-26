@@ -1,36 +1,24 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 interface AuthState {
-    accessToken: string | null,
+  accessToken: string | null;
 }
-
-const getLocalToken = () => {
-    if (typeof window !== "undefined") {
-        const token = localStorage.getItem("token");
-        if (token && token !== "undefined" && token !== "null") {
-            return token;
-        }
-    }
-    return null;
-};
 
 const initialState: AuthState = {
-    accessToken: getLocalToken(),
-}
+  accessToken: null,
+};
 
 const authSlice = createSlice({
-    name: "auth",
-    initialState,
-    reducers: {
-        setAccessToken: (state, action: PayloadAction<string>) => {
-            state.accessToken = action.payload;
-            localStorage.setItem("token", action.payload);
-        },
-        clearAccessToken: (state) => {
-            state.accessToken = null;
-            localStorage.removeItem("token");
-        },
+  name: "auth",
+  initialState,
+  reducers: {
+    setAccessToken: (state, action: PayloadAction<string>) => {
+      state.accessToken = action.payload;
     },
+    clearAccessToken: (state) => {
+      state.accessToken = null;
+    },
+  },
 });
 
 export const { setAccessToken, clearAccessToken } = authSlice.actions;

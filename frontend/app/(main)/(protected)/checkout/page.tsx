@@ -5,10 +5,8 @@ import CheckOutInfo from './_components/CheckOutInfo'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import RequireAuth from '@/components/auth/RequireAuth'
 const page = () => {
     return (
-        <RequireAuth>
             <section className="py-8">
                 <div className="container">
                     <div className="heading flex flex-wrap items-start sm:items-center justify-between gap-4 mb-6">
@@ -35,7 +33,6 @@ const page = () => {
                     </div>
                 </div>
             </section>
-        </RequireAuth>
     )
 }
 

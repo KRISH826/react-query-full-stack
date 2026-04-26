@@ -1,9 +1,17 @@
-import GuestOnly from '@/components/auth/GuestOnly'
+import { redirect } from "next/navigation";
+import { getServerAuth } from "@/lib/auth";
 
 export default async function AuthLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode
+  children: React.ReactNode;
 }) {
-    return <GuestOnly>{children}</GuestOnly>
+  const { isAuthenticated, role } = await getServerAuth();
+
+  // 🔐 If already logged in → redirect away
+  if (isAuthenticated) {
+    redirect(role === "admin" ? "/admin/dashboard" : "/product");
+  }
+
+  return <>{children}</>;
 }
