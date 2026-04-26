@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form'
 import { useLoginMutation } from '@/services/userApi'
 import { Spinner } from '@/components/ui/spinner';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { persistClientAuth } from '@/lib/client-auth';
 
 const UserAuthForm = ({
     className,
@@ -34,13 +34,17 @@ const UserAuthForm = ({
     const onSubmit = async (data: LoginValues) => {
         try {
             const response = await login(data).unwrap();
+            const accessToken = response?.accessToken;
+            const role = response?.user?.role ?? "customer";
+
+            if (accessToken && accessToken !== "undefined") {
+                persistClientAuth(accessToken, role);
+            }
+
             toast.success("Login successful");
             reset();
 
-            const role = response?.user?.role;
             let destination = "/product"; // Default destination
-
-            // Destination decide kar rahe hain
             if (role === "admin") {
                 destination = "/admin/dashboard";
             } else {

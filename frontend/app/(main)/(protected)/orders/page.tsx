@@ -1,9 +1,7 @@
 import OrderPage from "./_components/OrderPage"
-import RequireAuth from "@/components/auth/RequireAuth"
 
 const page = () => {
     return (
-        <RequireAuth>
             <div className="order_page py-8">
                 <div className="container">
                     <div className="mb-6">
@@ -17,7 +15,6 @@ const page = () => {
                     <OrderPage />
                 </div>
             </div>
-        </RequireAuth>
     )
 }
 

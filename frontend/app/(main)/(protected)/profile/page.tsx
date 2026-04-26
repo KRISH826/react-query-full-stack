@@ -1,5 +1,4 @@
 "use client"
-import RequireAuth from '@/components/auth/RequireAuth'
 import ProfileForm from './_components/ProfileForm'
 import { useGetProfileQuery } from '@/services/userApi'
 import { Spinner } from '@/components/ui/spinner'
@@ -20,13 +19,11 @@ const ProfilePage = () => {
         )
     }
     return (
-        <RequireAuth>
             <section className="py-12 bg-gray-50/50 min-h-[90vh]">
                 <div className="container">
                     <ProfileForm user={user} />
                 </div>
             </section>
-        </RequireAuth>
     )
 }
 

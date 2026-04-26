@@ -1,68 +1,68 @@
 import {
-    BaseQueryFn,
-    createApi,
-    fetchBaseQuery,
-    FetchArgs,
-    FetchBaseQueryError,
-    retry,
+  BaseQueryFn,
+  createApi,
+  fetchBaseQuery,
+  FetchArgs,
+  FetchBaseQueryError,
+  BaseQueryApi,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/store/store";
 import { clearAccessToken } from "@/store/slice/userSlice";
+import { clearClientAuth } from "@/lib/client-auth";
 
 const baseQuery = fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    credentials: "include",
-    prepareHeaders: (headers, { getState }) => {
-        let token = (getState() as RootState).auth.accessToken;
-
-        if (!token && typeof window !== "undefined") {
-            token = localStorage.getItem("token");
-        }
-
-        if (token && token !== "undefined" && token !== "null") {
-            headers.set("Authorization", `Bearer ${token}`);
-        }
-
-        return headers;
-    },
+  baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  credentials: "include",
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as RootState).auth.accessToken;
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);
+    }
+    return headers;
+  },
 });
 
-const baseQueryWithAuth: BaseQueryFn<
-    string | FetchArgs,
-    unknown,
-    FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-    const result = await baseQuery(args, api, extraOptions);
+function clearAuthState(dispatch: BaseQueryApi["dispatch"]) {
+  dispatch(clearAccessToken());
 
-    if (result.error?.status === 401) {
-        const state = api.getState() as RootState;
+  if (typeof window !== "undefined") {
+    clearClientAuth();
+  }
+}
 
-        const token =
-            state.auth.accessToken ||
-            (typeof window !== "undefined"
-                ? localStorage.getItem("token")
-                : null);
+// Prevent multiple simultaneous 401 redirects
+let isRedirecting = false;
 
-        // ✅ sirf tab logout jab actual token tha
-        if (token && token !== "undefined" && token !== "null") {
-            api.dispatch(clearAccessToken());
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: object) => {
+  const result = await baseQuery(args, api, extraOptions);
 
-            if (typeof window !== "undefined") {
-                localStorage.removeItem("token");
+  if (result.error?.status === 401) {
+    if (!isRedirecting) {
+      isRedirecting = true;
 
-                if (!window.location.pathname.includes("/login")) {
-                    window.location.href = "/login";
-                }
-            }
-        }
+      clearAuthState(api.dispatch);
+
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
+      }
+
+      // Reset flag after navigation completes
+      setTimeout(() => {
+        isRedirecting = false;
+      }, 3000);
     }
+  }
 
-    return result;
+  return result;
 };
 
 export const baseApi = createApi({
-    reducerPath: "api",
-    baseQuery: retry(baseQueryWithAuth, { maxRetries: 0 }),
-    tagTypes: ["User", "Product", "Cart", "Order", "Favourite", "Category", "Reviews"],
-    endpoints: () => ({}),
+  reducerPath: "api",
+  baseQuery: baseQueryWithReauth,
+  tagTypes: ["User", "Product", "Cart", "Order", "Favourite", "Category", "Reviews"],
+  endpoints: () => ({}),
 });

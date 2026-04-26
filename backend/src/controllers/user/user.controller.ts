@@ -1,4 +1,4 @@
-import { NextFunction, Response } from "express";
+import { CookieOptions, NextFunction, Response } from "express";
 import { AuthService } from "./user.service";
 import { AuthRequest } from "../../middlewares/auth.middleware";
 import { HttpError } from "../../middlewares/error.middleware";
@@ -27,34 +27,22 @@ export async function loginController(
     try {
         const { accessToken, refreshToken, user } = await AuthService.login(req.body);
         const isProduction = process.env.NODE_ENV === "production";
-
-        // 🔥 httpOnly refreshToken — never readable by JS
-        res.cookie("refreshToken", refreshToken, {
+        const baseCookieOptions: CookieOptions = {
             httpOnly: true,
             secure: isProduction,
             sameSite: isProduction ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined,
             path: "/",
-        });
-
-        // 🔥 FIX: email must also be httpOnly so it is sent on cross-origin POST
-        // (non-httpOnly cookies with SameSite=Lax are blocked on cross-origin POST)
-        res.cookie("email", user?.email as string, {
-            httpOnly: true,
-            secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
-        });
+        };
 
-        // 🔥 role is read by Next.js middleware (proxy) — keep it readable by JS,
-        //    but sameSite must match so it is also sent cross-origin in production
+        res.cookie("refreshToken", refreshToken, baseCookieOptions);
+
+        res.cookie("email", user?.email as string, baseCookieOptions);
+
         res.cookie("role", user?.role as string, {
+            ...baseCookieOptions,
             httpOnly: false,
-            secure: isProduction,
-            sameSite: isProduction ? "none" : "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-            path: "/",
         });
 
         return res.status(200).json({
@@ -168,14 +156,15 @@ export async function logOutController(
         await AuthService.logOut(req.user!.id);
 
         const isProduction = process.env.NODE_ENV === "production";
+        const sameSite: "none" | "lax" = isProduction ? "none" : "lax";
         const cookieOptions = {
             httpOnly: true,
             secure: isProduction,
-            sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
+            sameSite,
+            domain: isProduction ? ".dropculture.krishnendupanja.online" : undefined, // 🔥 SAME FIX
             path: "/",
         };
 
-        // 🔥 Clear all three cookies with same options they were set with
         res.clearCookie("refreshToken", cookieOptions);
         res.clearCookie("email", cookieOptions);
         res.clearCookie("role", { ...cookieOptions, httpOnly: false });
