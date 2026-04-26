@@ -6,9 +6,9 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { refreshToken } = await getServerAuth();
+  const { isAuthenticated } = await getServerAuth();
 
-  if (!refreshToken) {
+  if (!isAuthenticated) {
     redirect("/login?callbackUrl=/product");
   }
 

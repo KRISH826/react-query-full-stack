@@ -8,6 +8,7 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/store/store";
 import { clearAccessToken } from "@/store/slice/userSlice";
+import { clearClientAuth } from "@/lib/client-auth";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -25,8 +26,7 @@ function clearAuthState(dispatch: BaseQueryApi["dispatch"]) {
   dispatch(clearAccessToken());
 
   if (typeof window !== "undefined") {
-    localStorage.removeItem("token");
-    document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
+    clearClientAuth();
   }
 }
 
