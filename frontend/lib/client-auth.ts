@@ -1,4 +1,4 @@
-const AUTH_MAX_AGE = 60 * 60 * 24 * 7;
+const AUTH_MAX_AGE = 60 * 60 * 24 * 10;
 
 function getCookieAttributes(maxAge: number) {
   const isSecureContext =

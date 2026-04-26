@@ -38,7 +38,7 @@ export const signRefreshToken = (user: {
             token_version: user.token_version,
         },
         REFRESH_TOKEN_SECRET,
-        { expiresIn: "7d" }
+        { expiresIn: "10d" }
     );
 };
 
