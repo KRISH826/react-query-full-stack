@@ -2,7 +2,7 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useAddToCartMutation, useGetCartQuery } from "@/services/cartApi";
 import { Product, ProductVariant } from "@/types/product";
-import { CircleCheck, RotateCcw, ShoppingBag, Truck } from "lucide-react";
+import { CircleCheck, RotateCcw, ShoppingBag, Truck, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
@@ -145,6 +145,29 @@ const ProductContent = ({ product }: { product: Product }) => {
                 <div className="flex items-center gap-2 text-sm text-foreground">
                     <RotateCcw className="size-4 text-emerald-600" />
                     <span>Easy 14 days returns and exchanges</span>
+                </div>
+            </div>
+
+            {/* Bank Offers Section (Static) */}
+            <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-foreground">
+                        Available Offers
+                    </h3>
+                </div>
+                <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                        <Tag className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <p className="text-muted-foreground leading-snug"><span className="font-medium text-foreground">Bank Offer</span> 5% Unlimited Cashback on Axis Bank Credit Card <span className="text-primary cursor-pointer hover:underline text-xs font-medium ml-1">T&C</span></p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <Tag className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <p className="text-muted-foreground leading-snug"><span className="font-medium text-foreground">Special Price</span> Get extra 10% off (price inclusive of cashback/coupon) <span className="text-primary cursor-pointer hover:underline text-xs font-medium ml-1">T&C</span></p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                        <Tag className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <p className="text-muted-foreground leading-snug"><span className="font-medium text-foreground">Partner Offer</span> Make a purchase and enjoy a surprise cashback/coupon that you can redeem later! <span className="text-primary cursor-pointer hover:underline text-xs font-medium ml-1">Know More</span></p>
+                    </div>
                 </div>
             </div>
 
