@@ -1,6 +1,7 @@
 import { baseApi } from "./baseQuery";
 import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
 import { AuthResponse, LoginRequest, RegisterRequest, User } from "@/types/user";
+import { clearClientAuth, persistClientAuth } from "@/lib/client-auth";
 
 interface EmailRequest {
     email: string;
@@ -36,17 +37,12 @@ export const userApi = baseApi.injectEndpoints({
                 try {
                     const { data } = await queryFulfilled;
                     const validToken = data.accessToken;
+                    const role = data.user?.role ?? "customer";
 
                     if (validToken && validToken !== "undefined") {
                         dispatch(setAccessToken(validToken));
-                        localStorage.setItem("token", validToken);
+                        persistClientAuth(validToken, role);
                     }
-
-                    // Set role cookie for server-side auth checks
-                    // (also set by backend, but we set it here too for reliability)
-                    const role = data.user?.role ?? "customer";
-                    const maxAge = 60 * 60 * 24 * 7;
-                    document.cookie = `role=${role}; path=/; max-age=${maxAge}; SameSite=Lax`;
                 } catch (err) {
                     console.error("Login failed:", err);
                 }
@@ -80,9 +76,7 @@ export const userApi = baseApi.injectEndpoints({
                     console.error("Logout request failed:", err);
                 } finally {
                     dispatch(clearAccessToken());
-
-                    localStorage.removeItem("token");
-                    document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
+                    clearClientAuth();
 
                     window.location.href = "/login";
                 }
