@@ -46,7 +46,7 @@ const ImageGallery = ({ images }: { images: ProductImage[] }) => {
                 <CarouselContent className="ml-0">
                     {images.map((img) => (
                         <CarouselItem key={img.id} className="pl-0">
-                            <div className="relative h-[400px] sm:h-[550px] w-full">
+                            <div className="relative h-[350px] 2xl:h-[500px] xl:[430px] md:[h-400px] w-full">
                                 <Image
                                     src={img.image_url}
                                     alt={img.alt_text || "product"}
