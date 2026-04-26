@@ -96,16 +96,13 @@ const ProductSearchPage = () => {
 
     const renderFilterPanel = (isMobile = false) => (
         <div
-            className={`px-5 py-5 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] ${isMobile ? "rounded-2xl border-0 bg-transparent shadow-none" : "rounded-[26px] border border-stone-200 bg-white"
+            className={`rounded-2xl border-0 bg-transparent shadow-none ${isMobile ? "px-5 py-5" : "px-0 pr-4!"
                 }`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-foreground p-2 text-background">
-                        <SlidersHorizontal className="size-4" />
-                    </div>
                     <div>
-                        <h2 className="text-base font-semibold tracking-tight text-foreground">Filters</h2>
+                        <h2 className="text-lg font-semibold tracking-tight text-foreground">Filters</h2>
                         <p className="text-xs text-muted-foreground">Refine what you want to see</p>
                     </div>
                 </div>
@@ -275,9 +272,9 @@ const ProductSearchPage = () => {
     }
 
     return (
-        <div className="bg-gradient-to-b from-stone-50 to-white py-8 md:py-10">
-            <div className="mx-auto w-full max-w-[1600px] px-4 md:px-6 xl:px-8">
-                <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="bg-linear-to-b from-stone-50 to-white py-8 md:py-10">
+            <div className="mx-auto w-full max-w-400 px-4 md:px-6 xl:px-8">
+                <div className="pb-3.5 border-b border-gray-200 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <h1 className="text-lg font-bold text-foreground md:text-2xl">
                         Search Results for <span className="text-primary">&quot;{query}&quot;</span>
                     </h1>
@@ -286,7 +283,7 @@ const ProductSearchPage = () => {
                     </p>
                 </div>
 
-                <div className="mb-5 flex items-center justify-between lg:hidden">
+                <div className="my-3 flex items-center justify-between lg:hidden">
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button type="button" size="sm" className="gap-2 shadow-sm">
@@ -300,19 +297,18 @@ const ProductSearchPage = () => {
                             </Button>
                         </SheetTrigger>
 
-                        <SheetContent side="left" className="scrollbar-hide w-[92vw] max-w-[360px] overflow-y-auto bg-secondary/30 p-3 sm:w-[360px] sm:p-4">
+                        <SheetContent side="left" className="scrollbar-hide w-[80vw] max-w-90 overflow-y-auto bg-white/95 p-3 sm:w-90 sm:p-4">
                             <SheetTitle className="sr-only">Product Filters</SheetTitle>
                             {renderFilterPanel(true)}
                         </SheetContent>
                     </Sheet>
                 </div>
-
-                <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
-                    <aside className="hidden lg:block lg:sticky lg:top-20">
+                <div className="grid items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
+                    <aside className="hidden py-4 border-r border-stone-200 lg:block lg:sticky lg:top-20">
                         {renderFilterPanel()}
                     </aside>
 
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    <div className="grid grid-cols-2 lg:pt-5 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         {data?.map((product: Product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}

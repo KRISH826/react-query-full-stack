@@ -4,53 +4,56 @@ import {
   fetchBaseQuery,
   FetchArgs,
   FetchBaseQueryError,
+  BaseQueryApi,
 } from "@reduxjs/toolkit/query/react";
 import { RootState } from "@/store/store";
-import { setAccessToken, clearAccessToken } from "@/store/slice/userSlice";
+import { clearAccessToken } from "@/store/slice/userSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.accessToken;
-
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
-
     return headers;
   },
 });
+
+function clearAuthState(dispatch: BaseQueryApi["dispatch"]) {
+  dispatch(clearAccessToken());
+
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("token");
+    document.cookie = "role=; path=/; max-age=0; SameSite=Lax";
+  }
+}
+
+// Prevent multiple simultaneous 401 redirects
+let isRedirecting = false;
 
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
-> = async (args, api, extraOptions) => {
-  let result = await baseQuery(args, api, extraOptions);
+> = async (args: string | FetchArgs, api: BaseQueryApi, extraOptions: object) => {
+  const result = await baseQuery(args, api, extraOptions);
 
-  // 🔥 If access token expired → try refresh
   if (result.error?.status === 401) {
-    const refreshResult = await baseQuery(
-      {
-        url: "/auth/refresh-access-token",
-        method: "POST",
-      },
-      api,
-      extraOptions
-    );
+    if (!isRedirecting) {
+      isRedirecting = true;
 
-    if (refreshResult.data) {
-      const newAccessToken = (refreshResult.data as any).accessToken;
-      api.dispatch(setAccessToken(newAccessToken));
-      result = await baseQuery(args, api, extraOptions);
-    } else {
-      // ❌ refresh failed → logout
-      api.dispatch(clearAccessToken());
+      clearAuthState(api.dispatch);
 
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
+
+      // Reset flag after navigation completes
+      setTimeout(() => {
+        isRedirecting = false;
+      }, 3000);
     }
   }
 
