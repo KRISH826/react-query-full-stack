@@ -1,6 +1,10 @@
+import RequireAuth from "@/components/auth/RequireAuth";
+
 const page = () => {
     return (
-        <div>Order Details</div>
+        <RequireAuth>
+            <div>Order Details</div>
+        </RequireAuth>
     )
 }
 

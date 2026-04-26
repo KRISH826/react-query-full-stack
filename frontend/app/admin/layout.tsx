@@ -12,7 +12,11 @@ export default async function AdminLayout({
     const refreshToken = cookieStore.get('refreshToken')?.value
     const role = cookieStore.get('role')?.value
 
-    if (!refreshToken || role !== 'admin') {
+    if (!refreshToken || !role) {
+        redirect('/login?callbackUrl=/admin/dashboard')
+    }
+
+    if (role !== 'admin') {
         redirect('/product')
     }
 
