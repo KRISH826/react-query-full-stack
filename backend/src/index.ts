@@ -34,11 +34,7 @@ app.use(express.json(
     }
 ));
 app.use(cors({
-    origin: [
-        "http://localhost:3000",
-        "https://dropculture.krishnendupanja.online",
-        "https://www.dropculture.krishnendupanja.online"
-    ],
+    origin: "*",
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: "Content-Type,Authorization"
