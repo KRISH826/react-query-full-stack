@@ -113,9 +113,10 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                 toast.success('Product created successfully!');
             }
             router.push('/admin/product');
-        } catch (error) {
-            console.error('Error creating product:', error);
-            toast.error('Failed to create product.');
+        } catch (error: unknown) {
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Failed to create product.";
+            toast.error(errorMessage);
         }
     }
 

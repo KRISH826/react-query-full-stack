@@ -2,7 +2,7 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useAddToCartMutation, useGetCartQuery } from "@/services/cartApi";
 import { Product, ProductVariant } from "@/types/product";
-import { ShoppingBag } from "lucide-react";
+import { CircleCheck, RotateCcw, ShoppingBag, Truck } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import Buynow from "./Buynow";
@@ -132,6 +132,22 @@ const ProductContent = ({ product }: { product: Product }) => {
                 )}
             </div>
             <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={14} fontSizeClass="text-xs md:text-base" />
+
+            <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <CircleCheck className="size-4 text-emerald-600" />
+                    <span>100% Original Products</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <Truck className="size-4 text-emerald-600" />
+                    <span>Pay on delivery might be available</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-foreground">
+                    <RotateCcw className="size-4 text-emerald-600" />
+                    <span>Easy 14 days returns and exchanges</span>
+                </div>
+            </div>
+
             {/* Sizes section */}
             {hasSizes && (
                 <div className="space-y-3 pt-2">
@@ -155,7 +171,7 @@ const ProductContent = ({ product }: { product: Product }) => {
                                     onClick={() => !outOfStock && setSelectedSize(v.size)}
                                     disabled={outOfStock}
                                     className={`
-                                        flex h-10 min-w-[3.5rem] px-3 items-center justify-center border text-xs font-medium
+                                        flex h-10 min-w-14 px-3 items-center justify-center border text-xs font-medium
                                         transition-colors duration-200 cursor-pointer select-none
                                         ${isSelected
                                             ? "border-foreground bg-foreground text-background"
@@ -217,11 +233,14 @@ const ProductContent = ({ product }: { product: Product }) => {
                 />
             </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-                <div dangerouslySetInnerHTML={{
-                    __html: product.description ? product.description.replace(/&nbsp;/g, ' ') : ''
-                }} className="product-desc-viewer">
+            <div className="content">
+                <h2 className="text-primary mb-3.5 lg:text-2xl sm:text-xl text-lg font-semibold">Product Details</h2>
+                {/* Description */}
+                <div className="space-y-2 border border-secondary/85 rounded-xl p-4">
+                    <div dangerouslySetInnerHTML={{
+                        __html: product.description ? product.description.replace(/&nbsp;/g, ' ') : ''
+                    }} className="product-desc-viewer">
+                    </div>
                 </div>
             </div>
         </div>

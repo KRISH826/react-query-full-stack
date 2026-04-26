@@ -6,7 +6,7 @@ import React from 'react'
 const BottomHeader = () => {
     const { data: categories } = useGetAllCategoriesQuery()
     return (
-        <div className='sm:py-3 py-2 bg-secondary/30 backdrop-blur-md border-t shadow-sm border-secondary'>
+        <div className='sm:py-1.5 py-1 bg-secondary/30 backdrop-blur-md border-t shadow-sm border-secondary'>
             <div className="container">
                 <div className='flex items-center gap-5'>
                     <ul className='flex items-center gap-4 md:gap-5 overflow-x-auto whitespace-nowrap scrollbar-hide flex-nowrap py-1'>

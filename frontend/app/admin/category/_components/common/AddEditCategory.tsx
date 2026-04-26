@@ -53,7 +53,7 @@ const AddEditCategory = ({ initialData, onOpenChange, open }: props) => {
         try {
             if (isEditMode && initialData) {
                 await updateCategory({ id: initialData.id, data: values }).unwrap();
-                
+
                 toast.success("Category updated successfully");
             }
             else {
@@ -61,7 +61,9 @@ const AddEditCategory = ({ initialData, onOpenChange, open }: props) => {
                 toast.success("Category created successfully");
             }
         } catch (error) {
-            toast.error("An error occurred. Please try again.");
+            const err = error as { data?: { message?: string } };
+            const errorMessage = err?.data?.message || "Failed to create Category.";
+            toast.error(errorMessage);
         }
         finally {
             onOpenChange(false); // Modal close kar do

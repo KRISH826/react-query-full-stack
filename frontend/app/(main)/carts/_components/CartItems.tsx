@@ -27,9 +27,11 @@ const CartItems = ({ cart }: cart) => {
                     variant_id: cart.variantId,
                     quantity: newQuantity
                 }).unwrap();
-            } catch {
+            } catch (error: unknown) {
                 setQuantity(cart.quantity);
-                toast.error("Failed to update cart");
+                const err = error as { data?: { message?: string } };
+                const errorMessage = err?.data?.message || "Failed to create product.";
+                toast.error(errorMessage);
             }
         }, 200);
     }
