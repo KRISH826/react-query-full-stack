@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { BasicInfo } from './BasicInfo';
 import ProductImage from './ProductImage';
 import ProductVariants from './ProductVariants';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -24,6 +24,20 @@ const ProductForm = ({ productId }: { productId?: string }) => {
     const isEditMode = !!productId;
     const { data: existingProduct, isLoading: isLoadingProduct } = useGetProductByIdQuery(productId!);
     const { data: categories } = useGetAllCategoriesQuery();
+    const [loadingMessage, setLoadingMessage] = useState('Creating Product...');
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (isLoading) {
+            setLoadingMessage('Creating Product...');
+            timer = setTimeout(() => {
+                setLoadingMessage('Generating AI tags...');
+            }, 3000);
+        }
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [isLoading]);
 
     const form = useForm<ProductFormValues, unknown, ProductFormSubmitValues>({
         resolver: zodResolver(productSchema),
@@ -137,7 +151,7 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                                     </> : 'Update Product'
                                 ) : (
                                     isLoading ? <>
-                                        <Spinner className='w-4 h-4' /> Creating Product...
+                                        <Spinner className='w-4 h-4' /> {loadingMessage}
                                     </> : 'Create Product'
                                 )
                             }
