@@ -37,8 +37,7 @@ app.use(cors({
     origin: [
         "http://localhost:3000",
         "https://dropculture.krishnendupanja.online",
-        "https://www.dropculture.krishnendupanja.online",
-        "https://api.dropculture.krishnendupanja.online"
+        "https://www.dropculture.krishnendupanja.online"
     ],
     credentials: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
