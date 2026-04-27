@@ -22,23 +22,11 @@ const ProductForm = ({ productId }: { productId?: string }) => {
     const [createProduct, { isLoading }] = useCreateProductMutation();
     const [updateProduct, { isLoading: isLoadingUpdate }] = useUpdateProductMutation();
     const isEditMode = !!productId;
-    const { data: existingProduct, isLoading: isLoadingProduct } = useGetProductByIdQuery(productId!);
+    const { data: existingProduct, isLoading: isLoadingProduct } = useGetProductByIdQuery(productId!, {
+        skip: !productId
+    });
     const { data: categories } = useGetAllCategoriesQuery();
-    const [loadingMessage, setLoadingMessage] = useState('Creating Product...');
-
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-        if (isLoading) {
-            setLoadingMessage('Creating Product...');
-            timer = setTimeout(() => {
-                setLoadingMessage('Generating AI tags...');
-            }, 3000);
-        }
-        return () => {
-            if (timer) clearTimeout(timer);
-        };
-    }, [isLoading]);
-
+    // const [loadingMessage, setLoadingMessage] = useState('Creating Product...');
     const form = useForm<ProductFormValues, unknown, ProductFormSubmitValues>({
         resolver: zodResolver(productSchema),
         defaultValues: {
@@ -151,7 +139,7 @@ const ProductForm = ({ productId }: { productId?: string }) => {
                                     </> : 'Update Product'
                                 ) : (
                                     isLoading ? <>
-                                        <Spinner className='w-4 h-4' /> {loadingMessage}
+                                        <Spinner className='w-4 h-4' /> Creating Product...
                                     </> : 'Create Product'
                                 )
                             }

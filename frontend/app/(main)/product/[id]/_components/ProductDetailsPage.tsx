@@ -9,7 +9,9 @@ import ProductReviews from './ProductReviews';
 const ProductDetailsPage = () => {
     const params = useParams();
     const id = params.id as string;
-    const { data, isLoading, error } = useGetProductByIdQuery(id);
+    const { data, isLoading, error } = useGetProductByIdQuery(id, {
+        skip: !id
+    });
 
     if (isLoading) return <div className='flex items-center justify-center h-[45vh]'>
         <Spinner className='size-12' />
