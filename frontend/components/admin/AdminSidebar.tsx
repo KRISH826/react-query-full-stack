@@ -12,10 +12,10 @@ import { baseApi } from "@/services/baseQuery";
 import { useDispatch } from 'react-redux'
 
 const navItems = [
-  { href: "admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "admin/product", icon: Package, label: "Products" },
-  { href: "admin/category", icon: Tags, label: "Categories" },
-  { href: "admin/orders", icon: ShoppingCart, label: "Orders" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/product", icon: Package, label: "Products" },
+  { href: "/admin/category", icon: Tags, label: "Categories" },
+  { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
 ];
 
 export function AdminSidebar() {
