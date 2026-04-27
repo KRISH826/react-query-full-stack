@@ -26,12 +26,11 @@ export class AiService {
                 model: "gemini-3.1-flash-lite-preview",
                 generationConfig: {
                     responseMimeType: "application/json",
-                    maxOutputTokens: 2500,
+                    maxOutputTokens: 3500,
                 }
             });
             const promptText = `
             ${PRODUCT_TAG_PROMPT}
-
                 CONTEXT:
                 Product: ${product.productname}
                 Brand: ${product.brand ?? "Unknown"}
@@ -41,6 +40,7 @@ export class AiService {
 
                 VISION TASK: Look at the product image. Identify the exact color, fabric texture, 
                 neckline, and fit. Use these visual signals to refine the JSON output.
+                image description will be minimum 200 words ! maximum 500 words 
             `;
 
             const contentParts = [];
