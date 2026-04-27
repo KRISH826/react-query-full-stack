@@ -5,7 +5,7 @@ import { Form } from '@/components/ui/form';
 import productSchema, { ProductFormSubmitValues, ProductFormValues } from '@/schema/product.schema';
 import { useCreateProductMutation, useGetProductByIdQuery, useUpdateProductMutation } from '@/services/productApi';
 import { useGetAllCategoriesQuery } from '@/services/categoryApi';
-import { ProductStatus } from '@/types/product';
+import { ProductStatus, ProductVariant } from '@/types/product';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { BasicInfo } from './BasicInfo';
 import ProductImage from './ProductImage';
 import ProductVariants from './ProductVariants';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -42,19 +42,22 @@ const ProductForm = ({ productId }: { productId?: string }) => {
         }
     })
 
+    console.log('gender is', existingProduct?.gender);
+    console.log('status is', existingProduct?.status);
+
     useEffect(() => {
         if (existingProduct) {
             form.reset({
                 productname: existingProduct.productname || '',
                 description: existingProduct.description || '',
                 brand: existingProduct.brand || '',
-                gender: existingProduct.gender || 'UNISEX',
+                gender: existingProduct.gender,
                 status: existingProduct.status || ProductStatus.DRAFT,
                 is_track_inventory: existingProduct.is_track_inventory ?? true,
                 category_names: existingProduct.categories?.map((c) => c.name) || [],
                 // Map variants to remove extra properties like id, product_id, etc.
                 variants: existingProduct.variants?.length
-                    ? existingProduct.variants.map((v) => ({
+                    ? existingProduct.variants.map((v: ProductVariant) => ({
                         sku: v.sku ?? "",
                         size: v.size ?? "M",
                         price_override: v.price_override ?? null,

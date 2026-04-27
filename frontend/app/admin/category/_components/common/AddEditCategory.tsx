@@ -126,7 +126,7 @@ const AddEditCategory = ({ initialData, onOpenChange, open }: props) => {
                                                         <SelectValue placeholder="Select a parent category" />
                                                     </SelectTrigger>
                                                 </FormControl>
-                                                <SelectContent>
+                                                <SelectContent position="popper">
                                                     {categories?.map((cat: Category) => (
                                                         // Prevent selecting itself as parent in Edit mode
                                                         cat.id !== initialData?.id && (

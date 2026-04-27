@@ -8,7 +8,7 @@ import sharp from "sharp";
 export const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 1024 * 1024 * 15, // 10 mb
+        fileSize: 1024 * 1024 * 10, // 10 mb
     },
     fileFilter(_, file, callback) {
         if (!file.mimetype.startsWith("image/")) {
@@ -26,7 +26,7 @@ export const compressImage = async (file: Express.Multer.File) => {
                 fit: 'inside',
                 withoutEnlargement: true // Don't enlarge small images
             })
-            .webp({ quality: 80 }) // Convert to WebP with 80% quality
+            .webp({ quality: 60 }) // Convert to WebP with 80% quality
             .toBuffer();
         return compressedBuffer;
     } catch (error) {
