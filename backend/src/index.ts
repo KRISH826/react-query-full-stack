@@ -30,9 +30,10 @@ app.use("/api/payments/webhook", webhookRouter);
 
 app.use(express.json(
     {
-        limit: "3mb"
+        limit: "15mb"
     }
 ));
+app.use(express.urlencoded({ extended: true }));
 app.use(cors({
     origin: [
         "http://localhost:3000",
