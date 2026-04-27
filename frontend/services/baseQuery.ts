@@ -49,6 +49,8 @@ const baseQueryWithReauth: BaseQueryFn<
       if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.href = "/login";
       }
+
+      // Reset flag after navigation completes
       setTimeout(() => {
         isRedirecting = false;
       }, 3000);

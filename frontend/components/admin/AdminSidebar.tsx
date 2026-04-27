@@ -12,10 +12,10 @@ import { baseApi } from "@/services/baseQuery";
 import { useDispatch } from 'react-redux'
 
 const navItems = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/product", icon: Package, label: "Products" },
-  { href: "/admin/category", icon: Tags, label: "Categories" },
-  { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/product", icon: Package, label: "Products" },
+  { href: "/category", icon: Tags, label: "Categories" },
+  { href: "/orders", icon: ShoppingCart, label: "Orders" },
 ];
 
 export function AdminSidebar() {
@@ -43,7 +43,7 @@ export function AdminSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:flex">
       <div className="flex h-16 shrink-0 items-center border-b border-sidebar-border px-6">
-        <Link href="/dashboard" className="flex items-center gap-2 font-bold uppercase tracking-wider text-sidebar-primary">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold uppercase tracking-wider text-sidebar-primary">
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
             <LayoutDashboard className="size-5" />
           </div>

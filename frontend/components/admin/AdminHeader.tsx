@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/product", icon: Package, label: "Products" },
   { href: "/category", icon: Tags, label: "Categories" },
   { href: "/orders", icon: ShoppingCart, label: "Orders" },
@@ -40,7 +40,7 @@ export function AdminHeader() {
         <SheetContent side="left" className="w-72 flex flex-col p-0">
           <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
           <div className="flex h-16 shrink-0 items-center border-b border-border px-6">
-            <Link href="/dashboard" className="flex items-center gap-2 font-bold uppercase tracking-wider text-primary">
+            <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold uppercase tracking-wider text-primary">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <LayoutDashboard className="size-5" />
               </div>
