@@ -15,9 +15,9 @@ import { RootState } from '@/store/store'
 
 const navItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "admin/product", icon: Package, label: "Products" },
-  { href: "admin/category", icon: Tags, label: "Categories" },
-  { href: "admin/orders", icon: ShoppingCart, label: "Orders" },
+  { href: "/admin/product", icon: Package, label: "Products" },
+  { href: "/admin/category", icon: Tags, label: "Categories" },
+  { href: "/admin/orders", icon: ShoppingCart, label: "Orders" },
 ];
 
 export function AdminHeader() {
