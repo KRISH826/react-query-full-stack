@@ -35,4 +35,6 @@ export interface ProductAITags {
     vibe: string[];
     search_keywords: string[];
     image_description?: string; // Vision se aane wala description
+    recommended_age_range?: string;
+    wearer_profile?: string;
 }
