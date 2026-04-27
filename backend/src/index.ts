@@ -41,10 +41,10 @@ app.use("/api/payments/webhook", webhookRouter);
 
 app.use(express.json(
     {
-        limit: "15mb"
+        limit: "50mb"
     }
 ));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use(helmet());
 app.use(cookieParser());
