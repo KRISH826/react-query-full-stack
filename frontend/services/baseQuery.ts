@@ -14,10 +14,15 @@ const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   credentials: "include",
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.accessToken;
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+    let token = (getState() as RootState).auth.accessToken;
+    if (!token && typeof window !== "undefined") {
+      token = localStorage.getItem("token");
     }
+
+    if (token) {
+      headers.set("Authorization", `Bearer ${token}`);  // ← THIS LINE IS MISSING
+    }
+
     return headers;
   },
 });
