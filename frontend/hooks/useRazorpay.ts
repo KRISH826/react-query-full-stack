@@ -121,9 +121,7 @@ export const useRazorpay = () => {
                 if (paymentCompleted || cancellationRequested) {
                     return
                 }
-
                 cancellationRequested = true
-
                 try {
                     await cancelOrder(orderId).unwrap()
                 } catch {
@@ -173,7 +171,10 @@ export const useRazorpay = () => {
                 },
                 modal: {
                     ondismiss: () => {
-                        toast.warning("Payment cancelled. You can retry.");
+                        void cancelPendingOrder(
+                            "Payment cancelled. Your order has been removed.",
+                            "warning"
+                        )
                     },
                 },
             }
@@ -181,7 +182,10 @@ export const useRazorpay = () => {
             const rzp = new window.Razorpay(options)
 
             rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-                toast.error(`Payment failed: ${response.error.description}. Please retry.`);
+                void cancelPendingOrder(
+                    `Payment failed: ${response.error.description}. Please try again.`,
+                    "error"
+                )
             })
 
             rzp.open()
