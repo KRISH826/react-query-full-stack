@@ -27,5 +27,16 @@ export const startProductScheduler = async () => {
             repeat: { every: 30 * 60 * 1000 }
         }
     );
+
+    await refreshProductQueue.add(
+        'deleted-product-cache',
+        {},
+        {
+            jobId: 'deleted-product-cache-job',
+            repeat: {
+                every: 20 * 60 * 60 * 1000 // 20 hours
+            }
+        }
+    )
     console.log('Product scheduler started ✅')
 }
