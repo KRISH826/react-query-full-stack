@@ -31,7 +31,6 @@ import {
     updateOrderItemStatus,
     updateOrderStatus,
 } from "./order.repository";
-
 export class OrderService {
 
     static async createOrderFromCart(
@@ -58,6 +57,8 @@ export class OrderService {
 
             const order = await createOrder(userId, orderData, totalAmount, client);
             if (!order) throw new HttpError("Failed to create order", 500);
+
+
 
             await Promise.all(
                 cartItems.map((cartItem) => {
@@ -237,11 +238,13 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                "placed",
+                "confirmed",
                 product.size || null,
                 product.image_url || null,
                 client
             );
+
+
 
             await client.query("COMMIT");
             return this.getOrderById(order.id, userId);
