@@ -217,3 +217,18 @@ export async function searchProductsByNameAndBrand(name: string, brand: string, 
     return rows;
 }
 
+
+export async function deleteProductFromDb(limit = 100) {
+    const { rows } = await pool.query(
+        `DELETE FROM products
+         WHERE id IN (
+             SELECT id FROM products
+             WHERE deleted_at IS NOT NULL
+             LIMIT $1
+         )
+         RETURNING id`,
+        [limit]
+    );
+
+    return rows;
+}
