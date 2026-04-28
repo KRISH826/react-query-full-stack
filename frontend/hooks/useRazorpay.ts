@@ -107,7 +107,6 @@ export const useRazorpay = () => {
             }
 
             await waitForRazorpay()
-            await clearCart().unwrap();
 
             const paymentData = await createPayment({
                 order_id: orderId,
@@ -156,6 +155,7 @@ export const useRazorpay = () => {
                         }).unwrap()
 
                         paymentCompleted = true
+                        await clearCart().unwrap(); // ✅ move here
 
                         setSuccessData({ orderId, amount })
                         setIsSuccessOpen(true)
@@ -173,7 +173,7 @@ export const useRazorpay = () => {
                 },
                 modal: {
                     ondismiss: () => {
-                        void cancelPendingOrder("Payment cancelled. Order has been cancelled.", "warning")
+                        toast.warning("Payment cancelled. You can retry.");
                     },
                 },
             }
@@ -181,10 +181,7 @@ export const useRazorpay = () => {
             const rzp = new window.Razorpay(options)
 
             rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-                void cancelPendingOrder(
-                    `Payment failed: ${response.error.description}. Order has been cancelled.`,
-                    "error"
-                )
+                toast.error(`Payment failed: ${response.error.description}. Please retry.`);
             })
 
             rzp.open()

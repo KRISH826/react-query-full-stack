@@ -1,9 +1,8 @@
 "use client"
 
-import { FlatOrderItem, OrderStatus } from "@/types/order"
+import { OrderResponseDTO, OrderStatus } from "@/types/order"
 import { Calendar, ChevronRight, RefreshCw, Trash2 } from "lucide-react"
 import Image from "next/image"
-import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { statusConfig } from "./statusConfig"
 import { Button } from "@/components/ui/button"
@@ -11,20 +10,23 @@ import { useCancelOrderItemsMutation, useCancelOrderMutation } from "@/services/
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { OrderItemResponseDTO } from "@/types/order"
+import { useRazorpay } from "@/hooks/useRazorpay"
 
 type Props = {
-    item: OrderItemResponseDTO
+    item: OrderItemResponseDTO,
+    order: OrderResponseDTO,
     orderId: string
 }
 
 
 const TRACK_STEPS = ["Placed", "Confirmed", "Shipped", "Delivered"]
 
-const OrderItemCard = ({ item, orderId }: Props) => {
-    const status = statusConfig[item.status?.toLowerCase() as OrderStatus] ?? statusConfig.placed
+const OrderItemCard = ({ item, orderId, order }: Props) => {
+    const status = statusConfig[item.status?.toLowerCase() as OrderStatus] ?? statusConfig.placed;
     const isCancelledOrRefunded = item.status === "cancelled" || item.status === "refunded"
     const [cancelOrderItems, { isLoading }] = useCancelOrderItemsMutation();
     const router = useRouter();
+    const { initiatePayment } = useRazorpay();
 
     const handleViewProduct = () => {
         router.push(`/product/${item.product_id}`);
@@ -83,17 +85,17 @@ const OrderItemCard = ({ item, orderId }: Props) => {
                         )}
                         {item.offerPrice ? (
                             <>
-                            <div className="flex items-center gap-2.5">
-                                <p className="text-xs text-gray-400 line-through">
-                                    ₹{Number(item.price).toFixed(0)}
-                                </p>
-                                <p className="text-sm font-bold text-gray-900">
-                                    ₹{Number(item.offerPrice).toLocaleString("en-IN")}
-                                </p>
-                                <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                                    {Math.round((1 - item.offerPrice / item.price) * 100)}% off
-                                </span>
-                            </div>
+                                <div className="flex items-center gap-2.5">
+                                    <p className="text-xs text-gray-400 line-through">
+                                        ₹{Number(item.price).toFixed(0)}
+                                    </p>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        ₹{Number(item.offerPrice).toLocaleString("en-IN")}
+                                    </p>
+                                    <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                                        {Math.round((1 - item.offerPrice / item.price) * 100)}% off
+                                    </span>
+                                </div>
                             </>
                         ) : (
                             <p className="text-sm font-bold text-gray-900">
@@ -112,13 +114,34 @@ const OrderItemCard = ({ item, orderId }: Props) => {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Link
-                            href={item.status === "cancelled" || item.status === "refunded" ? `/product/${item.product_id}` : `/orders/${orderId}`}
+                        <Button
+                            onClick={() => {
+                                if (item.status === "placed") {
+                                    // Retry payment
+                                    initiatePayment({
+                                        orderId,
+                                        amount: order.totalamount,
+                                        userName: order.email,
+                                        userEmail: order.email,
+                                        userPhone: order.phone,
+                                    });
+                                } else if (item.status === "cancelled" || item.status === "refunded") {
+                                    // Re-order
+                                    router.push(`/product/${item.product_id}`);
+                                } else {
+                                    // Track order
+                                    router.push(`/orders/${orderId}`);
+                                }
+                            }}
                             className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gray-900 hover:bg-gray-700 transition-colors px-4 py-2 rounded-lg whitespace-nowrap"
                         >
-                            {item.status === "cancelled" || item.status === "refunded" ? "Re-Order" : "Track Order"}
+                            {item.status === "placed"
+                                ? "Retry Payment"
+                                : item.status === "cancelled" || item.status === "refunded"
+                                    ? "Re-Order"
+                                    : "Track Order"}
                             <ChevronRight size={13} />
-                        </Link>
+                        </Button>
                         {
                             item.status !== "cancelled" && item.status !== "refunded" && (
                                 <Button disabled={isLoading} onClick={handleCancelOrder} variant={"destructive"} size={"sm"} className="text-xs! cursor-pointer">
