@@ -1,23 +1,28 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useClearCartMutation, useGetCartQuery } from "@/services/cartApi";
+import { useGetCartQuery } from "@/services/cartApi";
 import { RootState } from "@/store/store";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
-import { toast } from "sonner";
 
 const OrderSummary = () => {
+    const searchParams = useSearchParams();
     const token = useSelector((state: RootState) => state.auth.accessToken);
-    // const [clearCart] = useClearCartMutation();
     const { data } = useGetCartQuery(undefined, { skip: !token });
     const router = useRouter();
     const pathname = usePathname();
-    const isCheckoutPage = pathname === "/checkout";
-    const cartItemsCount = data?.items?.length ?? 0;
-    const isCartEmpty = cartItemsCount === 0;
-    const formattedTotal = Number(data?.total ?? 0).toLocaleString("en-IN");
 
+    const isBuyNow = searchParams.has("productId")
+    const isCheckoutPage = pathname === "/checkout"
+    const cartItemsCount = data?.items?.length ?? 0
+    const isCartEmpty = !isBuyNow && cartItemsCount === 0
+
+    // Buy now passes amount in URL, fall back to cart total
+    const buyNowAmount = Number(searchParams.get("amount") ?? 0)
+    const cartTotal = Number(data?.total ?? 0)
+    const displayTotal = isBuyNow ? buyNowAmount : cartTotal
+    const formattedTotal = displayTotal.toLocaleString("en-IN")
 
     return (
         <div className="rounded-xl bg-secondary/15 border border-gray-200 p-4 h-fit sticky top-20">

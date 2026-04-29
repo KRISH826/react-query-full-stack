@@ -28,7 +28,6 @@ const ProductContent = ({ product }: { product: Product }) => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const quantity = 1;
     const [addToCart, { isLoading }] = useAddToCartMutation();
-    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
     const { data: cart } = useGetCartQuery(undefined, { skip: !token });
     const router = useRouter();
 
@@ -70,24 +69,18 @@ const ProductContent = ({ product }: { product: Product }) => {
         }
     };
 
-    const handleBuyNow = async () => {
+    const handleBuyNow = () => {
         if (!activeVariant && hasVariants) {
-            toast.error("Please select a size");
-            return;
+            toast.error("Please select a size")
+            return
         }
-        setIsBuyNowLoading(true);
-        try {
-            await addToCart({
-                product_id: product.id,
-                variant_id: activeVariant?.id || '',
-                quantity
-            }).unwrap();
-            router.push("/checkout");
-        } catch {
-            toast.error("Failed to add item to bag");
-            setIsBuyNowLoading(false);
-        }
-    };
+        const params = new URLSearchParams({
+            productId: product.id,
+            variantId: activeVariant?.id ?? "",
+            quantity: String(quantity),
+        })
+        router.push(`/checkout?${params.toString()}`)
+    }
 
     return (
         <div className="flex flex-col gap-5 lg:pr-4">
@@ -221,38 +214,23 @@ const ProductContent = ({ product }: { product: Product }) => {
             <div className="mt-auto grid w-full grid-cols-2 gap-3 pt-6">
                 <Button
                     onClick={handleAddToCart}
-                    disabled={isOutOfStock || isLoading || isBuyNowLoading || addcarted}
+                    disabled={isOutOfStock || isLoading || addcarted}
                     className="h-12 w-full"
                 >
-                    {
-                        addcarted ?
-
-                            <>
-                                {isLoading && !isBuyNowLoading ? (
-                                    <Spinner className="size-4" />
-                                ) : (
-                                    <>
-                                        <ShoppingBag className="size-5!" />
-                                        Added to bag
-                                    </>
-                                )}
-                            </> : <>
-                                {isLoading && !isBuyNowLoading ? (
-                                    <Spinner className="size-4" />
-                                ) : (
-                                    <>
-                                        <ShoppingBag className="size-5!" />
-                                        Add to bag
-                                    </>
-                                )}
-                            </>
-                    }
-
+                    {isLoading ? (
+                        <Spinner className="size-4" />
+                    ) : (
+                        <>
+                            <ShoppingBag className="size-5! mr-1" />
+                            {addcarted ? "Added to bag" : "Add to bag"}
+                        </>
+                    )}
                 </Button>
+
                 <Buynow
                     onClick={handleBuyNow}
                     disabled={isOutOfStock || isLoading}
-                    isLoading={isBuyNowLoading}
+                    isLoading={false}
                 />
             </div>
 

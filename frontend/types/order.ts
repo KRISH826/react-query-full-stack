@@ -50,6 +50,12 @@ export interface CreateOrderRequest {
     email: string;
 }
 
+export interface BuyNowOrderRequest extends CreateOrderRequest {
+    product_id: string;
+    variant_id: string;
+    quantity: number;
+}
+
 export interface OrderJobStatusResponse {
     state: "waiting" | "active" | "completed" | "failed";
     order?: OrderResponseDTO;
