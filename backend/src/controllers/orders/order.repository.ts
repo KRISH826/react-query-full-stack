@@ -212,13 +212,16 @@ export async function markOrderFailed(
 ): Promise<void> {
     await db.query(
         `UPDATE orders 
-         SET deleted_at = CURRENT_TIMESTAMP,
+         SET status = 'payment_failed',
              updated_at = CURRENT_TIMESTAMP 
          WHERE id = $1`,
         [orderId]
     );
     await db.query(
-        `DELETE FROM order_items WHERE order_id = $1`,
+        `UPDATE order_items 
+         SET status = 'payment_failed',
+             updated_at = CURRENT_TIMESTAMP 
+         WHERE order_id = $1`,
         [orderId]
     );
 }
