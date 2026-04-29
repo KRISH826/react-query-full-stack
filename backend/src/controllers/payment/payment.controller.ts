@@ -30,6 +30,19 @@ export class PaymentController {
         }
     }
 
+    static async handlePaymentFailedController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const { order_id } = req.body;
+            if (!order_id) {
+                return res.status(400).json({ message: "Order Id is not found" });
+            }
+            await PaymentService.handlePaymentFaild(order_id);
+            res.status(200).json({ message: "Payment failed successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async webHookController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
             const signature = req.headers["x-razorpay-signature"] as string;

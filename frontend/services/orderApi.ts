@@ -89,6 +89,18 @@ export const orderApi = baseApi.injectEndpoints({
             ],
         }),
 
+        cancelPayment: builder.mutation<{ message: string }, string>({
+            query: (orderId) => ({
+                url: "payments/payment-failed",
+                method: "POST",
+                body: { orderId },
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
+
         getAllOrders: builder.query<OrderResponseDTO[], void>({
             query: () => "orders/admin",
             transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
@@ -118,5 +130,6 @@ export const {
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
-    useLazyGetOrderJobStatusQuery
+    useLazyGetOrderJobStatusQuery,
+    useCancelPaymentMutation
 } = orderApi;

@@ -1,5 +1,5 @@
 import { OrderStatus } from "@/types/order"
-import { Clock, CheckCircle2, Truck, XCircle, RefreshCw } from "lucide-react"
+import { AlertTriangle, Clock, CheckCircle2, Truck, XCircle, RefreshCw, Hourglass } from "lucide-react"
 
 export const statusConfig: Record<OrderStatus, {
     color: string
@@ -8,7 +8,7 @@ export const statusConfig: Record<OrderStatus, {
     dot: string
     label: string
     icon: React.ReactNode
-    track: number // 0-4 progress steps
+    track: number
 }> = {
     placed: {
         color: "text-blue-700",
@@ -62,6 +62,24 @@ export const statusConfig: Record<OrderStatus, {
         dot: "bg-orange-500",
         label: "Refunded",
         icon: <RefreshCw size={13} />,
+        track: 0,
+    },
+    payment_pending: {
+        color: "text-yellow-700",
+        bg: "bg-yellow-50",
+        border: "border-yellow-200",
+        dot: "bg-yellow-500",
+        label: "Payment Pending",
+        icon: <Hourglass size={13} />,
+        track: 0,
+    },
+    payment_failed: {
+        color: "text-red-700",
+        bg: "bg-red-50",
+        border: "border-red-200",
+        dot: "bg-red-500",
+        label: "Payment Failed",
+        icon: <AlertTriangle size={13} />,
         track: 0,
     },
 }

@@ -101,6 +101,21 @@ export class PaymentService {
         }
     }
 
+    static async handlePaymentFaild(orderId: string): Promise<void> {
+        const client = await pool.connect();
+        try {
+            await client.query("BEGIN");
+            await markPaymentFailed(orderId, client);
+            await markOrderFailed(orderId, client);
+            await client.query("COMMIT");
+        } catch (error) {
+            await client.query("ROLLBACK");
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
     static async handleWebHookService(payload: any): Promise<void> {
         const event = payload.event;
         const orderId = payload.payload?.payment?.entity?.receipt;

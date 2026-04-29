@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {
     useCancelOrderMutation,
+    useCancelPaymentMutation,
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
 } from "@/services/orderApi"
@@ -83,7 +84,8 @@ export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
     const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
     const [clearCart] = useClearCartMutation();
-    const [cancelOrder] = useCancelOrderMutation()
+    const [cancelOrder] = useCancelOrderMutation();
+    const [cancelPayment] = useCancelPaymentMutation();
 
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
     const [isSuccessOpen, setIsSuccessOpen] = useState(false)
@@ -178,7 +180,8 @@ export const useRazorpay = () => {
 
             const rzp = new window.Razorpay(options)
 
-            rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
+            rzp.on("payment.failed", async (response: RazorpayErrorResponse) => {
+                await cancelPayment(orderId).unwrap();
                 toast.warning(`Payment failed: ${response.error.description}`)
             })
 
