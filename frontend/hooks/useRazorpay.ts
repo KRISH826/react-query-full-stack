@@ -171,10 +171,7 @@ export const useRazorpay = () => {
                 },
                 modal: {
                     ondismiss: () => {
-                        void cancelPendingOrder(
-                            "Payment cancelled. Your order has been removed.",
-                            "warning"
-                        )
+                        toast.warning("Not Added Order Items")
                     },
                 },
             }
@@ -182,10 +179,7 @@ export const useRazorpay = () => {
             const rzp = new window.Razorpay(options)
 
             rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-                void cancelPendingOrder(
-                    `Payment failed: ${response.error.description}. Please try again.`,
-                    "error"
-                )
+                toast.warning(`Payment failed: ${response.error.description}`)
             })
 
             rzp.open()

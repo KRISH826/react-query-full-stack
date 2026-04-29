@@ -1,7 +1,7 @@
 "use client"
 
 import { useGetOrdersQuery } from '@/services/orderApi'
-import { FlatOrderItem, OrderResponseDTO } from '@/types/order'
+import { OrderResponseDTO } from '@/types/order'
 import { Calendar, PackageX } from 'lucide-react'
 import OrderItemCard from './OrderItems'
 import { Spinner } from '@/components/ui/spinner'

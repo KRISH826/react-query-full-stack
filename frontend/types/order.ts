@@ -1,4 +1,4 @@
-export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'payment_pending';
+export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'payment_pending' | 'payment_failed';
 
 export interface ShippingAddressDTO {
     shipping_address: string;

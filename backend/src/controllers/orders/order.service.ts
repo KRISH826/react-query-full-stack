@@ -1,4 +1,3 @@
-import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import {
@@ -80,7 +79,7 @@ export class OrderService {
                         offerPrice,
                         subtotal,
                         cartItem.size,
-                        order.status,
+                        "payment_pending",
                         cartItem.image_url,
                         client
                     );
@@ -238,7 +237,7 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                "confirmed",
+                "payment_pending",
                 product.size || null,
                 product.image_url || null,
                 client
