@@ -51,7 +51,7 @@ export interface CreateOrderRequest {
 }
 
 export interface BuyNowOrderRequest extends CreateOrderRequest {
-    product_id: string;
+    productId: string;
     variant_id: string;
     quantity: number;
 }
