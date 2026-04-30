@@ -1,7 +1,7 @@
 "use client"
 
 import { useGetOrdersQuery } from '@/services/orderApi'
-import { FlatOrderItem, OrderResponseDTO } from '@/types/order'
+import { OrderResponseDTO } from '@/types/order'
 import { Calendar, PackageX } from 'lucide-react'
 import OrderItemCard from './OrderItems'
 import { Spinner } from '@/components/ui/spinner'
@@ -98,23 +98,13 @@ const OrderPage = () => {
                                     </div>
                                 </div>
 
-                                {/* STATUS BADGE */}
-                                {/* <div className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border",
-                    status.color,
-                    status.bg,
-                    status.border
-                )}>
-                    <span className={cn("h-1.5 w-1.5 rounded-full", status.dot)} />
-                    {status.icon}
-                    {status.label}
-                </div> */}
                             </div>
                             <div className='space-y-4 divide-y divide-accent'>
                                 {order.items.map((item) => (
                                     <OrderItemCard
                                         key={`${order.id}-${item.id}`}
                                         orderId={order.id}
+                                        order={order as OrderResponseDTO}
                                         item={item}
                                     />
                                 ))}

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import {
     useCancelOrderMutation,
+    useCancelPaymentMutation,
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
 } from "@/services/orderApi"
@@ -83,7 +84,8 @@ export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
     const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
     const [clearCart] = useClearCartMutation();
-    const [cancelOrder] = useCancelOrderMutation()
+    const [cancelOrder] = useCancelOrderMutation();
+    const [cancelPayment] = useCancelPaymentMutation();
 
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
     const [isSuccessOpen, setIsSuccessOpen] = useState(false)
@@ -107,7 +109,6 @@ export const useRazorpay = () => {
             }
 
             await waitForRazorpay()
-            await clearCart().unwrap();
 
             const paymentData = await createPayment({
                 order_id: orderId,
@@ -122,9 +123,7 @@ export const useRazorpay = () => {
                 if (paymentCompleted || cancellationRequested) {
                     return
                 }
-
                 cancellationRequested = true
-
                 try {
                     await cancelOrder(orderId).unwrap()
                 } catch {
@@ -156,6 +155,7 @@ export const useRazorpay = () => {
                         }).unwrap()
 
                         paymentCompleted = true
+                        await clearCart().unwrap(); // ✅ move here
 
                         setSuccessData({ orderId, amount })
                         setIsSuccessOpen(true)
@@ -173,18 +173,16 @@ export const useRazorpay = () => {
                 },
                 modal: {
                     ondismiss: () => {
-                        void cancelPendingOrder("Payment cancelled. Order has been cancelled.", "warning")
+                        toast.warning("Not Added Order Items")
                     },
                 },
             }
 
             const rzp = new window.Razorpay(options)
 
-            rzp.on("payment.failed", (response: RazorpayErrorResponse) => {
-                void cancelPendingOrder(
-                    `Payment failed: ${response.error.description}. Order has been cancelled.`,
-                    "error"
-                )
+            rzp.on("payment.failed", async (response: RazorpayErrorResponse) => {
+                await cancelPayment(orderId).unwrap();
+                toast.warning(`Payment failed: ${response.error.description}`)
             })
 
             rzp.open()

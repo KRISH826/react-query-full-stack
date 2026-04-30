@@ -1,4 +1,4 @@
-export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'payment_pending';
 
 export interface OrderDB {
     id: string;

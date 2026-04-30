@@ -1,4 +1,4 @@
-import { CreateOrderRequest, OrderJobStatusResponse, OrderResponseDTO } from "@/types/order";
+import { CreateOrderRequest, OrderJobStatusResponse, OrderResponseDTO, BuyNowOrderRequest } from "@/types/order";
 import { baseApi } from "./baseQuery";
 import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } from "@/types/payment";
 
@@ -62,7 +62,7 @@ export const orderApi = baseApi.injectEndpoints({
                 { type: "Order", id: "ORDER_DETAIL" },
             ],
         }),
-        buyNowOrder: builder.mutation<{ message: string; jobId: string }, CreateOrderRequest>({
+        buyNowOrder: builder.mutation<{ message: string; jobId: string }, BuyNowOrderRequest>({
             query: (order) => ({
                 url: "orders/buy-now",
                 method: "POST",
@@ -83,6 +83,18 @@ export const orderApi = baseApi.injectEndpoints({
 
         verifyPayment: builder.mutation<{ message: string; payment: boolean }, VerifyPaymentRequest>({
             query: (body) => ({ url: "payments/verify-payment", method: "POST", body }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
+
+        cancelPayment: builder.mutation<{ message: string }, string>({
+            query: (orderId) => ({
+                url: "payments/payment-failed",
+                method: "POST",
+                body: { orderId },
+            }),
             invalidatesTags: [
                 { type: "Order", id: "LIST" },
                 { type: "Order", id: "ORDER_DETAIL" },
@@ -118,5 +130,6 @@ export const {
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
-    useLazyGetOrderJobStatusQuery
+    useLazyGetOrderJobStatusQuery,
+    useCancelPaymentMutation
 } = orderApi;

@@ -1,4 +1,4 @@
-export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded';
+export type OrderStatus = 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'refunded' | 'payment_pending' | 'payment_failed';
 
 export interface ShippingAddressDTO {
     shipping_address: string;
@@ -48,6 +48,12 @@ export interface CreateOrderRequest {
     shippingAddress: ShippingAddressDTO;
     phone: string;
     email: string;
+}
+
+export interface BuyNowOrderRequest extends CreateOrderRequest {
+    product_id: string;
+    variant_id: string;
+    quantity: number;
 }
 
 export interface OrderJobStatusResponse {

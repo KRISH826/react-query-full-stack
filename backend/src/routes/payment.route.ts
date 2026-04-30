@@ -6,4 +6,5 @@ const router = express.Router();
 
 router.post("/create-payment", requireAuth, requireRole("customer"), PaymentController.createPaymentController);
 router.post("/verify-payment", requireAuth, requireRole("customer"), PaymentController.verifyPaymentController);
+router.post("/payment-failed", requireAuth, requireRole("customer"), PaymentController.handlePaymentFailedController);
 export default router;

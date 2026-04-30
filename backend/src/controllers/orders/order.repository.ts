@@ -60,7 +60,7 @@ export async function findUsersOrders(
     const countResult = await db.query(
         `SELECT COUNT(*) 
          FROM orders 
-         WHERE user_id = $1
+         WHERE user_id = $1 AND status != 'payment_pending'
            AND deleted_at IS NULL`,
         [userId]
     );
@@ -68,7 +68,7 @@ export async function findUsersOrders(
 
     const { rows } = await db.query(
         `SELECT * FROM orders_with_items
-     WHERE user_id = $1
+     WHERE user_id = $1 AND status != 'payment_pending'
      ORDER BY created_at DESC
      LIMIT $2 OFFSET $3`,
         [userId, limit, offset]
@@ -212,13 +212,16 @@ export async function markOrderFailed(
 ): Promise<void> {
     await db.query(
         `UPDATE orders 
-         SET deleted_at = CURRENT_TIMESTAMP,
+         SET status = 'payment_failed',
              updated_at = CURRENT_TIMESTAMP 
          WHERE id = $1`,
         [orderId]
     );
     await db.query(
-        `DELETE FROM order_items WHERE order_id = $1`,
+        `UPDATE order_items 
+         SET status = 'payment_failed',
+             updated_at = CURRENT_TIMESTAMP 
+         WHERE order_id = $1`,
         [orderId]
     );
 }

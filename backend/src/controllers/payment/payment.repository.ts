@@ -37,3 +37,12 @@ export async function updateStatusConfirmedByOrderId(orderId: string, db: Pool |
         [orderId]
     );
 }
+
+
+export async function isVerifyPayment(orderId: string, db: Pool | PoolClient = pool): Promise<PaymentDB | undefined> {
+    const { rows } = await db.query(
+        `SELECT * FROM payments WHERE order_id=$1 AND status='success'`,
+        [orderId]
+    );
+    return rows[0];
+}

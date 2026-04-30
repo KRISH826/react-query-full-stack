@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { useOrderPolling } from "@/hooks/usePolling"
 import { useRazorpay } from "@/hooks/useRazorpay"
 import { CheckOutSchema, checkOutSchema } from "@/schema/checkout.schema"
-import { useCheckOutMutation } from "@/services/orderApi"
+import { useBuyNowOrderMutation, useCheckOutMutation } from "@/services/orderApi"
 import { useGetCartQuery } from "@/services/cartApi"
 import { useGetProfileQuery } from "@/services/userApi"
 import { CreditCard, Mail, Phone } from "lucide-react"
@@ -17,15 +17,29 @@ import { useForm } from "react-hook-form"
 import { useSelector } from "react-redux"
 import { RootState } from "@/store/store"
 import { toast } from "sonner"
+import { useSearchParams } from "next/navigation"
 
 const CheckOutInfo = () => {
-    const [checkout] = useCheckOutMutation()
+    const [checkout] = useCheckOutMutation();
+    const searchParams = useSearchParams();
     const { startPolling, order } = useOrderPolling()
     const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
     const paymentStartedForOrderIdRef = useRef<string | null>(null)
     const token = useSelector((state: RootState) => state.auth.accessToken)
-    const { data: cart } = useGetCartQuery(undefined, { skip: !token })
-    const isCartEmpty = (cart?.items?.length ?? 0) === 0
+    const isBuyNow = searchParams.has("productId");
+    const { data: cart } = useGetCartQuery(undefined, { skip: !token || isBuyNow })
+    const quantity = Number(searchParams.get("quantity") ?? 1);
+    const unitPrice = Number(searchParams.get("amount") ?? 0);
+    const buyNowParams = {
+        productId: searchParams.get("productId") ?? "",
+        variantId: searchParams.get("variantId") ?? "",
+        quantity,
+        amount: String(unitPrice * quantity),  // ← pass total
+    }
+    const isCartEmpty = !isBuyNow && (cart?.items?.length ?? 0) === 0
+    const [buyNowOrder] = useBuyNowOrderMutation();
+
+
 
     const { data: user } = useGetProfileQuery(undefined, {
         skip: !token,
@@ -75,7 +89,18 @@ const CheckOutInfo = () => {
         }
 
         try {
-            const response = await checkout(data).unwrap()
+            let response;
+            if (isBuyNow) {
+                response = await buyNowOrder({
+                    ...data,
+                    product_id: buyNowParams?.productId,
+                    variant_id: buyNowParams.variantId,
+                    quantity: buyNowParams.quantity,
+                }).unwrap();
+            }
+            else {
+                response = await checkout(data).unwrap()
+            }
             startPolling(response.jobId)
             toast.success("Order is being processed...")
         } catch (error: unknown) {

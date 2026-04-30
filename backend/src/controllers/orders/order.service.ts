@@ -1,4 +1,3 @@
-import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { HttpError } from "../../middlewares/error.middleware";
 import {
@@ -31,7 +30,6 @@ import {
     updateOrderItemStatus,
     updateOrderStatus,
 } from "./order.repository";
-
 export class OrderService {
 
     static async createOrderFromCart(
@@ -59,6 +57,8 @@ export class OrderService {
             const order = await createOrder(userId, orderData, totalAmount, client);
             if (!order) throw new HttpError("Failed to create order", 500);
 
+
+
             await Promise.all(
                 cartItems.map((cartItem) => {
                     const price = Number(cartItem.price_at_add);
@@ -79,7 +79,7 @@ export class OrderService {
                         offerPrice,
                         subtotal,
                         cartItem.size,
-                        order.status,
+                        "payment_pending",
                         cartItem.image_url,
                         client
                     );
@@ -237,11 +237,13 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                "placed",
+                "payment_pending",
                 product.size || null,
                 product.image_url || null,
                 client
             );
+
+
 
             await client.query("COMMIT");
             return this.getOrderById(order.id, userId);
