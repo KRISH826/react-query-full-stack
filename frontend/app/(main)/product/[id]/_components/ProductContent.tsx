@@ -74,10 +74,12 @@ const ProductContent = ({ product }: { product: Product }) => {
             toast.error("Please select a size")
             return
         }
+        const effectivePrice = activeVariant?.offer_price_override ?? activeVariant?.price_override ?? 0
         const params = new URLSearchParams({
             productId: product.id,
             variantId: activeVariant?.id ?? "",
             quantity: String(quantity),
+            amount: String(effectivePrice * quantity),  // ← ye missing tha
         })
         router.push(`/checkout?${params.toString()}`)
     }
@@ -132,7 +134,6 @@ const ProductContent = ({ product }: { product: Product }) => {
                 )}
             </div>
             <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={14} fontSizeClass="text-xs md:text-base" />
-
             <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                     <CircleCheck className="size-4 text-emerald-600" />
