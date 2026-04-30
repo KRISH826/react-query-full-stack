@@ -198,7 +198,7 @@ const ProductContent = ({ product }: { product: Product }) => {
                                     onClick={() => !outOfStock && setSelectedSize(v.size)}
                                     disabled={outOfStock}
                                     className={`
-                                        flex h-10 min-w-14 px-3 items-center justify-center border text-xs font-medium
+                                        flex h-10 sm:min-w-14 min-w-10 px-3 items-center justify-center border text-xs font-medium
                                         transition-colors duration-200 cursor-pointer select-none
                                         ${isSelected
                                             ? "border-foreground bg-foreground text-background"
