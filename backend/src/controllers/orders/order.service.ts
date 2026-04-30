@@ -237,8 +237,8 @@ export class OrderService {
                 price,
                 offerPrice,
                 subtotal,
-                "payment_pending",
                 product.size || null,
+                "payment_pending",
                 product.image_url || null,
                 client
             );

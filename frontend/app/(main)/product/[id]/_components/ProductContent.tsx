@@ -52,6 +52,8 @@ const ProductContent = ({ product }: { product: Product }) => {
         ? (activeVariant !== undefined ? (activeVariant.stock_quantity ?? 0) <= 0 : false)
         : product.is_track_inventory && product.stock_quantity <= 0;
 
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
+
     const handleAddToCart = async () => {
         if (!activeVariant && hasVariants) {
             toast.error("Please select a size");
@@ -74,10 +76,13 @@ const ProductContent = ({ product }: { product: Product }) => {
             toast.error("Please select a size")
             return
         }
+        setIsBuyNowLoading(true);
+        const effectivePrice = activeVariant?.offer_price_override ?? activeVariant?.price_override ?? 0
         const params = new URLSearchParams({
             productId: product.id,
             variantId: activeVariant?.id ?? "",
             quantity: String(quantity),
+            amount: String(effectivePrice * quantity),  // ← ye missing tha
         })
         router.push(`/checkout?${params.toString()}`)
     }
@@ -98,17 +103,24 @@ const ProductContent = ({ product }: { product: Product }) => {
 
             {/* Price section */}
             <div className="flex items-end gap-3 pb-4 border-b border-border/40">
-                <span className="text-xl md:text-2xl font-semibold text-foreground">
-                    ₹{displayPrice?.toLocaleString()}
-                </span>
+                {
+                    displayPrice && <span className="text-xl md:text-2xl font-semibold text-foreground">
+                        ₹{displayPrice?.toLocaleString()}
+                    </span>
+                }
 
                 {hasDiscount && (
-                    <span className="text-sm text-muted-foreground line-through mb-1">
-                        ₹{originalPrice?.toLocaleString()}
+                    <span
+                        className={
+                            displayPrice
+                                ? "text-sm text-muted-foreground line-through mb-1"
+                                : "text-xl md:text-2xl font-semibold text-foreground"
+                        }
+                    >
+                        ₹{originalPrice?.toLocaleString("en-IN")}
                     </span>
                 )}
-
-                {hasDiscount && (
+                {hasDiscount || !displayPrice && (
                     <span className="ml-2 rounded-sm bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-600 uppercase mb-1">
                         {Math.round(((originalPrice! - displayPrice!) / originalPrice!) * 100)}% off
                     </span>
@@ -125,7 +137,6 @@ const ProductContent = ({ product }: { product: Product }) => {
                 )}
             </div>
             <ProductRating rating={product.avg_rating} reviewCount={product.total_reviews} size={14} fontSizeClass="text-xs md:text-base" />
-
             <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
                 <div className="flex items-center gap-2 text-sm text-foreground">
                     <CircleCheck className="size-4 text-emerald-600" />
@@ -229,8 +240,8 @@ const ProductContent = ({ product }: { product: Product }) => {
 
                 <Buynow
                     onClick={handleBuyNow}
-                    disabled={isOutOfStock || isLoading}
-                    isLoading={false}
+                    disabled={isOutOfStock || isLoading || isBuyNowLoading}
+                    isLoading={isBuyNowLoading}
                 />
             </div>
 
