@@ -98,17 +98,24 @@ const ProductContent = ({ product }: { product: Product }) => {
 
             {/* Price section */}
             <div className="flex items-end gap-3 pb-4 border-b border-border/40">
-                <span className="text-xl md:text-2xl font-semibold text-foreground">
-                    ₹{displayPrice?.toLocaleString()}
-                </span>
+                {
+                    displayPrice && <span className="text-xl md:text-2xl font-semibold text-foreground">
+                        ₹{displayPrice?.toLocaleString()}
+                    </span>
+                }
 
                 {hasDiscount && (
-                    <span className="text-sm text-muted-foreground line-through mb-1">
-                        ₹{originalPrice?.toLocaleString()}
+                    <span
+                        className={
+                            displayPrice
+                                ? "text-sm text-muted-foreground line-through mb-1"
+                                : "text-xl md:text-2xl font-semibold text-foreground"
+                        }
+                    >
+                        ₹{originalPrice?.toLocaleString("en-IN")}
                     </span>
                 )}
-
-                {hasDiscount && (
+                {hasDiscount || !displayPrice && (
                     <span className="ml-2 rounded-sm bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-600 uppercase mb-1">
                         {Math.round(((originalPrice! - displayPrice!) / originalPrice!) * 100)}% off
                     </span>

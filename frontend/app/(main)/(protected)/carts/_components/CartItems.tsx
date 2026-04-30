@@ -74,7 +74,10 @@ const CartItems = ({ cart }: cart) => {
                     </div>
                     <div className="flex items-center gap-4 sm:gap-6">
                         <span className="text-[15px] md:text-lg font-semibold text-gray-900">
-                            ₹{cart.offerPrice}
+                            {
+                                cart.offerPrice ? <>₹{cart.offerPrice}</> : <>₹{cart.price}</>
+                            }
+
                         </span>
                         <DeleteCartProduct id={cart.variantId} />
                     </div>
