@@ -33,13 +33,11 @@ const CheckOutInfo = () => {
     const buyNowParams = {
         productId: searchParams.get("productId") ?? "",
         variantId: searchParams.get("variantId") ?? "",
-        quantity,
+        quantity: Number(searchParams.get("quantity") ?? 1),
         amount: String(unitPrice * quantity),  // ← pass total
     }
     const isCartEmpty = !isBuyNow && (cart?.items?.length ?? 0) === 0
     const [buyNowOrder] = useBuyNowOrderMutation();
-
-
 
     const { data: user } = useGetProfileQuery(undefined, {
         skip: !token,
@@ -91,12 +89,14 @@ const CheckOutInfo = () => {
         try {
             let response;
             if (isBuyNow) {
+                debugger
                 response = await buyNowOrder({
                     ...data,
-                    product_id: buyNowParams?.productId,
+                    productId: buyNowParams?.productId, // ✅ Match backend casing
                     variant_id: buyNowParams.variantId,
                     quantity: buyNowParams.quantity,
                 }).unwrap();
+                debugger;
             }
             else {
                 response = await checkout(data).unwrap()
