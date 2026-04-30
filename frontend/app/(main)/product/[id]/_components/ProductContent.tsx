@@ -52,6 +52,8 @@ const ProductContent = ({ product }: { product: Product }) => {
         ? (activeVariant !== undefined ? (activeVariant.stock_quantity ?? 0) <= 0 : false)
         : product.is_track_inventory && product.stock_quantity <= 0;
 
+    const [isBuyNowLoading, setIsBuyNowLoading] = useState(false);
+
     const handleAddToCart = async () => {
         if (!activeVariant && hasVariants) {
             toast.error("Please select a size");
@@ -74,6 +76,7 @@ const ProductContent = ({ product }: { product: Product }) => {
             toast.error("Please select a size")
             return
         }
+        setIsBuyNowLoading(true);
         const effectivePrice = activeVariant?.offer_price_override ?? activeVariant?.price_override ?? 0
         const params = new URLSearchParams({
             productId: product.id,
@@ -237,8 +240,8 @@ const ProductContent = ({ product }: { product: Product }) => {
 
                 <Buynow
                     onClick={handleBuyNow}
-                    disabled={isOutOfStock || isLoading}
-                    isLoading={false}
+                    disabled={isOutOfStock || isLoading || isBuyNowLoading}
+                    isLoading={isBuyNowLoading}
                 />
             </div>
 

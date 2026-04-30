@@ -127,8 +127,9 @@ const OrderItemCard = ({ item, orderId, order }: Props) => {
                     </div>
                     <div className="flex items-center gap-2">
                         <Button
+                            size="sm"
                             onClick={handleActionButton}
-                            className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gray-900 hover:bg-gray-700 transition-colors px-4 py-2 rounded-lg whitespace-nowrap"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-white bg-gray-900 hover:bg-gray-700 transition-colors whitespace-nowrap"
                         >
                             {actionLabel()}
                             <ChevronRight size={13} />
