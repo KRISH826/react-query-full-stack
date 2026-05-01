@@ -119,7 +119,7 @@ export class PaymentService {
     static async handleWebHookService(payload: any): Promise<void> {
         const event = payload.event;
         const orderId = payload.payload?.payment?.entity?.receipt;
-        if (event === "payment.capture") {
+        if (event === "payment.captured") {
             const client = await pool.connect();
             try {
                 await client.query("BEGIN");
