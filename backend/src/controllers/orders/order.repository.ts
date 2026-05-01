@@ -204,8 +204,6 @@ export async function buyNowProductByid(
     return rows[0] || null;
 }
 
-
-
 export async function markOrderFailed(
     orderId: string,
     db: Pool | PoolClient = pool
@@ -319,4 +317,14 @@ export async function deleteAllOrderItemsByOrderId(orderId: string, db: Pool | P
         `DELETE FROM order_items WHERE order_id = $1`,
         [orderId]
     );
+}
+
+export async function deletePendingOrder(db: Pool | PoolClient = pool) {
+    await db.query(
+        `DELETE FROM orders WHERE status = 'payment_pending'`,
+    );
+    await db.query(
+        `DELETE FROM order_items WHERE status = 'payment_pending'`,
+    );
+
 }
