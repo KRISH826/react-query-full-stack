@@ -49,7 +49,7 @@ const CheckOutInfo = () => {
         formState: { errors },
     } = useForm<CheckOutSchema>({
         resolver: zodResolver(checkOutSchema),
-        defaultValues: {
+        values: {
             shippingAddress: {
                 shipping_address: user?.address || "",
                 city: user?.city || "",

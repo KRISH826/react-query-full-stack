@@ -2,10 +2,9 @@
 
 import { useState } from "react"
 import {
-    useCancelOrderMutation,
-    useCancelPaymentMutation,
     useCreatePaymentMutation,
     useVerifyPaymentMutation,
+    useCancelPaymentMutation,
 } from "@/services/orderApi"
 import { toast } from "sonner"
 import { useClearCartMutation } from "@/services/cartApi"
@@ -58,22 +57,13 @@ const waitForRazorpay = (timeoutMs = 10000) =>
             reject(new Error("Razorpay is only available in the browser"))
             return
         }
-
-        if (window.Razorpay) {
-            resolve()
-            return
-        }
-
+        if (window.Razorpay) { resolve(); return }
         const intervalId = window.setInterval(() => {
-            if (!window.Razorpay) {
-                return
-            }
-
+            if (!window.Razorpay) return
             window.clearInterval(intervalId)
             window.clearTimeout(timeoutId)
             resolve()
         }, 100)
-
         const timeoutId = window.setTimeout(() => {
             window.clearInterval(intervalId)
             reject(new Error("Razorpay SDK failed to load"))
@@ -82,10 +72,9 @@ const waitForRazorpay = (timeoutMs = 10000) =>
 
 export const useRazorpay = () => {
     const [createPayment, { isLoading: isCreatingPayment }] = useCreatePaymentMutation()
-    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation();
-    const [clearCart] = useClearCartMutation();
-    const [cancelOrder] = useCancelOrderMutation();
-    const [cancelPayment] = useCancelPaymentMutation();
+    const [verifyPayment, { isLoading: isVerifyingPayment }] = useVerifyPaymentMutation()
+    const [markPaymentFailed] = useCancelPaymentMutation()
+    const [clearCart] = useClearCartMutation()
 
     const [successData, setSuccessData] = useState<PaymentSuccess | null>(null)
     const [isSuccessOpen, setIsSuccessOpen] = useState(false)
@@ -104,39 +93,15 @@ export const useRazorpay = () => {
     }: RazorpayOptions) => {
         try {
             const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
-            if (!razorpayKey) {
-                throw new Error("Razorpay key is missing")
-            }
+            if (!razorpayKey) throw new Error("Razorpay key is missing")
 
             await waitForRazorpay()
 
-            const paymentData = await createPayment({
-                order_id: orderId,
-                amount,
-            }).unwrap()
-
+            const paymentData = await createPayment({ order_id: orderId, amount }).unwrap()
             const razorpayOrderId = paymentData.payment.razorpay_order_id
-            let paymentCompleted = false
-            let cancellationRequested = false
 
-            const cancelPendingOrder = async (message: string, variant: "warning" | "error") => {
-                if (paymentCompleted || cancellationRequested) {
-                    return
-                }
-                cancellationRequested = true
-                try {
-                    await cancelOrder(orderId).unwrap()
-                } catch {
-                    // Preserve the payment interruption message even if cancellation fails.
-                }
-
-                if (variant === "error") {
-                    toast.error(message)
-                    return
-                }
-
-                toast.warning(message)
-            }
+            // Track if payment.failed fired before ondismiss
+            let paymentFailed = false
 
             const options = {
                 key: razorpayKey,
@@ -145,7 +110,9 @@ export const useRazorpay = () => {
                 name: "ShopNova",
                 description: "Order Payment",
                 order_id: razorpayOrderId,
+
                 handler: async (response: RazorpaySuccessResponse) => {
+                    // ✅ Payment success
                     try {
                         await verifyPayment({
                             order_id: orderId,
@@ -153,27 +120,30 @@ export const useRazorpay = () => {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
                         }).unwrap()
-
-                        paymentCompleted = true
-                        await clearCart().unwrap(); // ✅ move here
-
+                        await clearCart().unwrap()
                         setSuccessData({ orderId, amount })
                         setIsSuccessOpen(true)
                     } catch {
-                        toast.error("Payment verification failed. Please contact support.")
+                        toast.error("Verification failed. If amount was debited, your order will confirm automatically.")
                     }
                 },
+
                 prefill: {
                     name: userName,
                     email: userEmail,
                     contact: userPhone,
                 },
-                theme: {
-                    color: "#111827",
-                },
+                theme: { color: "#111827" },
+
                 modal: {
+                    // NO escape: false — net banking popup needs visibility events to work
                     ondismiss: () => {
-                        toast.warning("Not Added Order Items")
+                        if (paymentFailed) {
+                            // Came back from net banking failure page — already handled
+                            return
+                        }
+                        // Pure dismiss — user closed without paying
+                        // Order stays payment_pending → hidden from list, no action needed
                     },
                 },
             }
@@ -181,8 +151,14 @@ export const useRazorpay = () => {
             const rzp = new window.Razorpay(options)
 
             rzp.on("payment.failed", async (response: RazorpayErrorResponse) => {
-                await cancelPayment(orderId).unwrap();
-                toast.warning(`Payment failed: ${response.error.description}`)
+                // ❌ Net banking / card failure
+                paymentFailed = true
+                try {
+                    await markPaymentFailed(orderId).unwrap()
+                } catch {
+                    // webhook handles in production
+                }
+                toast.error(`Payment failed: ${response.error.description}`)
             })
 
             rzp.open()
