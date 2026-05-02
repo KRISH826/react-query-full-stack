@@ -20,10 +20,8 @@ import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
 import { startProductScheduler } from "./corn/product/product.scheduler";
-import { startOrderScheduler } from "./corn/order/order.scheduler";
 import "./corn/product/product.worker"
 import "./queue/order/order.worker";
-
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -39,7 +37,7 @@ app.use(cors({
     allowedHeaders: "Content-Type,Authorization"
 }));
 
-app.use("/api/payments/webhook", express.raw({ type: "application/json" }), webhookRouter);
+app.use("/api/payments/webhook", webhookRouter);
 
 app.use(express.json(
     {
@@ -74,6 +72,5 @@ app.use(errorHandler);
 app.listen(config.app.port, async () => {
     await startUpCleanScheduler();
     await startProductScheduler();
-    await startOrderScheduler();
     console.log(`Server is running on port ${config.app.port}`);
 });
