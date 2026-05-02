@@ -45,6 +45,9 @@ export class PaymentController {
 
     static async webHookController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
+            console.log("[Webhook] Headers:", req.headers["x-razorpay-signature"])
+            console.log("[Webhook] Body type:", typeof req.body)
+            console.log("[Webhook] Body:", req.body?.toString?.())
             const signature = req.headers["x-razorpay-signature"] as string;
             const rawBody = req.body;
             const expectedSignature = crypto
@@ -52,7 +55,11 @@ export class PaymentController {
                 .update(req.body)
                 .digest("hex");
 
-            if(signature !== expectedSignature) {
+            console.log("[Webhook] Headers:", req.headers["x-razorpay-signature"])
+            console.log("[Webhook] Body type:", typeof req.body)
+            console.log("[Webhook] Body:", req.body?.toString?.())
+            
+            if (signature !== expectedSignature) {
                 return res.status(400).json({ message: "Invalid webhook signature" });
             }
             const parsedBody = JSON.parse(rawBody.toString());
