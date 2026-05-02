@@ -44,7 +44,14 @@ export class PaymentController {
     }
 
     static async webHookController(req: AuthRequest, res: Response, next: NextFunction) {
-        try {
+        let rawBody = ""
+
+        req.on("data", (chunk: Buffer) => {
+            rawBody += chunk.toString()
+        })
+
+        req.on("end", async () => {
+            try {
             console.log("[Webhook] Headers:", req.headers["x-razorpay-signature"])
             console.log("[Webhook] Body type:", typeof req.body)
             console.log("[Webhook] Body:", req.body?.toString?.())
@@ -58,7 +65,7 @@ export class PaymentController {
             console.log("[Webhook] Headers:", req.headers["x-razorpay-signature"])
             console.log("[Webhook] Body type:", typeof req.body)
             console.log("[Webhook] Body:", req.body?.toString?.())
-            
+
             if (signature !== expectedSignature) {
                 return res.status(400).json({ message: "Invalid webhook signature" });
             }
@@ -68,5 +75,7 @@ export class PaymentController {
         } catch (error) {
             next(error);
         }
+        })
+
     }
 }
