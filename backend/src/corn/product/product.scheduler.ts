@@ -6,7 +6,11 @@ export const refreshProductQueue = new Queue('product-refresh-queue', {
     defaultJobOptions: {
         removeOnComplete: true,
         removeOnFail: 100,
-        attempts: 1
+        attempts: 3,
+        backoff: {
+            type: "exponential",
+            delay: 5000
+        }
     }
 })
 

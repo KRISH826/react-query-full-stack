@@ -12,10 +12,14 @@ export const pool = new Pool({
     connectionTimeoutMillis: config.db.connectionTimeoutMillis,
 });
 
+pool.on("error", (error) => {
+    console.error("Unexpected PostgreSQL pool error", error);
+});
 
 export const connectDB = async () => {
     try {
-        await pool.connect();
+        const client = await pool.connect();
+        client.release();
         console.log("Database connected");
     } catch (error) {
         console.log("Database error", error);
