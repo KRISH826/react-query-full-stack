@@ -15,6 +15,7 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { sendOrderConfirmatinMail } from "../email/email.service";
 import { clearCartItems, findCartByUserId } from "../cart/cart.repository";
 import { cache } from "../../utils/cache";
+import { orderQueue } from "../../queue/order/order.queue";
 
 export class PaymentService {
 
@@ -122,6 +123,7 @@ export class PaymentService {
     static async handleWebHookService(payload: any): Promise<void> {
         const event = payload.event;
 
+        // ✅ PAYMENT SUCCESS
         if (event === "payment.captured") {
             const client = await pool.connect();
             try {
@@ -132,14 +134,13 @@ export class PaymentService {
                 const paymentRecord = await findPaymentByRazorpayOrderId(razorpayOrderId);
 
                 if (!paymentRecord) {
-                    console.log("❌ Payment record not found");
                     await client.query("ROLLBACK");
                     return;
                 }
 
                 const orderId = paymentRecord.order_id;
+
                 if (paymentRecord.status === "success") {
-                    console.log("⚠️ Already processed");
                     await client.query("ROLLBACK");
                     return;
                 }
@@ -155,7 +156,11 @@ export class PaymentService {
 
                 await client.query("COMMIT");
 
-                console.log("✅ Order confirmed via webhook");
+                // 🔥 QUEUE EVENT
+                await orderQueue.add("order.confirmed", {
+                    type: "order.confirmed",
+                    orderId,
+                });
 
             } catch (error) {
                 await client.query("ROLLBACK");
@@ -165,24 +170,34 @@ export class PaymentService {
             }
         }
 
+        // ❌ PAYMENT FAILED
         if (event === "payment.failed") {
             const client = await pool.connect();
             try {
                 await client.query("BEGIN");
+
                 const razorpayOrderId = payload.payload.payment.entity.order_id;
 
                 const paymentRecord = await findPaymentByRazorpayOrderId(razorpayOrderId);
 
                 if (!paymentRecord) {
-                    console.log("❌ Payment record not found");
                     await client.query("ROLLBACK");
                     return;
                 }
 
                 const orderId = paymentRecord.order_id;
+
                 await markPaymentFailed(orderId, client);
                 await markOrderFailed(orderId, client);
+
                 await client.query("COMMIT");
+
+                // 🔥 QUEUE EVENT
+                await orderQueue.add("order.failed", {
+                    type: "order.failed",
+                    orderId,
+                });
+
             } catch (error) {
                 await client.query("ROLLBACK");
                 throw error;
