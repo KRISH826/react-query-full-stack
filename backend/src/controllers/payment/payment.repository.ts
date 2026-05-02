@@ -46,3 +46,11 @@ export async function isVerifyPayment(orderId: string, db: Pool | PoolClient = p
     );
     return rows[0];
 }
+
+export async function findPaymentByRazorpayOrderId(razorpayOrderId: string) {
+    const { rows } = await pool.query(
+        `SELECT * FROM payments WHERE razorpay_order_id=$1`,
+        [razorpayOrderId]
+    );
+    return rows[0];
+}

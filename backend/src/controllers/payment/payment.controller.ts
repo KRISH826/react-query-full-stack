@@ -51,8 +51,8 @@ export class PaymentController {
             const signature = req.headers["x-razorpay-signature"] as string;
             const rawBody = req.body;
             const expectedSignature = crypto
-                .createHmac("sha256", config.razorpay.key_secret as string)
-                .update(req.body)
+                .createHmac("sha256", config.razorpay.webhook_secret as string)
+                .update(rawBody)
                 .digest("hex");
 
             console.log("[Webhook] Headers:", req.headers["x-razorpay-signature"])
