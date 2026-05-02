@@ -1,7 +1,6 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { PaymentSuccessDialog } from "@/components/payment/PaymentSuccessDialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -23,7 +22,7 @@ const CheckOutInfo = () => {
     const [checkout] = useCheckOutMutation();
     const searchParams = useSearchParams();
     const { startPolling, order } = useOrderPolling()
-    const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
+    const { initiatePayment } = useRazorpay()
     const paymentStartedForOrderIdRef = useRef<string | null>(null)
     const token = useSelector((state: RootState) => state.auth.accessToken)
     const isBuyNow = searchParams.has("productId");
@@ -220,14 +219,6 @@ const CheckOutInfo = () => {
                 </div>
             </form>
 
-            {successData && (
-                <PaymentSuccessDialog
-                    isOpen={isSuccessOpen}
-                    onClose={closeSuccess}
-                    orderId={successData.orderId}
-                    amount={successData.amount}
-                />
-            )}
         </div>
     )
 }
