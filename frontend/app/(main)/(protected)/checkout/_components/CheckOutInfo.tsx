@@ -1,7 +1,6 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { PaymentSuccessDialog } from "@/components/payment/PaymentSuccessDialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Field, FieldError, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
@@ -23,7 +22,7 @@ const CheckOutInfo = () => {
     const [checkout] = useCheckOutMutation();
     const searchParams = useSearchParams();
     const { startPolling, order } = useOrderPolling()
-    const { initiatePayment, isSuccessOpen, successData, closeSuccess } = useRazorpay()
+    const { initiatePayment } = useRazorpay()
     const paymentStartedForOrderIdRef = useRef<string | null>(null)
     const token = useSelector((state: RootState) => state.auth.accessToken)
     const isBuyNow = searchParams.has("productId");
@@ -62,55 +61,36 @@ const CheckOutInfo = () => {
         },
     })
 
-    useEffect(() => {
-        if (!order || paymentStartedForOrderIdRef.current === order.id) {
-            return
-        }
-
-        paymentStartedForOrderIdRef.current = order.id
-
-        void initiatePayment({
-            orderId: order.id,
-            amount: order.totalamount,
-            userName: order.shippingaddress.shipping_address,
-            userEmail: order.email || "",
-            userPhone: order.phone,
-        }).catch(() => {
-            paymentStartedForOrderIdRef.current = null
-        })
-    }, [initiatePayment, order])
-
     const onSubmit = async (data: CheckOutSchema) => {
-        if (isCartEmpty) {
-            toast.error("Your cart is empty. Add items before placing an order.")
-            return
-        }
-
         try {
             let response;
+
             if (isBuyNow) {
-                debugger
                 response = await buyNowOrder({
                     ...data,
-                    productId: buyNowParams?.productId, // ✅ Match backend casing
+                    productId: buyNowParams.productId,
                     variant_id: buyNowParams.variantId,
                     quantity: buyNowParams.quantity,
                 }).unwrap();
-                debugger;
+            } else {
+                response = await checkout(data).unwrap();
             }
-            else {
-                response = await checkout(data).unwrap()
-            }
-            startPolling(response.jobId)
-            toast.success("Order is being processed...")
-        } catch (error: unknown) {
-            const errorMessage =
-                (error as { data?: { message?: string } })?.data?.message ||
-                "Failed to place order. Please try again."
-            toast.error(errorMessage)
-        }
-    }
 
+            const order = response.order;
+
+            await initiatePayment({
+                orderId: order.id,
+                amount: order.totalamount,
+                userName: order.shippingaddress.shipping_address,
+                userEmail: order.email || "",
+                userPhone: order.phone,
+            });
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (error) {
+            toast.error("Failed to place order");
+        }
+    };
     return (
         <div className="mx-auto w-full">
             <form
@@ -239,14 +219,6 @@ const CheckOutInfo = () => {
                 </div>
             </form>
 
-            {successData && (
-                <PaymentSuccessDialog
-                    isOpen={isSuccessOpen}
-                    onClose={closeSuccess}
-                    orderId={successData.orderId}
-                    amount={successData.amount}
-                />
-            )}
         </div>
     )
 }

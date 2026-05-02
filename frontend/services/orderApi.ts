@@ -21,7 +21,7 @@ interface OrderDetailResponse {
 
 export const orderApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
-        checkOut: builder.mutation<{ message: string; jobId: string }, CreateOrderRequest>({
+        checkOut: builder.mutation<{ message: string; order: OrderResponseDTO }, CreateOrderRequest>({
             query: (order) => ({
                 url: "orders/checkout",
                 method: "POST",
@@ -62,7 +62,7 @@ export const orderApi = baseApi.injectEndpoints({
                 { type: "Order", id: "ORDER_DETAIL" },
             ],
         }),
-        buyNowOrder: builder.mutation<{ message: string; jobId: string }, BuyNowOrderRequest>({
+        buyNowOrder: builder.mutation<{ message: string; order: OrderResponseDTO }, BuyNowOrderRequest>({
             query: (order) => ({
                 url: "orders/buy-now",
                 method: "POST",

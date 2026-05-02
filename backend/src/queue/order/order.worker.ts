@@ -1,40 +1,36 @@
-import { Job, Worker } from "bullmq";
-import { OrderData } from "./order.queue";
-import { OrderService } from "../../controllers/orders/order.service";
+import { Worker } from "bullmq";
 import { redisConnection } from "../../db/redis";
+import { getOrderWithItems, markOrderFailed } from "../../controllers/orders/order.repository";
+import { sendOrderConfirmatinMail } from "../../controllers/email/email.service";
+import { clearCartItems, findCartByUserId } from "../../controllers/cart/cart.repository";
+import { cache } from "../../utils/cache";
 
-const orderWorker = new Worker<OrderData>('order-queue', async (job: Job<OrderData>) => {
+new Worker(
+  "order-events-queue",
+  async (job) => {
     const data = job.data;
-    if(data.type === "cart") {
-        const order = await OrderService.createOrderFromCart(data.userId, data.orderData);
-        return order;
+
+    if (data.type === "order.confirmed") {
+      const { orderId } = data;
+
+      const { order, items } = await getOrderWithItems(orderId);
+      if (!order) return;
+
+      if (order.user_id) {
+        const cart = await findCartByUserId(order.user_id);
+        if (cart) await clearCartItems(cart.id);
+
+        await cache.delete(`cart:${order.user_id}`);
+      }
+
+      setImmediate(() => {
+        sendOrderConfirmatinMail(order, items, order.email);
+      });
     }
 
-    if(data.type === "buy-now") {
-        const order = await OrderService.buyNowService(data.productId, data.orderData, data.userId);
-        return order;
+    if (data.type === "order.failed") {
+      await markOrderFailed(data.orderId);
     }
-},
-    {
-        connection: redisConnection,
-        concurrency: 20,
-        limiter: {
-            max: 100,
-            duration: 1000
-        }
-    }
+  },
+  { connection: redisConnection }
 );
-
-orderWorker.on("completed", (job) => {
-    console.log(`[OrderWorker] Job ${job.id} completed — order created`);
-});
- 
-orderWorker.on("failed", (job, err) => {
-    console.error(`[OrderWorker] Job ${job?.id} failed:`, err.message);
-});
- 
-orderWorker.on("error", (err) => {
-    console.error("[OrderWorker] Worker error:", err);
-});
-
-export default orderWorker;
