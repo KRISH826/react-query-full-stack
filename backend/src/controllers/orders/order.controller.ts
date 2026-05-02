@@ -6,6 +6,8 @@ import { OrderStatus } from "../../models/order";
 import { orderQueue } from "../../queue/order/order.queue";
 
 export class OrderController {
+    // controllers/order.controller.ts
+
     static async createOrderController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
             const userId = req.user?.id;
