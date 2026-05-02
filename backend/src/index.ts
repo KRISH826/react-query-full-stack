@@ -39,7 +39,7 @@ app.use(cors({
     allowedHeaders: "Content-Type,Authorization"
 }));
 
-app.use("/api/payments/webhook", webhookRouter);
+app.use("/api/payments/webhook", express.raw({ type: "application/json" }), webhookRouter);
 
 app.use(express.json(
     {
