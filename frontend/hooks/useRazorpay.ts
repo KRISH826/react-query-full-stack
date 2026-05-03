@@ -109,7 +109,7 @@ export const useRazorpay = () => {
             },
             onFallback: () => {
                 toast("Payment processing… check orders page");
-                router.push("/orders");
+                router.push(`/order-success/${orderId}`);
             },
         });
     };
