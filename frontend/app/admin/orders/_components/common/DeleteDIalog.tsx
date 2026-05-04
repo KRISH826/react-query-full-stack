@@ -17,13 +17,13 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const DeleteAction = ({ orderId, itemId }: { orderId: string, itemId: string }) => {
+export const DeleteAction = ({ orderId }: { orderId: string }) => {
     const [deleteOrderItem, { isLoading }] = useDeleteOrderItemMutation();
     const [open, setOpen] = React.useState(false);
 
     const handleDelete = async () => {
         try {
-            await deleteOrderItem({ orderId, itemId }).unwrap();
+            await deleteOrderItem({ orderId }).unwrap();
             toast.success("Item deleted successfully");
             setOpen(false);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

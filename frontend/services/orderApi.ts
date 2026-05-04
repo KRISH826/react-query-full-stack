@@ -76,6 +76,17 @@ export const orderApi = baseApi.injectEndpoints({
 
         }),
 
+        deleteOrderItem: builder.mutation<{ message: string }, { orderId: string }>({
+            query: () => ({
+                url: "/otderId",
+                method: "DELETE",
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
+
         // payment
         createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
             query: (body) => ({ url: "payments/create-payment", method: "POST", body }),
@@ -106,16 +117,6 @@ export const orderApi = baseApi.injectEndpoints({
             transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
-        deleteOrderItem: builder.mutation<{ success: boolean; message: string }, { orderId: string; itemId: string }>({
-            query: ({ orderId, itemId }) => ({
-                url: `orders/${orderId}/items/${itemId}`,
-                method: "DELETE",
-            }),
-            invalidatesTags: [
-                { type: "Order", id: "LIST" },
-                { type: "Order", id: "ORDER_DETAIL" },
-            ],
-        }),
     }),
 });
 
@@ -131,5 +132,5 @@ export const {
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
     useLazyGetOrderJobStatusQuery,
-    useCancelPaymentMutation
+    useCancelPaymentMutation,
 } = orderApi;
