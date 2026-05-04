@@ -77,8 +77,8 @@ export const orderApi = baseApi.injectEndpoints({
         }),
 
         deleteOrderItem: builder.mutation<{ message: string }, { orderId: string }>({
-            query: () => ({
-                url: "/otderId",
+            query: ({ orderId }) => ({
+                url: `orders/${orderId}`,
                 method: "DELETE",
             }),
             invalidatesTags: [

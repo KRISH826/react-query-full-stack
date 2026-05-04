@@ -18,7 +18,6 @@ router.delete("/:orderId/items/:itemId", requireAuth, requireRole("customer"), O
 router.delete("/:orderId", requireAuth, requireRole("admin"), OrderController.deleteOrderController);
 router.patch("/:orderId/cancel", requireAuth, requireRole("customer"), OrderController.cancelOrderController);
 router.patch("/:orderId/status", requireAuth, requireRole("admin"), OrderController.updateOrderStatusController);
-
 router.patch("/:orderId/items/:itemId/status", requireAuth, requireRole("admin"), OrderController.updateOrderItemStatusController);
 
 

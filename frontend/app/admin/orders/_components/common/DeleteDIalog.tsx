@@ -53,7 +53,7 @@ export const DeleteAction = ({ orderId }: { orderId: string }) => {
             <AlertDialogContent className="sm:max-w-[425px]">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-lg text-destructive">
-                        Are you absolutely sure?
+                        Are you absolutely sure? {orderId}
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-base">
                         This will delete the order item from the system and cancel it.
