@@ -1,6 +1,7 @@
 import { CreateOrderRequest, OrderJobStatusResponse, OrderResponseDTO, BuyNowOrderRequest } from "@/types/order";
 import { baseApi } from "./baseQuery";
 import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } from "@/types/payment";
+import { url } from "inspector";
 
 interface OrdersFullResponse {
     orders: OrderResponseDTO[];
@@ -87,6 +88,18 @@ export const orderApi = baseApi.injectEndpoints({
             ],
         }),
 
+        updateOrderStatus: builder.mutation<{ message: string }, { orderId: string; itemId: string; status: string }>({
+            query: ({ orderId, itemId, status }) => ({
+                url: `orders/${orderId}/items/${itemId}/status`,
+                method: "PATCH",
+                body: { status }
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ]
+        }),
+
         // payment
         createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
             query: (body) => ({ url: "payments/create-payment", method: "POST", body }),
@@ -131,6 +144,7 @@ export const {
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
+    useUpdateOrderStatusMutation,
     useLazyGetOrderJobStatusQuery,
     useCancelPaymentMutation,
 } = orderApi;
