@@ -54,7 +54,7 @@ export function DeleteCategoryDialog({ id }: DeleteCategoryProps) {
       </AlertDialogTrigger>
       <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-lg text-destructive">
+          <AlertDialogTitle className="text-lg">
             Are you absolutely sure?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-base">
