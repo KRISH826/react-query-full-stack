@@ -181,7 +181,6 @@ export class OrderService {
             const orderItem = await findOrderItemById(itemId, client);
             if (!order) throw new HttpError("Order not found", 404);
             if (!orderItem) throw new HttpError("Order item not found", 404);
-            if (order.user_id !== userId) throw new HttpError("Unauthorized", 401);
 
             await updateOrderItemStatus(itemId, status, client);
 

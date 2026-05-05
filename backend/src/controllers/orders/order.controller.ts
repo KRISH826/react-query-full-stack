@@ -201,6 +201,7 @@ export class OrderController {
 
     static async updateOrderItemStatusController(req: AuthRequest, res: Response, next: NextFunction) {
         try {
+            console.log("BODY:", req.body);
             const userId = req.user?.id;
             if (!userId) {
                 throw new HttpError("Unauthorized", 401);
@@ -208,6 +209,7 @@ export class OrderController {
             const orderId = req.params.orderId as string;
             const itemId = req.params.itemId as string;
             const status = req.body.status as OrderStatus;
+            console.log("Params:", { orderId, itemId, status });
             if (!orderId || !itemId || !status) {
                 throw new HttpError("Order ID, Item ID and status are required", 400);
             }
