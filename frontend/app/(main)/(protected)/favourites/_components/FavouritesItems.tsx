@@ -22,6 +22,11 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
     const activeVariant = product.variants?.[0];
     const offerPrice = activeVariant?.offer_price_override;
     const originalPrice = activeVariant?.price_override;
+    const displayPrice = offerPrice ?? originalPrice;
+    const hasDiscount = offerPrice && originalPrice && originalPrice > offerPrice;
+    const discountPercent = hasDiscount
+        ? Math.round(((originalPrice - offerPrice) / originalPrice) * 100)
+        : 0;
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -33,20 +38,19 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
             }).unwrap();
             toast.success("Added to bag");
         } catch (error: unknown) {
-            toast.error("Failed to add");
             const err = error as { data?: { message?: string } };
-            const errorMessage = err?.data?.message || "Failed to Add Favourite.";
+            const errorMessage = err?.data?.message || "Failed to add item.";
             toast.error(errorMessage);
         }
     };
 
     return (
-        <div className="group flex flex-col sm:flex-row items-center gap-6 p-5 bg-background rounded-2xl border border-border transition-all hover:shadow-sm w-full">
+        <div className="group flex gap-4 p-4 sm:p-5 bg-background rounded-2xl border border-border transition-all duration-200 hover:shadow-md hover:border-border/80 w-full">
 
-            {/* Image Box */}
+            {/* Image */}
             <div
-                className="relative h-40 w-40 shrink-0 overflow-hidden rounded-xl bg-secondary/20 cursor-pointer border border-border/50"
                 onClick={() => router.push(`/product/${item.product_id}`)}
+                className="relative shrink-0 h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 overflow-hidden rounded-xl bg-secondary/20 cursor-pointer border border-border/40"
             >
                 <Image
                     src={image}
@@ -56,53 +60,60 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                 />
             </div>
 
-            {/* Info Section */}
-            <div className="flex flex-1 flex-col w-full">
-                <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">
-                            {product.brand}
-                        </span>
+            {/* Content */}
+            <div className="flex flex-1 min-w-0 flex-col justify-between gap-3">
+
+                {/* Top Row: Brand + Name + Delete */}
+                <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 space-y-0.5">
+                        {product.brand && (
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
+                                {product.brand}
+                            </p>
+                        )}
                         <h2
                             onClick={() => router.push(`/product/${item.product_id}`)}
-                            className="text-xl font-semibold text-foreground cursor-pointer hover:underline underline-offset-4"
+                            className="text-sm sm:text-base font-semibold text-foreground cursor-pointer hover:underline underline-offset-4 line-clamp-2 leading-snug"
                         >
                             {product.productname}
                         </h2>
                     </div>
-                    {/* Your Delete Dialog Trigger */}
-                    <DeleteDialog productId={item.product_id} />
+                    <div className="shrink-0">
+                        <DeleteDialog productId={item.product_id} />
+                    </div>
                 </div>
 
-                {/* Description */}
+                {/* Bottom Row: Price + Button */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
 
-                {/* Price & Action Row */}
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <span className="text-2xl font-bold text-foreground">
-                            ₹{(offerPrice ?? originalPrice)?.toLocaleString()}
+                    {/* Price */}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-lg sm:text-xl font-bold text-foreground">
+                            ₹{displayPrice?.toLocaleString("en-IN")}
                         </span>
-                        {offerPrice && originalPrice && originalPrice > offerPrice && (
-                            <span className="text-sm text-muted-foreground line-through opacity-60">
-                                ₹{originalPrice.toLocaleString()}
-                            </span>
-                        )}
-                        {offerPrice && originalPrice && originalPrice > offerPrice && (
-                            <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded">
-                                {Math.round(((originalPrice - offerPrice) / originalPrice) * 100)}% OFF
-                            </span>
+                        {hasDiscount && (
+                            <>
+                                <span className="text-xs sm:text-sm text-muted-foreground line-through">
+                                    ₹{originalPrice.toLocaleString("en-IN")}
+                                </span>
+                                <span className="text-[10px] sm:text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
+                                    {discountPercent}% OFF
+                                </span>
+                            </>
                         )}
                     </div>
 
+                    {/* Add to Bag */}
                     <Button
                         onClick={handleAddToCart}
                         disabled={isAddingToCart}
-                        className="h-11 px-6! rounded-md bg-primary text-primary-foreground font-semibold cursor-pointer shadow-sm hover:opacity-90 active:scale-95 disabled:opacity-50"
+                        size="sm"
+                        className="h-9 sm:h-10 px-4 sm:px-5 rounded-lg font-semibold text-xs sm:text-sm shrink-0"
                     >
                         {isAddingToCart ? (
-                            <Spinner className="size-4 mr-0.5" />
+                            <Spinner className="size-3.5 mr-1.5" />
                         ) : (
-                            <ShoppingBag className="size-4 mr-0.5" />
+                            <ShoppingBag className="size-3.5 mr-1.5" />
                         )}
                         Add to Bag
                     </Button>

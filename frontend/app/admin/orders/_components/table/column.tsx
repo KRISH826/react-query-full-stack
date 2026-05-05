@@ -50,7 +50,7 @@ export const columns: ColumnDef<FlatOrderItem & { orderId: string }>[] = [
             return (
                 <div className="flex items-center gap-2">
                     <UpdateStatusAction orderId={row.original.orderId} itemId={row.original.id} currentStatus={row.original.status || 'placed'} />
-                    <DeleteAction orderId={row.original.orderId} itemId={row.original.id} />
+                    <DeleteAction orderId={row.original.orderId} />
                 </div>
             )
         }

@@ -17,13 +17,13 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export const DeleteAction = ({ orderId, itemId }: { orderId: string, itemId: string }) => {
+export const DeleteAction = ({ orderId }: { orderId: string }) => {
     const [deleteOrderItem, { isLoading }] = useDeleteOrderItemMutation();
     const [open, setOpen] = React.useState(false);
 
     const handleDelete = async () => {
         try {
-            await deleteOrderItem({ orderId, itemId }).unwrap();
+            await deleteOrderItem({ orderId }).unwrap();
             toast.success("Item deleted successfully");
             setOpen(false);
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -53,7 +53,7 @@ export const DeleteAction = ({ orderId, itemId }: { orderId: string, itemId: str
             <AlertDialogContent className="sm:max-w-[425px]">
                 <AlertDialogHeader>
                     <AlertDialogTitle className="text-lg text-destructive">
-                        Are you absolutely sure?
+                        Are you absolutely sure? {orderId}
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-base">
                         This will delete the order item from the system and cancel it.

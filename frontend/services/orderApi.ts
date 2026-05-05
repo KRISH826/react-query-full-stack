@@ -1,6 +1,7 @@
 import { CreateOrderRequest, OrderJobStatusResponse, OrderResponseDTO, BuyNowOrderRequest } from "@/types/order";
 import { baseApi } from "./baseQuery";
 import { CreatePaymentRequest, CreatePaymentResponse, VerifyPaymentRequest } from "@/types/payment";
+import { url } from "inspector";
 
 interface OrdersFullResponse {
     orders: OrderResponseDTO[];
@@ -76,6 +77,29 @@ export const orderApi = baseApi.injectEndpoints({
 
         }),
 
+        deleteOrderItem: builder.mutation<{ message: string }, { orderId: string }>({
+            query: ({ orderId }) => ({
+                url: `orders/${orderId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ],
+        }),
+
+        updateOrderStatus: builder.mutation<{ message: string }, { orderId: string; itemId: string; status: string }>({
+            query: ({ orderId, itemId, status }) => ({
+                url: `orders/${orderId}/items/${itemId}/status`,
+                method: "PATCH",
+                body: { status }
+            }),
+            invalidatesTags: [
+                { type: "Order", id: "LIST" },
+                { type: "Order", id: "ORDER_DETAIL" },
+            ]
+        }),
+
         // payment
         createPayment: builder.mutation<CreatePaymentResponse, CreatePaymentRequest>({
             query: (body) => ({ url: "payments/create-payment", method: "POST", body }),
@@ -106,16 +130,6 @@ export const orderApi = baseApi.injectEndpoints({
             transformResponse: (response: { message: string; orders: OrdersFullResponse }) => response.orders.orders,
             providesTags: [{ type: "Order", id: "LIST" }],
         }),
-        deleteOrderItem: builder.mutation<{ success: boolean; message: string }, { orderId: string; itemId: string }>({
-            query: ({ orderId, itemId }) => ({
-                url: `orders/${orderId}/items/${itemId}`,
-                method: "DELETE",
-            }),
-            invalidatesTags: [
-                { type: "Order", id: "LIST" },
-                { type: "Order", id: "ORDER_DETAIL" },
-            ],
-        }),
     }),
 });
 
@@ -130,6 +144,7 @@ export const {
     useCancelOrderItemsMutation,
     useGetAllOrdersQuery,
     useDeleteOrderItemMutation,
+    useUpdateOrderStatusMutation,
     useLazyGetOrderJobStatusQuery,
-    useCancelPaymentMutation
+    useCancelPaymentMutation,
 } = orderApi;
