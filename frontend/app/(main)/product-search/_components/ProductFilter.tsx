@@ -7,24 +7,41 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
 import { Product } from "@/types/product";
+import { ProductFilterResponse } from "@/types/filter";
 
 interface ProductFilterProps {
-    data: Product[] | undefined;
+    filters: ProductFilterResponse | undefined;
+    productsCount: number;
+
     selectedCategories: string[];
+
     toggleCategory: (name: string) => void;
+
     selectedSizes: string[];
+
     toggleSize: (size: string) => void;
+
     selectedRating: number | null;
-    setSelectedRating: (rating: number | null | ((prev: number | null) => number | null)) => void;
+
+    setSelectedRating: (
+        rating: number | null |
+            ((prev: number | null) => number | null)
+    ) => void;
+
     priceLimit: number;
+
     setPriceLimit: (price: number) => void;
+
     clearAllFilters: () => void;
+
     activeFilterCount: number;
+
     isMobile?: boolean;
 }
 
 const ProductFilter = ({
-    data,
+    filters,
+    productsCount,
     selectedCategories,
     toggleCategory,
     selectedSizes,
@@ -35,44 +52,8 @@ const ProductFilter = ({
     setPriceLimit,
     clearAllFilters,
     activeFilterCount,
-    isMobile = false,
+    isMobile = false
 }: ProductFilterProps) => {
-    const categoryCounts = useMemo(() => {
-        const counts = new Map<string, number>();
-
-        (data ?? []).forEach((product) => {
-            product.categories?.forEach((category) => {
-                counts.set(category.name, (counts.get(category.name) ?? 0) + 1);
-            });
-        });
-
-        return counts;
-    }, [data]);
-
-    const categories = useMemo(() => {
-        if (categoryCounts.size > 0) {
-            return [...categoryCounts.keys()].slice(0, 10);
-        }
-        return []
-    }, [categoryCounts]);
-
-    const allPrices = useMemo(() => {
-        return (data ?? [])
-            .map((product) => product.variants?.[0]?.offer_price_override ?? product.variants?.[0]?.price_override)
-            .filter((price): price is number => typeof price === "number" && !Number.isNaN(price));
-    }, [data]);
-
-    const minPrice = useMemo(() => {
-        if (allPrices.length === 0) return 0;
-        return Math.floor(Math.min(...allPrices));
-    }, [allPrices]);
-
-    const maxPrice = useMemo(() => {
-        if (allPrices.length === 0) return 10000;
-        return Math.ceil(Math.max(...allPrices));
-    }, [allPrices]);
-
-    const sliderMax = useMemo(() => Math.max(maxPrice, minPrice + 1), [maxPrice, minPrice]);
 
     return (
         <div
@@ -105,7 +86,7 @@ const ProductFilter = ({
                     {activeFilterCount} active
                 </span>
                 <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-                    {data?.length ?? 0} results
+                    {filters?.length ?? 0} results
                 </span>
             </div>
 
@@ -117,21 +98,21 @@ const ProductFilter = ({
                     </div>
 
                     <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
-                        {categories.map((category) => (
+                        {filters?.categories?.map((category) => (
                             <label
-                                key={category}
+                                key={category.name}
                                 className="flex cursor-pointer items-center justify-between rounded-xl px-2 py-2 transition-colors hover:bg-stone-50"
                             >
                                 <div className="flex items-center gap-3">
                                     <Checkbox
-                                        checked={selectedCategories.includes(category)}
-                                        onCheckedChange={() => toggleCategory(category)}
+                                        checked={selectedCategories.includes(category.name)}
+                                        onCheckedChange={() => toggleCategory(category.name)}
                                     />
-                                    <span className="text-sm text-foreground">{category}</span>
+                                    <span className="text-sm text-foreground">{category.name}</span>
                                 </div>
 
                                 <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                                    {categoryCounts.get(category) ?? 0}
+                                    {category.count}
                                 </span>
                             </label>
                         ))}
@@ -149,16 +130,16 @@ const ProductFilter = ({
                     </div>
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Rs {minPrice.toLocaleString()}</span>
-                        <span>Rs {sliderMax.toLocaleString()}</span>
+                        <span>Rs {filters?.priceRange.min}</span>
+                        <span>Rs {filters?.priceRange.max}</span>
                     </div>
 
                     <Slider
                         value={[priceLimit]}
-                        min={minPrice}
-                        max={sliderMax}
+                        min={filters?.priceRange.min || 0}
+                        max={filters?.priceRange.max || 10000}
                         step={100}
-                        onValueChange={(value) => setPriceLimit(value[0] ?? minPrice)}
+                        onValueChange={(value) => setPriceLimit(value[0] ?? 0)}
                         className="w-full"
                     />
 
@@ -177,30 +158,33 @@ const ProductFilter = ({
                     </div>
 
                     <div className="space-y-1">
-                        {[4, 3, 2].map((rating) => (
-                            <button
-                                key={rating}
-                                type="button"
-                                onClick={() => setSelectedRating((prev) => (prev === rating ? null : rating))}
-                                className={`
-                                    flex w-full items-center justify-between rounded-xl px-2 py-2.5 text-sm transition-colors
-                                    ${selectedRating === rating
-                                        ? "bg-stone-100 text-foreground"
-                                        : "text-foreground hover:bg-stone-50"
-                                    }
-                                `}
-                            >
-                                <span className="flex items-center gap-1">
-                                    {Array.from({ length: 5 }).map((_, idx) => (
-                                        <Star
-                                            key={idx}
-                                            className={`size-3.5 ${idx < rating ? "fill-current" : ""}`}
-                                        />
-                                    ))}
-                                </span>
-                                <span className="text-xs font-medium">&amp; up</span>
-                            </button>
-                        ))}
+                        {filters?.ratings?.map((item) => {
+                            const ratingValue = Number(item.rating);
+                            return (
+                                <button
+                                    key={item.rating}
+                                    type="button"
+                                    onClick={() => setSelectedRating((prev) => (prev === ratingValue ? null : ratingValue))}
+                                    className={`
+                                        flex w-full items-center justify-between rounded-xl px-2 py-2.5 text-sm transition-colors
+                                        ${selectedRating === ratingValue
+                                            ? "bg-stone-100 text-foreground"
+                                            : "text-foreground hover:bg-stone-50"
+                                        }
+                                    `}
+                                >
+                                    <span className="flex items-center gap-1">
+                                        {Array.from({ length: 5 }).map((_, idx) => (
+                                            <Star
+                                                key={idx}
+                                                className={`size-3.5 ${idx < ratingValue ? "fill-current" : ""}`}
+                                            />
+                                        ))}
+                                    </span>
+                                    <span className="text-xs font-medium">&amp; up <span className="text-[10px] text-muted-foreground ml-1">({item.count})</span></span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </section>
 
