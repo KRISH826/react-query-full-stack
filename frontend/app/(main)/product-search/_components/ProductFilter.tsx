@@ -53,8 +53,7 @@ const ProductFilter = ({
         if (categoryCounts.size > 0) {
             return [...categoryCounts.keys()].slice(0, 10);
         }
-
-        return ["T-Shirts", "Shirts", "Jeans", "Jackets", "Hoodies", "Shoes"];
+        return []
     }, [categoryCounts]);
 
     const allPrices = useMemo(() => {
