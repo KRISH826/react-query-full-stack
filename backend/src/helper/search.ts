@@ -13,7 +13,6 @@ export function parseSearchQuery(search: string) {
     if (lower.includes("women")) {
         result.gender = "FEMALE";
     }
-
     const keyword = lower
         .replace(/under\s*\d+/g, "")
         .replace(/men|women/g, "")

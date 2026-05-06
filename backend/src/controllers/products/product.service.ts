@@ -18,6 +18,7 @@ export class ProductService {
         await cache.delPattern(`products:*`);
     }
 
+
     static async createProductService(product: CreateProductDTO, files?: Express.Multer.File[]): Promise<ProductWithImagesDTO | null> {
         if (
             !product.productname ||
