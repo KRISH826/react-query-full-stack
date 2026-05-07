@@ -1,130 +1,108 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { SearchParams } from "../../models/search";
+import { ProductWithImagesDTO } from "../../models/product";
 
-export const searchProductsQuery = async (params: SearchParams, db: Pool | PoolClient = pool) => {
-    const {
-        keyword, gender, brand, size,
-        min_price, max_price, rating,
-        page = 1, limit = 20
-    } = params;
-
-    const offset = (page - 1) * limit;
+export const searchProductQuery = async (filters: any, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO[]> => {
+    const { keyword, gender, max_price, limit = 40 } = filters;
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
-    let idx = 1;
+    let i = 1;
     let scoreSelect = "0 AS score";
-    let orderBy = "p.created_at DESC";
+    let orderClause = "ORDER BY p.created_at DESC";
 
-    // ── Full-text search ──────────────────────────────────────────────
     if (keyword) {
+        // Category hata diya, sirf Name, Description aur Brand ko weightage di hai
         scoreSelect = `(
-      ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${idx})) * 0.7 +
-      similarity(p.productname, $${idx}) * 0.3
-    ) AS score`;
+            (ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.6) + 
+            (GREATEST(
+                similarity(p.productname, $${i}),
+                similarity(COALESCE(p.description, ''), $${i}),
+                similarity(COALESCE(p.brand, ''), $${i}),
+                word_similarity(p.productname, $${i})
+            ) * 0.4) + 
+            (GREATEST(
+                COALESCE((SELECT MAX(similarity(pi.image_url, $${i})) FROM product_images pi WHERE pi.product_id = p.id), 0),
+                COALESCE((SELECT MAX(similarity(v.sku, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0),
+                COALESCE((SELECT MAX(similarity(v.size, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0)
+            ) * 0.4)
+        ) AS score`;
 
+        // Yahan se bhi category ki ILIKE aur similarity conditions hata di
         conditions.push(`(
-      p.search_vector @@ websearch_to_tsquery('english', $${idx})
-      OR p.productname              ILIKE '%' || $${idx} || '%'
-      OR COALESCE(p.brand, '')      ILIKE '%' || $${idx} || '%'
-      OR COALESCE(p.description,'') ILIKE '%' || $${idx} || '%'
-    )`);
+            p.search_vector @@ websearch_to_tsquery('english', $${i})
+            OR EXISTS (
+                SELECT 1
+                FROM unnest(string_to_array($${i}, ' ')) AS kw
+                WHERE word_similarity(p.productname, kw) > 0.15
+                OR word_similarity(COALESCE(p.description, ''), kw) > 0.15
+                OR word_similarity(COALESCE(p.brand, ''), kw) > 0.15
+            )
+            OR p.productname ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.description, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(p.brand, '') ILIKE '%' || $${i} || '%'
+        )`);
 
-        orderBy = "score DESC, p.created_at DESC";
+        orderClause = "ORDER BY score DESC, p.created_at DESC";
         values.push(keyword);
-        idx++;
+        i++;
     }
 
-    // ── Gender ───────────────────────────────────────────────────────
     if (gender) {
-        conditions.push(`p.gender IN ($${idx}::gender_enum, 'UNISEX'::gender_enum)`);
+        conditions.push(`p.gender IN ($${i}::gender_enum, 'UNISEX'::gender_enum)`);
         values.push(gender);
-        idx++;
+        i++;
     }
 
-    // ── Brand ────────────────────────────────────────────────────────
-    if (brand) {
-        conditions.push(`p.brand ILIKE $${idx}`);
-        values.push(brand);
-        idx++;
-    }
-
-    // ── Rating ───────────────────────────────────────────────────────
-    if (rating) {
-        conditions.push(`p.avg_rating >= $${idx}`);
-        values.push(rating);
-        idx++;
-    }
-
-    // ── Price & Size (one EXISTS = one subquery) ──────────────────────
-    if (size || min_price !== undefined || max_price !== undefined) {
-        const variantConds: string[] = [];
-
-        if (size) {
-            variantConds.push(`v.size = $${idx}`);
-            values.push(size);
-            idx++;
-        }
-        if (min_price !== undefined) {
-            variantConds.push(`COALESCE(v.offer_price_override, v.price_override) >= $${idx}`);
-            values.push(min_price);
-            idx++;
-        }
-        if (max_price !== undefined) {
-            variantConds.push(`COALESCE(v.offer_price_override, v.price_override) <= $${idx}`);
-            values.push(max_price);
-            idx++;
-        }
-
+    if (max_price) {
         conditions.push(`EXISTS (
-      SELECT 1 FROM product_variants v
-      WHERE v.product_id = p.id
-        AND ${variantConds.join(" AND ")}
-    )`);
+            SELECT 1 FROM product_variants pv 
+            WHERE pv.product_id = p.id 
+            AND COALESCE(pv.offer_price_override, pv.price_override) <= $${i}
+        )`);
+        values.push(max_price);
+        i++;
     }
 
-    values.push(limit, offset);
+    values.push(limit);
 
     const query = `
-    WITH matched AS (
-      SELECT p.*, ${scoreSelect}
-      FROM products p
-      WHERE ${conditions.join(" AND ")}
-      ORDER BY ${orderBy}
-      LIMIT $${idx} OFFSET $${idx + 1}
-    )
-    SELECT
-      m.*,
-      COALESCE(img.images,  '[]'::json) AS images,
-      COALESCE(cat.categories, '[]'::json) AS categories,
-      COALESCE(var.variants,'[]'::json) AS variants
-    FROM matched m
+        WITH matched_products AS (
+            SELECT p.*, ${scoreSelect}
+            FROM products p
+            WHERE ${conditions.join(" AND ")}
+            ${orderClause}
+            LIMIT $${i}
+        )
+        SELECT 
+            mp.*, 
+            COALESCE(img.images, '[]'::json) AS images,
+            COALESCE(cat.categories, '[]'::json) AS categories,
+            COALESCE(var.variants, '[]'::json) AS variants
+        FROM matched_products mp
 
-    LEFT JOIN LATERAL (
-      SELECT json_agg(jsonb_build_object(
-        'id', pi.id, 'image_url', pi.image_url, 'isprimary', pi.isprimary
-      )) AS images
-      FROM product_images pi
-      WHERE pi.product_id = m.id AND pi.isprimary = true
-    ) img ON true
+        LEFT JOIN LATERAL (
+            SELECT json_agg(jsonb_build_object(
+                'id', pi.id, 'image_url', pi.image_url, 'isprimary', pi.isprimary
+            )) AS images
+            FROM product_images pi WHERE pi.product_id = mp.id AND pi.isprimary = true
+        ) img ON true
 
-    LEFT JOIN LATERAL (
-      SELECT json_agg(jsonb_build_object(
-        'id', c.id, 'name', c.name, 'slug', c.slug
-      )) AS categories
-      FROM product_categories pc
-      JOIN categories c ON c.id = pc.category_id
-      WHERE pc.product_id = m.id
-    ) cat ON true
+        LEFT JOIN LATERAL (
+            SELECT json_agg(jsonb_build_object(
+                'id', c.id, 'name', c.name, 'slug', c.slug
+            )) AS categories
+            FROM product_categories pc 
+            JOIN categories c ON c.id = pc.category_id
+            WHERE pc.product_id = mp.id
+        ) cat ON true
 
-    LEFT JOIN LATERAL (
-      SELECT json_agg(v.*) AS variants
-      FROM product_variants v
-      WHERE v.product_id = m.id
-    ) var ON true
+        LEFT JOIN LATERAL (
+            SELECT json_agg(v.*) AS variants 
+            FROM product_variants v WHERE v.product_id = mp.id
+        ) var ON true
 
-    ORDER BY m.score DESC, m.created_at DESC;
-  `;
+        ORDER BY mp.score DESC, mp.created_at DESC;
+    `;
 
     const { rows } = await db.query(query, values);
     return rows;

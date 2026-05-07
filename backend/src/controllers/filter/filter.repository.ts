@@ -8,17 +8,18 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
     let i = 1;
 
     if (keyword) {
-    conditions.push(`
+        conditions.push(`
         (
             productname ILIKE '%' || $${i} || '%'
-            OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
             OR COALESCE(brand, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
+            OR similarity(productname, $${i}) > 0.2
+            OR similarity(COALESCE(brand, ''), $${i}) > 0.2
         )
     `);
-
-    values.push(keyword);
-    i++;
-}
+        values.push(keyword);
+        i++;
+    }
 
     if (gender) {
         conditions.push(`gender IN ($${i}::gender_enum, 'UNISEX')`);
@@ -112,6 +113,6 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
         ) AS filters;
     `;
 
-    const {rows} = await db.query(query, values);
+    const { rows } = await db.query(query, values);
     return rows[0].filters;
 }
