@@ -1,5 +1,6 @@
 import { Product } from "@/types/product";
 import { baseApi } from "./baseQuery";
+import { ProductFilterResponse } from "@/types/filter";
 
 export interface ProductsQueryParams {
     page: number;
@@ -22,6 +23,11 @@ interface SearchProductsParams {
     name?: string;
     brand?: string;
     limit?: number;
+}
+
+export interface FilterResponse {
+    success: boolean;
+    data: ProductFilterResponse;
 }
 
 export const productApi = baseApi.injectEndpoints({
@@ -79,6 +85,15 @@ export const productApi = baseApi.injectEndpoints({
             providesTags: [{ type: "Product", id: "LIST" }],
         }),
 
+        getProductFilters: builder.query<ProductFilterResponse, string>({
+            query: (query: string) => `filters?q=${query}`,
+            transformResponse: (response: FilterResponse) => response.data,
+            providesTags: [
+                { type: "Product", id: "FILTERS" }
+            ],
+
+        }),
+
         clientSearchProducts: builder.query<Product[], string>({
             query: (query) => `search-products/search?q=${query}`,
             transformResponse: (response: ProductsResponse) => response.data,
@@ -87,4 +102,4 @@ export const productApi = baseApi.injectEndpoints({
     })
 })
 
-export const { useGetProductsQuery, useGetProductByIdQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation, useSearchProductsQuery, useClientSearchProductsQuery } = productApi;
+export const { useGetProductsQuery, useGetProductByIdQuery, useDeleteProductMutation, useCreateProductMutation, useUpdateProductMutation, useDeleteProductImageMutation, useSearchProductsQuery, useClientSearchProductsQuery, useGetProductFiltersQuery } = productApi;

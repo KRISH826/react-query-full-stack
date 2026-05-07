@@ -1,14 +1,14 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SlidersHorizontal, Star } from 'lucide-react';
+import { SlidersHorizontal, } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
-import { useClientSearchProductsQuery } from '@/services/productApi';
-import { Product } from '@/types/product';
+import { useClientSearchProductsQuery, useGetProductFiltersQuery } from '@/services/productApi';
+import { Category, Product, ProductVariant } from '@/types/product';
 
 import ProductCard from '../../product/_components/ProductCard';
 import ProductFilter from './ProductFilter';
@@ -16,56 +16,65 @@ import ProductFilter from './ProductFilter';
 const ProductSearchPage = () => {
     const params = useSearchParams();
     const query = params.get("q") || "";
-    const { data, isLoading, error } = useClientSearchProductsQuery(query, {
+    const { data = [], isLoading, error } = useClientSearchProductsQuery(query, {
         skip: !query,
     });
+    const { data: filters, isLoading: isFilterLoading } = useGetProductFiltersQuery(query, {
+        skip: !query
+    });
 
-    const categoryCounts = useMemo(() => {
-        const counts = new Map<string, number>();
-
-        (data ?? []).forEach((product) => {
-            product.categories?.forEach((category) => {
-                counts.set(category.name, (counts.get(category.name) ?? 0) + 1);
-            });
-        });
-
-        return counts;
-    }, [data]);
-
-    const categories = useMemo(() => {
-        if (categoryCounts.size > 0) {
-            return [...categoryCounts.keys()].slice(0, 10);
-        }
-
-        return ["T-Shirts", "Shirts", "Jeans", "Jackets", "Hoodies", "Shoes"];
-    }, [categoryCounts]);
-
-    const allPrices = useMemo(() => {
-        return (data ?? [])
-            .map((product) => product.variants?.[0]?.offer_price_override ?? product.variants?.[0]?.price_override)
-            .filter((price): price is number => typeof price === "number" && !Number.isNaN(price));
-    }, [data]);
-
-    const minPrice = useMemo(() => {
-        if (allPrices.length === 0) return 0;
-        return Math.floor(Math.min(...allPrices));
-    }, [allPrices]);
-
-    const maxPrice = useMemo(() => {
-        if (allPrices.length === 0) return 10000;
-        return Math.ceil(Math.max(...allPrices));
-    }, [allPrices]);
-
-    const sliderMax = useMemo(() => Math.max(maxPrice, minPrice + 1), [maxPrice, minPrice]);
-
+    // states
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-    const [selectedRating, setSelectedRating] = useState<number | null>(null);
-    const [priceLimit, setPriceLimit] = useState<number>(maxPrice);
 
-    useEffect(() => {
-        setPriceLimit(maxPrice);
-    }, [maxPrice]);
+    const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+
+    const [selectedRating, setSelectedRating] = useState<number | null>(null);
+    const [priceLimit, setPriceLimit] = useState<number>(0);
+    const maxPrice = filters?.priceRange?.max ?? 0;  // ← yeh line add karo
+    const effectivePriceLimit = priceLimit === 0 && maxPrice > 0 ? maxPrice : priceLimit;
+
+    // ✅ Ensure data is an array before filtering
+    const productList = Array.isArray(data) ? data : (data as any)?.products ?? [];
+
+    const filteredProducts = useMemo(() => {
+        return productList.filter((product: Product) => {
+
+            // Category filter
+            if (selectedCategories.length > 0) {
+                const productCategories = product.categories?.map((c: Category) => c.name) ?? [];
+                const hasCategory = selectedCategories.some(cat => productCategories.includes(cat));
+                if (!hasCategory) return false;
+            }
+
+            // Rating filter
+            if (selectedRating !== null) {
+                if (!product.avg_rating || product.avg_rating < selectedRating) return false;
+            }
+
+            // Size filter
+            if (selectedSizes.length > 0) {
+                const productSizes = product.variants?.map((v: ProductVariant) => v.size) ?? [];
+                const hasSize = selectedSizes.some(size => productSizes.includes(size));
+                if (!hasSize) return false;
+            }
+
+            // Price filter
+            if (effectivePriceLimit > 0) {
+                const prices = product.variants?.map((v: any) =>
+                    v.offer_price_override ?? v.price_override
+                ) ?? [];
+                
+                const validPrices = prices.filter((p: any): p is number => typeof p === 'number');
+                if (validPrices.length > 0) {
+                    const minVariantPrice = Math.min(...validPrices);
+                    if (minVariantPrice > effectivePriceLimit) return false;
+                }
+            }
+
+            return true;
+        });
+    }, [data, effectivePriceLimit, selectedCategories, selectedRating, selectedSizes]);
+
 
     const toggleCategory = (name: string) => {
         setSelectedCategories((prev) =>
@@ -83,16 +92,18 @@ const ProductSearchPage = () => {
         setSelectedCategories([]);
         setSelectedSizes([]);
         setSelectedRating(null);
-        setPriceLimit(maxPrice);
+        setPriceLimit(filters?.priceRange?.max || 0);
     };
 
     const activeFilterCount =
         selectedCategories.length +
         selectedSizes.length +
         (selectedRating ? 1 : 0) +
-        (priceLimit !== maxPrice ? 1 : 0);
-
-
+        (
+            priceLimit !== (filters?.priceRange?.max || 0)
+                ? 1
+                : 0
+        );
 
     if (isLoading) {
         return (
@@ -139,7 +150,7 @@ const ProductSearchPage = () => {
                         <SheetContent side="left" className="scrollbar-hide w-[80vw] max-w-90 overflow-y-auto bg-white/95 p-3 sm:w-90 sm:p-4">
                             <SheetTitle className="sr-only">Product Filters</SheetTitle>
                             <ProductFilter
-                                data={data}
+                                filters={filters}
                                 selectedCategories={selectedCategories}
                                 toggleCategory={toggleCategory}
                                 selectedSizes={selectedSizes}
@@ -150,15 +161,14 @@ const ProductSearchPage = () => {
                                 setPriceLimit={setPriceLimit}
                                 clearAllFilters={clearAllFilters}
                                 activeFilterCount={activeFilterCount}
-                                isMobile={true}
-                            />
+                                isMobile={true} productsCount={0} />
                         </SheetContent>
                     </Sheet>
                 </div>
                 <div className="grid items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
                     <aside className="hidden py-4 border-r border-stone-200 lg:block lg:sticky lg:top-20">
                         <ProductFilter
-                            data={data}
+                            filters={filters}
                             selectedCategories={selectedCategories}
                             toggleCategory={toggleCategory}
                             selectedSizes={selectedSizes}
@@ -169,11 +179,12 @@ const ProductSearchPage = () => {
                             setPriceLimit={setPriceLimit}
                             clearAllFilters={clearAllFilters}
                             activeFilterCount={activeFilterCount}
+                            productsCount={0}
                         />
                     </aside>
 
                     <div className="grid grid-cols-2 lg:pt-5 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        {data?.map((product: Product) => (
+                        {filteredProducts?.map((product: Product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>

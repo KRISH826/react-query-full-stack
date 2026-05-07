@@ -15,6 +15,7 @@ import paymentRouter from "./routes/payment.route";
 import searchRouter from "./routes/search.routes";
 import favouriteRouter from "./routes/favourite.route";
 import reviewRouter from "./routes/review.routes";
+import filterRouter from "./routes/filter.route";
 import webhookRouter from "./routes/webhook.route";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
@@ -65,6 +66,7 @@ app.use("/api/payments", paymentRouter);
 app.use("/api/search-products", searchRouter);
 app.use("/api/favourites", favouriteRouter);
 app.use("/api/reviews", reviewRouter);
+app.use("/api/filters", filterRouter);
 
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is Perfect!")
