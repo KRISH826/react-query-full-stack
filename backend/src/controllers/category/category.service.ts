@@ -2,7 +2,7 @@ import { tryCatch } from "bullmq";
 import { pool } from "../../db/db";
 import { buildCategoryTree } from "../../helper/helper";
 import { HttpError } from "../../middlewares/error.middleware";
-import { CategoryCreateDTO, CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
+import { CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
 import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, getProductByCategoryId, searchCategory, updateCategory } from "./category.repository";
 import { cache } from "../../utils/cache";
 

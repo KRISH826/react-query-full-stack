@@ -1,23 +1,27 @@
 import { NextFunction, Request, Response } from "express";
 import { SearchService } from "./search.service";
-import { HttpError } from "../../middlewares/error.middleware";
-
 export class SearchController {
-    static async searchProducts(req: Request, res: Response, next: NextFunction) {
-        try {
-            const query = (req.query.q as string) || "";
-            const products = await SearchService.searchProducts(query)
-            if (!products) {
-                throw new HttpError("Products not found", 404);
-            }
-            res.json({
-                message: "Products found",
-                success: true,
-                data: products
-            });
+  static async search(req: Request, res: Response, next: NextFunction) {
+    try {
+      const {
+        q         = "",
+        brand, size,
+        min_price, max_price,
+        rating, page,
+      } = req.query;
 
-        } catch (error) {
-            next(error);
-        }
+      const result = await SearchService.searchProducts(q as string, {
+        brand     : brand     as string,
+        size      : size      as string,
+        min_price : min_price ? Number(min_price) : undefined,
+        max_price : max_price ? Number(max_price) : undefined,
+        rating    : rating    ? Number(rating)    : undefined,
+        page      : page      ? Number(page)      : 1,
+      });
+
+      res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
     }
+  }
 }

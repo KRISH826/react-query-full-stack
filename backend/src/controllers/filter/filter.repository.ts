@@ -3,15 +3,22 @@ import { pool } from "../../db/db";
 
 export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClient = pool) => {
     const { keyword, gender } = filters;
-    const conditions: string[] = ["deleted_at IS NULL"];
+    const conditions: string[] = ["1=1"];
     const values: any[] = [];
     let i = 1;
 
     if (keyword) {
-        conditions.push(`search_vector @@ websearch_to_tsquery('english', $${i})`);
-        values.push(keyword);
-        i++;
-    }
+    conditions.push(`
+        (
+            productname ILIKE '%' || $${i} || '%'
+            OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(brand, '') ILIKE '%' || $${i} || '%'
+        )
+    `);
+
+    values.push(keyword);
+    i++;
+}
 
     if (gender) {
         conditions.push(`gender IN ($${i}::gender_enum, 'UNISEX')`);
@@ -49,7 +56,7 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
                         c->>'name' AS name,
                         COUNT(*)::int AS count
                     FROM filtered_products,
-                    json_array_elements(categories) c
+                    jsonb_array_elements(categories) c
                     GROUP BY c->>'name'
                     ORDER BY count DESC
                 ) x
@@ -62,7 +69,7 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
                         v->>'size' AS size,
                         COUNT(*)::int AS count
                     FROM filtered_products,
-                    json_array_elements(variants) v
+                    jsonb_array_elements(variants) v
                     WHERE v->>'size' IS NOT NULL
                     GROUP BY v->>'size'
                     ORDER BY count DESC
@@ -99,7 +106,7 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
                     )
                 )
                 FROM filtered_products,
-                json_array_elements(variants) v
+                jsonb_array_elements(variants) v
             )
 
         ) AS filters;
