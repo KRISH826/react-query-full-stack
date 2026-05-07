@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SlidersHorizontal, } from 'lucide-react';
 
@@ -8,16 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { useClientSearchProductsQuery, useGetProductFiltersQuery } from '@/services/productApi';
-import { Product } from '@/types/product';
+import { Category, Product, ProductVariant } from '@/types/product';
 
 import ProductCard from '../../product/_components/ProductCard';
 import ProductFilter from './ProductFilter';
-import { setPriority } from 'os';
 
 const ProductSearchPage = () => {
     const params = useSearchParams();
     const query = params.get("q") || "";
-    const { data, isLoading, error } = useClientSearchProductsQuery(query, {
+    const { data = [], isLoading, error } = useClientSearchProductsQuery(query, {
         skip: !query,
     });
     const { data: filters, isLoading: isFilterLoading } = useGetProductFiltersQuery(query, {
@@ -31,13 +30,50 @@ const ProductSearchPage = () => {
 
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
     const [priceLimit, setPriceLimit] = useState<number>(0);
+    const maxPrice = filters?.priceRange?.max ?? 0;  // ← yeh line add karo
+    const effectivePriceLimit = priceLimit === 0 && maxPrice > 0 ? maxPrice : priceLimit;
 
-    useEffect(() => {
-        if (filters?.priceRange.max) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setPriceLimit(filters.priceRange.max)
-        }
-    }, [filters])
+    // ✅ Ensure data is an array before filtering
+    const productList = Array.isArray(data) ? data : (data as any)?.products ?? [];
+
+    const filteredProducts = useMemo(() => {
+        return productList.filter((product: Product) => {
+
+            // Category filter
+            if (selectedCategories.length > 0) {
+                const productCategories = product.categories?.map((c: Category) => c.name) ?? [];
+                const hasCategory = selectedCategories.some(cat => productCategories.includes(cat));
+                if (!hasCategory) return false;
+            }
+
+            // Rating filter
+            if (selectedRating !== null) {
+                if (!product.avg_rating || product.avg_rating < selectedRating) return false;
+            }
+
+            // Size filter
+            if (selectedSizes.length > 0) {
+                const productSizes = product.variants?.map((v: ProductVariant) => v.size) ?? [];
+                const hasSize = selectedSizes.some(size => productSizes.includes(size));
+                if (!hasSize) return false;
+            }
+
+            // Price filter
+            if (effectivePriceLimit > 0) {
+                const prices = product.variants?.map((v: any) =>
+                    v.offer_price_override ?? v.price_override
+                ) ?? [];
+                
+                const validPrices = prices.filter((p: any): p is number => typeof p === 'number');
+                if (validPrices.length > 0) {
+                    const minVariantPrice = Math.min(...validPrices);
+                    if (minVariantPrice > effectivePriceLimit) return false;
+                }
+            }
+
+            return true;
+        });
+    }, [data, effectivePriceLimit, selectedCategories, selectedRating, selectedSizes]);
 
 
     const toggleCategory = (name: string) => {
@@ -68,8 +104,6 @@ const ProductSearchPage = () => {
                 ? 1
                 : 0
         );
-
-
 
     if (isLoading) {
         return (
@@ -150,7 +184,7 @@ const ProductSearchPage = () => {
                     </aside>
 
                     <div className="grid grid-cols-2 lg:pt-5 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                        {data?.map((product: Product) => (
+                        {filteredProducts?.map((product: Product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>

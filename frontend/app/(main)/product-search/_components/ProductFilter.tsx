@@ -85,9 +85,9 @@ const ProductFilter = ({
                 <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-foreground">
                     {activeFilterCount} active
                 </span>
-                <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+                {/* <span className="rounded-full bg-stone-100 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
                     {filters?.length ?? 0} results
-                </span>
+                </span> */}
             </div>
 
             <div className="mt-5 space-y-5">
