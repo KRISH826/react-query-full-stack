@@ -6,7 +6,8 @@ export class SearchController {
     static async searchProducts(req: Request, res: Response, next: NextFunction) {
         try {
             const query = (req.query.q as string) || "";
-            const products = await SearchService.searchProducts(query)
+            
+            const products = await SearchService.searchProducts(query);
             if (!products) {
                 throw new HttpError("Products not found", 404);
             }

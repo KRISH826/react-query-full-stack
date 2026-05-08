@@ -5,6 +5,7 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { CategoryDb, CategoryResponseDTO, CategoryTree } from "../../models/category";
 import { createCateGory, deleteCategory, findCategoryById, findCategoryByName, findCategoryBySlug, getAllCategories, getProductByCategoryId, searchCategory, updateCategory } from "./category.repository";
 import { cache } from "../../utils/cache";
+import { invalidateCatalogCaches } from "../../utils/catalog-cache";
 
 export class CategoryService {
     static async createCateoryService(data: CategoryResponseDTO): Promise<CategoryDb | null> {
@@ -28,6 +29,7 @@ export class CategoryService {
             }
             const category = await createCateGory(data, client);
             await client.query('COMMIT');
+            await invalidateCatalogCaches();
             return category;
         } catch (error) {
             await client.query('ROLLBACK');
@@ -99,6 +101,7 @@ export class CategoryService {
 
             const updatedCategory = await updateCategory(id, data, client);
             await client.query('COMMIT');
+            await invalidateCatalogCaches();
             return updatedCategory;
         } catch (error) {
             await client.query('ROLLBACK');
@@ -147,6 +150,7 @@ export class CategoryService {
             }
             const deletedCategory = await deleteCategory(id, client);
             await client.query('COMMIT');
+            await invalidateCatalogCaches();
             return deletedCategory;
         } catch (error) {
             await client.query('ROLLBACK');
