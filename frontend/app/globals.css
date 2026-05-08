@@ -51,6 +51,10 @@
   font-family: var(--font-poppins), var(--font-geist-sans), sans-serif;
 }
 
+.font-brand {
+  font-family: var(--font-brand), var(--font-poppins), serif;
+}
+
 .font-auth-brand {
   font-family: var(--font-brand), var(--font-poppins), serif;
 }

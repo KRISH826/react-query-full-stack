@@ -29,8 +29,8 @@ const brandFont = Bodoni_Moda({
 });
 
 export const metadata: Metadata = {
-  title: "ShopNova",
-  description: "Premium Fashion Store",
+  title: "Zovara",
+  description: "Zovara premium fashion store",
 };
 
 export default function RootLayout({
