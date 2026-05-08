@@ -10,28 +10,11 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
     if (keyword) {
         conditions.push(`
         (
-            p.search_vector @@ websearch_to_tsquery('english', $${i})
-
-        OR EXISTS (
-            SELECT 1
-            FROM unnest(string_to_array($${i}, ' ')) AS kw
-            WHERE
-                word_similarity(p.productname, kw) > 0.15
-                OR word_similarity(COALESCE(p.description, ''), kw) > 0.15
-                OR word_similarity(COALESCE(p.brand, ''), kw) > 0.15
-        )
-
-        OR similarity(p.productname, $${i}) > 0.2
-
-        OR similarity(COALESCE(p.brand, ''), $${i}) > 0.2
-
-        OR similarity(COALESCE(p.description, ''), $${i}) > 0.2
-
-        OR p.productname ILIKE '%' || $${i} || '%'
-
-        OR COALESCE(p.brand, '') ILIKE '%' || $${i} || '%'
-
-        OR COALESCE(p.description, '') ILIKE '%' || $${i} || '%'
+            productname ILIKE '%' || $${i} || '%'
+            OR COALESCE(brand, '') ILIKE '%' || $${i} || '%'
+            OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
+            OR similarity(productname, $${i}) > 0.2
+            OR similarity(COALESCE(brand, ''), $${i}) > 0.2
         )
     `);
         values.push(keyword);
