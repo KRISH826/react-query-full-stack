@@ -2,11 +2,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
-  className?: string;
-  compact?: boolean;
-  href?: string;
-  light?: boolean;
-  showTagline?: boolean;
+  readonly className?: string;
+  readonly compact?: boolean;
+  readonly href?: string;
+  readonly light?: boolean;
+  readonly showTagline?: boolean;
 };
 
 export default function BrandLogo({
@@ -41,7 +41,7 @@ export default function BrandLogo({
         <span
           className={cn(
             "font-brand font-semibold uppercase",
-            compact ? "text-[1.1rem] tracking-[0.18em] md:text-[1.3rem]" : "text-[1.85rem] tracking-[0.22em]",
+            compact ? "text-[1rem] tracking-[0.18em] md:text-[1.2rem]" : "text-[1.55rem] tracking-[0.22em]",
             light ? "text-white" : "text-slate-900"
           )}
         >
