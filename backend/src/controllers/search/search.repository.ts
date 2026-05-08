@@ -2,8 +2,23 @@ import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 import { ProductWithImagesDTO } from "../../models/product";
 
-export const searchProductQuery = async (filters: any, db: Pool | PoolClient = pool): Promise<ProductWithImagesDTO[]> => {
-    const { keyword, gender, max_price, limit = 40 } = filters;
+export interface SearchProductsResult {
+    data: ProductWithImagesDTO[];
+    total: number;
+    page: number;
+    limit: number;
+    offset: number;
+    totalPages: number;
+}
+
+export const searchProductQuery = async (
+    filters: any,
+    page: number = 1,
+    limit: number = 30,
+    db: Pool | PoolClient = pool
+): Promise<SearchProductsResult> => {
+    const { keyword, gender, max_price } = filters;
+    const offset = (page - 1) * limit;
     const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
     let i = 1;
@@ -11,7 +26,6 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
     let orderClause = "ORDER BY p.created_at DESC";
 
     if (keyword) {
-        // Category hata diya, sirf Name, Description aur Brand ko weightage di hai
         scoreSelect = `(
             (ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.6) + 
             (GREATEST(
@@ -27,7 +41,6 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             ) * 0.4)
         ) AS score`;
 
-        // Yahan se bhi category ki ILIKE aur similarity conditions hata di
         conditions.push(`(
             p.search_vector @@ websearch_to_tsquery('english', $${i})
             OR EXISTS (
@@ -63,7 +76,17 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
         i++;
     }
 
-    values.push(limit);
+    const countResult = await db.query(
+        `SELECT COUNT(*) 
+         FROM products p
+         WHERE ${conditions.join(" AND ")}`,
+        values
+    );
+
+    const total = Number.parseInt(countResult.rows[0].count, 10);
+    const limitPlaceholder = i;
+    const offsetPlaceholder = i + 1;
+    const queryValues = [...values, limit, offset];
 
     const query = `
         WITH matched_products AS (
@@ -71,7 +94,7 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
             FROM products p
             WHERE ${conditions.join(" AND ")}
             ${orderClause}
-            LIMIT $${i}
+            LIMIT $${limitPlaceholder} OFFSET $${offsetPlaceholder}
         )
         SELECT 
             mp.*, 
@@ -104,6 +127,13 @@ export const searchProductQuery = async (filters: any, db: Pool | PoolClient = p
         ORDER BY mp.score DESC, mp.created_at DESC;
     `;
 
-    const { rows } = await db.query(query, values);
-    return rows;
+    const { rows } = await db.query(query, queryValues);
+    return {
+        data: rows,
+        total,
+        page,
+        limit,
+        offset,
+        totalPages: Math.ceil(total / limit),
+    };
 };

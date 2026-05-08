@@ -98,7 +98,7 @@ export async function getProductByCategoryId(slug: string, categoryId: string, p
         [categoryId, slug]
     );
 
-    const total = parseInt((await countResult).rows[0].count, 10);
+    const total = Number.parseInt((await countResult).rows[0].count, 10);
 
     const query = await db.query(
         `SELECT p.id, p.productname, p.description, p.brand,p.total_reviews, p.avg_rating,
