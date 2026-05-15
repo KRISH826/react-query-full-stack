@@ -1,12 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Slider } from "@/components/ui/slider";
-import { Product } from "@/types/product";
 import { ProductFilterResponse } from "@/types/filter";
 
 interface ProductFilterProps {
