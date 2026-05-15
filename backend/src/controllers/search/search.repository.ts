@@ -20,7 +20,7 @@ export const searchProductQuery = async (
     const { keyword, gender, max_price, brands, categories, sizes, min_rating } =
         filters;
     const offset = (page - 1) * limit;
-    const conditions: string[] = ["p.deleted_at IS NULL", "p.status = 'active'"];
+    const conditions: string[] = ["p.deleted_at IS NULL"];
     const values: any[] = [];
     let i = 1;
     let scoreSelect = "0 AS score";

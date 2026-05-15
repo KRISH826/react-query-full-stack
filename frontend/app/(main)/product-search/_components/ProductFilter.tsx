@@ -10,36 +10,26 @@ import { ProductFilterResponse } from "@/types/filter";
 interface ProductFilterProps {
     filters: ProductFilterResponse | undefined;
     productsCount: number;
-
+    selectedBrands: string[];
+    toggleBrand: (name: string) => void;
     selectedCategories: string[];
-
     toggleCategory: (name: string) => void;
-
     selectedSizes: string[];
-
     toggleSize: (size: string) => void;
-
     selectedRating: number | null;
-
-    setSelectedRating: (
-        rating: number | null |
-            ((prev: number | null) => number | null)
-    ) => void;
-
+    setSelectedRating: (rating: number | null | ((prev: number | null) => number | null)) => void;
     priceLimit: number;
-
     setPriceLimit: (price: number) => void;
-
     clearAllFilters: () => void;
-
     activeFilterCount: number;
-
     isMobile?: boolean;
 }
 
 const ProductFilter = ({
     filters,
     productsCount,
+    selectedBrands,
+    toggleBrand,
     selectedCategories,
     toggleCategory,
     selectedSizes,
@@ -89,6 +79,34 @@ const ProductFilter = ({
             </div>
 
             <div className="mt-5 space-y-5">
+                 {filters?.brands && filters.brands.length > 0 && (
+                    <>
+                        <section className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-foreground">Brand</h3>
+                                <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Make</span>
+                            </div>
+                            <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                                {filters.brands.map((brand) => (
+                                    <label key={brand.name}
+                                        className="flex cursor-pointer items-center justify-between rounded-xl px-2 py-2 transition-colors hover:bg-stone-50">
+                                        <div className="flex items-center gap-3">
+                                            <Checkbox
+                                                checked={selectedBrands.includes(brand.name)}
+                                                onCheckedChange={() => toggleBrand(brand.name)}
+                                            />
+                                            <span className="text-sm text-foreground">{brand.name}</span>
+                                        </div>
+                                        <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                                            {brand.count}
+                                        </span>
+                                    </label>
+                                ))}
+                            </div>
+                        </section>
+                        <Separator className="bg-stone-200" />
+                    </>
+                )}
                 <section className="space-y-3">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-foreground">Category</h3>
