@@ -1,11 +1,9 @@
-export interface SearchParams {
-  keyword?  : string;
-  gender?   : string;
-  brand?    : string;
-  size?     : string;
-  min_price?: number;
+export interface SearchFilters {
+  keyword?: string;
+  gender?: string;
   max_price?: number;
-  rating?   : number;
-  page?     : number;
-  limit?    : number;
+  brands?: string[];
+  categories?: string[];
+  sizes?: string[];
+  min_rating?: number;
 }

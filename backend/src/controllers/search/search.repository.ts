@@ -15,11 +15,12 @@ export const searchProductQuery = async (
     filters: any,
     page: number = 1,
     limit: number = 30,
-    db: Pool | PoolClient = pool
+    db: Pool | PoolClient = pool,
 ): Promise<SearchProductsResult> => {
-    const { keyword, gender, max_price } = filters;
+    const { keyword, gender, max_price, brands, categories, sizes, min_rating } =
+        filters;
     const offset = (page - 1) * limit;
-    const conditions: string[] = ["p.deleted_at IS NULL"];
+    const conditions: string[] = ["p.deleted_at IS NULL", "p.status = 'active'"];
     const values: any[] = [];
     let i = 1;
     let scoreSelect = "0 AS score";
@@ -76,11 +77,42 @@ export const searchProductQuery = async (
         i++;
     }
 
+    if (brands && brands.length > 0) {
+        conditions.push(`p.brand = ANY($${i})`);
+        values.push(brands);
+        i++;
+    }
+
+    if (categories && categories.length > 0) {
+        conditions.push(`EXISTS (
+        SELECT 1 FROM product_categories pc
+        JOIN categories c ON c.id = pc.category_id
+        WHERE pc.product_id = p.id AND c.name = ANY($${i})
+    )`);
+        values.push(categories);
+        i++;
+    }
+
+    if (sizes && sizes.length > 0) {
+        conditions.push(`EXISTS (
+        SELECT 1 FROM product_variants pv
+        WHERE pv.product_id = p.id AND pv.size = ANY($${i})
+    )`);
+        values.push(sizes);
+        i++;
+    }
+
+    if (min_rating) {
+        conditions.push(`p.avg_rating >= $${i}`);
+        values.push(min_rating);
+        i++;
+    }
+
     const countResult = await db.query(
         `SELECT COUNT(*) 
          FROM products p
          WHERE ${conditions.join(" AND ")}`,
-        values
+        values,
     );
 
     const total = Number.parseInt(countResult.rows[0].count, 10);

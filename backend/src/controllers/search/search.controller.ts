@@ -8,8 +8,12 @@ export class SearchController {
             const query = (req.query.q as string) || "";
             const page = Number(req.query.page) || 1;
             const limit = Number(req.query.limit) || 30;
+            const brands = req.query.brands ? (req.query.brands as string).split(",") : undefined;
+            const categories = req.query.categories ? (req.query.categories as string).split(",") : undefined;
+            const sizes = req.query.sizes ? (req.query.sizes as string).split(",") : undefined;
+            const min_rating = req.query.min_rating ? Number(req.query.min_rating) : undefined;
 
-            const products = await SearchService.searchProducts(query, page, limit);
+            const products = await SearchService.searchProducts(query, page, limit, { brands, categories, sizes, min_rating });
             if (!products.data) {
                 throw new HttpError("Products not found", 404);
             }

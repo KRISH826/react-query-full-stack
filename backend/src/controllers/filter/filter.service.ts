@@ -1,7 +1,7 @@
-import { parseSearchQuery } from "../../helper/search";
 import { getFilteredProductsQuery } from "./filter.repository";
 import { cache } from "../../utils/cache";
 import { FILTER_CACHE_TTL_SECONDS } from "../../utils/catalog-cache";
+import { parseSearchQuery } from "../../helper/parseSearchQuery";
 
 export class FilterService {
     private static buildCacheKey(searchQuery: string) {
@@ -22,6 +22,7 @@ export class FilterService {
                 return getFilteredProductsQuery({
                     keyword: parsed.keyword,
                     gender: parsed.gender,
+                    max_price: parsed.max_price,
                 });
             },
             FILTER_CACHE_TTL_SECONDS
