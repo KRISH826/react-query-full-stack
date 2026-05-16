@@ -26,7 +26,7 @@ const ProductSearchPage = () => {
     useEffect(() => {
         const t = setTimeout(() => setDebouncedQuery(query), 300);
         return () => clearTimeout(t);
-    }, [])
+    }, [query]);
 
     const { data: filters, isLoading: isFilterLoading } = useGetProductFiltersQuery(query, {
         skip: !debouncedQuery,
@@ -105,7 +105,7 @@ const ProductSearchPage = () => {
                         Search Results for <span className="text-primary">&quot;{query}&quot;</span>
                     </h1>
                     <p className="text-xs text-muted-foreground md:text-sm">
-                        Found {data?.length || 0} items
+                        Found {data?.total || 0} items
                     </p>
                 </div>
 

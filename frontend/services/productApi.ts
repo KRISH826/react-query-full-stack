@@ -97,6 +97,7 @@ export const productApi = baseApi.injectEndpoints({
             },
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
+            keepUnusedDataFor: 0
         }),
         getProductFilters: builder.query<ProductFilterResponse, string>({
             query: (query: string) => `filters?q=${query}`,
@@ -104,7 +105,7 @@ export const productApi = baseApi.injectEndpoints({
             providesTags: [
                 { type: "Product", id: "FILTERS" }
             ],
-
+            keepUnusedDataFor: 0
         }),
 
         clientSearchProducts: builder.query<Product[], string>({
