@@ -13,5 +13,5 @@ export default async function AuthLayout({
     redirect(role === "admin" ? "/admin/dashboard" : "/product");
   }
 
-  return <>{children}</>;
+  return <div className="font-auth">{children}</div>;
 }

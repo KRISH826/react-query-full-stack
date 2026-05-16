@@ -1,8 +1,7 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, ProductWithImagesResponseDTO, UpdateProductDTO } from "../../models/product";
+import { CreateProductDTO, CreateVariantDTO, ProductDB, ProductImageDB, ProductImageDTO, ProductWithImagesDTO, UpdateProductDTO } from "../../models/product";
 import { ProductAITags } from "../../models/aimodel";
-import { OrderItemDB } from "../../models/order";
 
 export async function findProductByid(productname: string, db: Pool | PoolClient = pool): Promise<ProductDB | null> {
     const { rows } = await db.query(
@@ -110,7 +109,7 @@ export async function findAllProducts(
     const countResult = await pool.query(
         `SELECT COUNT(*) FROM products WHERE deleted_at IS NULL`
     );
-    const total = parseInt(countResult.rows[0].count);
+    const total = Number.parseInt(countResult.rows[0].count);
     return { data: rows, total };
 }
 

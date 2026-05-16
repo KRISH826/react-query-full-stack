@@ -1,15 +1,41 @@
 import { parseSearchQuery } from "../../helper/parseSearchQuery";
 import { searchProductQuery } from "./search.repository";
+import { cache } from "../../utils/cache";
+import { SEARCH_CACHE_TTL_SECONDS } from "../../utils/catalog-cache";
 
 export class SearchService {
-    static async searchProducts(searchQuery: string = "") {
+    private static buildCacheKey(searchQuery: string, page: number, limit: number) {
         const parsed = parseSearchQuery(searchQuery);
 
-        return await searchProductQuery({
-            keyword: parsed.keyword,
-            gender: parsed.gender,
-            max_price: parsed.max_price,
-            limit: 40
-        });
+        return {
+            parsed,
+            cacheKey: `search:keyword:${parsed.keyword || "all"}:gender:${parsed.gender || "all"}:max_price:${parsed.max_price ?? "any"}:page:${page}:limit:${limit}`,
+        };
+    }
+
+    static async searchProducts(
+        searchQuery: string = "",
+        page: number = 1,
+        limit: number = 30,
+        extraFilters: { brands?: string[]; categories?: string[]; sizes?: string[]; min_rating?: number } = {}
+    ) {
+        const safePage = Math.max(1, page);
+        const safeLimit = Math.min(40, Math.max(1, limit));
+        const { parsed, cacheKey } = this.buildCacheKey(searchQuery, safePage, safeLimit);
+
+        const fullCacheKey = `${cacheKey}:brands:${extraFilters.brands?.join("-") || "all"}:cats:${extraFilters.categories?.join("-") || "all"}:sizes:${extraFilters.sizes?.join("-") || "all"}:rating:${extraFilters.min_rating ?? "any"}`;
+
+        return cache.getOrSet(
+            fullCacheKey,
+            async () => {
+                return searchProductQuery({
+                    keyword: parsed.keyword,
+                    gender: parsed.gender,
+                    max_price: parsed.max_price,
+                    ...extraFilters,
+                }, safePage, safeLimit);
+            },
+            SEARCH_CACHE_TTL_SECONDS
+        );
     }
 }

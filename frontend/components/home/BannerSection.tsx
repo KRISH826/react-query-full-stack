@@ -31,7 +31,7 @@ const BannerSection = () => {
                         </h1>
 
                         <p className="text-base sm:text-lg text-white/90 mb-7 sm:mb-10 max-w-xl leading-relaxed">
-                            Discover a curated collection of premium fashion designed for the modern individual. Elevate your everyday with ShopNova.
+                            Discover a curated collection of premium fashion designed for the modern individual. Elevate your everyday with Zovara.
                         </p>
 
                         <div className="flex flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">

@@ -3,13 +3,11 @@ import { HttpError } from "../../middlewares/error.middleware";
 import { CreateReviewDTO } from "../../models/review";
 import { cache } from "../../utils/cache";
 import { UpdateProductRatingReview, createReviewRepo, getProductRatingStars, getReviewProductById } from "./review.repository";
+import { invalidateCatalogCaches } from "../../utils/catalog-cache";
 
 export class ReviewServices {
     private static async invalidateReviewCaches(productId: string): Promise<void> {
-        await cache.delPattern(`reviews:${productId}:*`);
-        await cache.delete(`product:${productId}`);
-        await cache.delPattern(`product:${productId}:*`);
-        await cache.delPattern(`products:*`);
+        await invalidateCatalogCaches(productId);
     }
 
     static async createReview(userId: string, data: CreateReviewDTO) {

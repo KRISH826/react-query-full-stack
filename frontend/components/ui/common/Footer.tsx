@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Facebook, Instagram, Twitter, Github } from "lucide-react";
+import { Facebook, Instagram, Twitter, Github } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import BrandLogo from "@/components/branding/BrandLogo";
 
 const Footer = () => {
     return (
@@ -14,14 +15,7 @@ const Footer = () => {
 
                     {/* Brand */}
                     <div className="space-y-5">
-                        <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                                <ShoppingBag className="h-5 w-5" />
-                            </div>
-                            <span className="text-lg font-semibold tracking-tight">
-                                ShopNova
-                            </span>
-                        </div>
+                        <BrandLogo showTagline={false} className="w-fit" />
 
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Discover premium fashion crafted with elegance and comfort.
@@ -93,7 +87,7 @@ const Footer = () => {
                 <div className="mt-12 border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
 
                     <p className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} ShopNova. All rights reserved.
+                        &copy; {new Date().getFullYear()} Zovara. All rights reserved.
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-sm text-muted-foreground">

@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import {
-    ShoppingBag,
     User,
     Heart,
     Menu,
@@ -25,6 +24,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useGetProfileQuery } from "@/services/userApi";
 import { useGetCartQuery } from "@/services/cartApi";
+import BrandLogo from "@/components/branding/BrandLogo";
 
 const MobileMenu = () => {
     const router = useRouter();
@@ -59,9 +59,8 @@ const MobileMenu = () => {
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] px-4">
                 <SheetHeader>
-                    <SheetTitle className="flex items-center gap-2">
-                        <ShoppingBag className="h-5 w-5" />
-                        ShopNova
+                    <SheetTitle className="text-left">
+                        <BrandLogo compact showTagline={false} className="w-fit" />
                     </SheetTitle>
                 </SheetHeader>
 

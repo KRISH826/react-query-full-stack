@@ -3,20 +3,28 @@ import { pool } from "../../db/db";
 
 export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClient = pool) => {
     const { keyword, gender } = filters;
-    const conditions: string[] = ["1=1"];
+    const conditions: string[] = ["1=1", "status = 'active'"];
     const values: any[] = [];
     let i = 1;
 
     if (keyword) {
-        conditions.push(`
-        (
-            productname ILIKE '%' || $${i} || '%'
+        conditions.push(`(
+            search_vector @@ websearch_to_tsquery('english', $${i})
+            OR EXISTS (
+                SELECT 1
+                FROM unnest(string_to_array($${i}, ' ')) AS kw
+                WHERE word_similarity(productname, kw) > 0.15
+                OR word_similarity(COALESCE(brand, ''), kw) > 0.15
+                OR word_similarity(COALESCE(description, ''), kw) > 0.15
+            )
+            OR productname ILIKE '%' || $${i} || '%'
             OR COALESCE(brand, '') ILIKE '%' || $${i} || '%'
             OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
-            OR similarity(productname, $${i}) > 0.2
-            OR similarity(COALESCE(brand, ''), $${i}) > 0.2
-        )
-    `);
+            OR EXISTS (
+                SELECT 1 FROM jsonb_array_elements(categories) c
+                WHERE c->>'name' ILIKE '%' || $${i} || '%'
+            )
+        )`);
         values.push(keyword);
         i++;
     }
