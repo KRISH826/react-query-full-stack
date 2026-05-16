@@ -12,6 +12,7 @@ import { Category, Product, ProductVariant } from '@/types/product';
 
 import ProductCard from '../../product/_components/ProductCard';
 import ProductFilter from './ProductFilter';
+import ProductCardSkeleton from '@/components/ui/common/ProductCardSkeleton';
 
 const ProductSearchPage = () => {
     const params = useSearchParams();
@@ -122,7 +123,6 @@ const ProductSearchPage = () => {
                                 )}
                             </Button>
                         </SheetTrigger>
-
                         <SheetContent side="left" className="scrollbar-hide w-[80vw] max-w-90 overflow-y-auto bg-white/95 p-3 sm:w-90 sm:p-4">
                             <SheetTitle className="sr-only">Product Filters</SheetTitle>
                             <ProductFilter
@@ -164,6 +164,9 @@ const ProductSearchPage = () => {
                     </aside>
 
                     <div className="grid grid-cols-2 lg:pt-5 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                        {
+                            isLoading && <ProductCardSkeleton /> 
+                        }
                         {productList?.map((product: Product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
