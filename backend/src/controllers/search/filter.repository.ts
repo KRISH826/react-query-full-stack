@@ -1,11 +1,11 @@
 import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
-import { SearchParams } from "../../models/search";
+import { SearchFilters } from "../../models/search";
 
 // Filter options are always based on keyword + gender ONLY
 // (same as Amazon — selecting Nike doesn't remove Nike from the brand list)
 export const getFilterOptionsQuery = async (
-  params: Pick<SearchParams, "keyword" | "gender">,
+  params: Pick<SearchFilters, "keyword" | "gender">,
   db: Pool | PoolClient = pool
 ) => {
   const { keyword, gender } = params;
