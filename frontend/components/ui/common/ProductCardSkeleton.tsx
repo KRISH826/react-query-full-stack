@@ -1,8 +1,10 @@
 "use client";
 
+const DEFAULT_PRODUCT_CARD_SKELETON_COUNT = 10;
+
 const ProductCardSkeleton = () => {
     return (
-        <div className="flex h-full animate-pulse flex-col overflow-hidden rounded-xl md:rounded-2xl border bg-white shadow-sm">
+        <div className="flex h-full animate-pulse flex-col overflow-hidden rounded-xl border bg-white shadow-sm md:rounded-2xl">
             <div className="aspect-square w-full bg-gray-200" />
             <div className="flex flex-1 flex-col p-3 md:p-4">
                 <div className="h-4 w-24 rounded bg-gray-200 md:h-5" />
@@ -24,5 +26,17 @@ const ProductCardSkeleton = () => {
         </div>
     );
 };
+
+export const ProductCardSkeletonGrid = ({
+    count = DEFAULT_PRODUCT_CARD_SKELETON_COUNT,
+}: {
+    count?: number;
+}) => (
+    <>
+        {Array.from({ length: count }, (_, index) => (
+            <ProductCardSkeleton key={`product-card-skeleton-${index}`} />
+        ))}
+    </>
+);
 
 export default ProductCardSkeleton;
