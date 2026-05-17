@@ -33,6 +33,13 @@ const ProductSearchPage = () => {
         skip: !debouncedQuery,
     });
 
+    useEffect(() => {
+        if (filters?.priceRange?.max && priceLimit === 0) {
+            setPriceLimit(filters.priceRange.max);
+        }
+    }, [filters]);
+
+
     const maxPrice = filters?.priceRange?.max ?? 0;  // ← yeh line add karo
     const effectivePriceLimit = priceLimit === 0 && maxPrice > 0 ? maxPrice : priceLimit;
 
@@ -63,6 +70,16 @@ const ProductSearchPage = () => {
             prev.includes(name) ? prev.filter(b => b !== name) : [...prev, name]
         );
     };
+
+    const filteredProducts = productList.filter((product: Product) => {
+        if (!product.variants || product.variants.length === 0) return true;
+
+        const minVariantPrice = Math.min(
+            ...product.variants.map(v => v.price_override ?? Infinity)
+        );
+
+        return minVariantPrice <= effectivePriceLimit;
+    });
 
     const clearAllFilters = () => {
         setSelectedCategories([]);
@@ -135,7 +152,7 @@ const ProductSearchPage = () => {
                                 toggleSize={toggleSize}
                                 selectedRating={selectedRating}
                                 setSelectedRating={setSelectedRating}
-                                priceLimit={priceLimit}
+                                priceLimit={effectivePriceLimit}
                                 setPriceLimit={setPriceLimit}
                                 clearAllFilters={clearAllFilters}
                                 activeFilterCount={activeFilterCount}
@@ -165,9 +182,9 @@ const ProductSearchPage = () => {
 
                     <div className="grid grid-cols-2 lg:pt-5 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         {
-                            isLoading && <ProductCardSkeleton /> 
+                            isLoading && <ProductCardSkeleton />
                         }
-                        {productList?.map((product: Product) => (
+                        {filteredProducts?.map((product: Product) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
