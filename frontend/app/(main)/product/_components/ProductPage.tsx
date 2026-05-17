@@ -1,28 +1,29 @@
 "use client";
 
-import { Spinner } from "@/components/ui/spinner";
-import { useGetProductsQuery } from "@/services/productApi";
-import ProductCard from "./ProductCard";
-import { useState } from "react";
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ProductCardSkeletonGrid } from "@/components/ui/common/ProductCardSkeleton";
 import { usePagination } from "@/hooks/usePagination";
+import { useGetProductsQuery } from "@/services/productApi";
 import { Product } from "@/types/product";
-
+import { useState } from "react";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+import ProductCard from "./ProductCard";
 
 const LIMIT = 30;
+
 const ProductPage = () => {
     const [page, setPage] = useState(1);
-    const { isLoading, error, data } = useGetProductsQuery({ page, limit: LIMIT });
+    const { isLoading, isFetching, error, data } = useGetProductsQuery({ page, limit: LIMIT });
     const totalPages = data?.totalPages ?? 1;
     const pages = usePagination(page, totalPages);
-
-    if (isLoading) {
-        return (
-            <div className="flex min-h-[60vh] items-center justify-center">
-                <Spinner className="h-12 w-12" />
-            </div>
-        );
-    }
+    const isProductsLoading = isLoading || isFetching;
 
     if (error) {
         return (
@@ -33,61 +34,64 @@ const ProductPage = () => {
     }
 
     return (
-        <section className="py-10 bg-white">
+        <section className="bg-white py-10">
             <div className="container mx-auto px-4">
-                <div className="grid gap-3 sm:gap-5 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {data?.data.map((product: Product) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                    {isProductsLoading ? (
+                        <ProductCardSkeletonGrid />
+                    ) : (
+                        data?.data.map((product: Product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))
+                    )}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 w-full justify-between md:mt-12 mt-8 items-center border-t border-gray-100 pt-8">
-                    <p className="text-[10px] md:text-xs text-muted-foreground order-2 sm:order-1 font-medium">
-                        Page {page} of {totalPages} — {data?.total} products
+
+                <div className="mt-8 flex w-full flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 md:mt-12 sm:flex-row">
+                    <p className="order-2 text-[10px] font-medium text-muted-foreground md:text-xs sm:order-1">
+                        Page {page} of {totalPages} - {data?.total ?? 0} products
                     </p>
-                    {
-                        totalPages > 1 && (
-                            <div className="order-1 sm:order-2 w-full sm:w-auto overflow-x-auto">
-                                <Pagination>
-                                    <PaginationContent className="flex-nowrap">
-                                        <PaginationItem>
-                                            <PaginationPrevious
-                                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                                className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                            />
-                                        </PaginationItem>
 
-                                        {pages.map((p, idx) =>
-                                            p === "ellipsis" ? (
-                                                <PaginationItem key={`ellipsis-${idx}`}>
-                                                    <PaginationEllipsis />
-                                                </PaginationItem>
-                                            ) : (
-                                                <PaginationItem key={p}>
-                                                    <PaginationLink
-                                                        isActive={p === page}
-                                                        onClick={() => setPage(p)}
-                                                        className="cursor-pointer text-xs sm:text-sm"
-                                                    >
-                                                        {p}
-                                                    </PaginationLink>
-                                                </PaginationItem>
-                                            )
-                                        )}
+                    {totalPages > 1 && (
+                        <div className="order-1 w-full overflow-x-auto sm:order-2 sm:w-auto">
+                            <Pagination>
+                                <PaginationContent className="flex-nowrap">
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+                                            className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
 
-                                        <PaginationItem>
-                                            <PaginationNext
-                                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                                className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                            />
-                                        </PaginationItem>
-                                    </PaginationContent>
-                                </Pagination>
-                            </div>
-                        )
-                    }
+                                    {pages.map((paginationPage, index) =>
+                                        paginationPage === "ellipsis" ? (
+                                            <PaginationItem key={`ellipsis-${index}`}>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        ) : (
+                                            <PaginationItem key={paginationPage}>
+                                                <PaginationLink
+                                                    isActive={paginationPage === page}
+                                                    onClick={() => setPage(paginationPage)}
+                                                    className="cursor-pointer text-xs sm:text-sm"
+                                                >
+                                                    {paginationPage}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        )
+                                    )}
+
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => setPage((currentPage) => Math.min(totalPages, currentPage + 1))}
+                                            className={page === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    )}
                 </div>
             </div>
-
         </section>
     );
 };
