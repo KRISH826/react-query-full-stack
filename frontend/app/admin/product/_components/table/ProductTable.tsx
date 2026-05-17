@@ -24,7 +24,7 @@ export function ProductTable({ searchTerm }: { searchTerm: string }) {
   const [page, setPage] = useState(1)
   const limit = 10
   const searchString = searchTerm.trim().length > 0;
-  const { data: SearchData, isLoading: SearchLoading, isError: SearchIsError } = useSearchProductsQuery({ name: searchTerm, limit }, { skip: !searchString })
+  const { data: SearchData, isLoading: SearchLoading, isError: SearchIsError } = useSearchProductsQuery({ q: searchTerm, limit, page }, { skip: !searchString })
   const { data, isLoading, isError } = useGetProductsQuery({ page, limit }, { skip: searchString })
 
   const table = useReactTable({
