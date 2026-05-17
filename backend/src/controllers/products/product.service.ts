@@ -6,16 +6,11 @@ import { addProductImage, addProductVariant, createProduct, deleteProduct, delet
 import { addProductCategory, findCategoryByName } from "../category/category.repository";
 import { cache } from "../../utils/cache";
 import { AiService } from "../aisearch/ai.service";
+import { invalidateCatalogCaches } from "../../utils/catalog-cache";
 
 export class ProductService {
     private static async invalidateProductCache(productId?: string): Promise<void> {
-        if (productId) {
-            await cache.delete(`product:${productId}`);
-            await cache.delPattern(`product:${productId}:*`);
-        }
-
-        await cache.delPattern(`product:*`);
-        await cache.delPattern(`products:*`);
+        await invalidateCatalogCaches(productId);
     }
 
 

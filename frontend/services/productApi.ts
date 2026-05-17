@@ -30,6 +30,16 @@ export interface FilterResponse {
     data: ProductFilterResponse;
 }
 
+interface ClientSearchParams {
+    q: string;
+    brands?: string;
+    categories?: string;
+    sizes?: string;
+    min_rating?: number;
+    page?: number;
+    limit?: number;
+}
+
 export const productApi = baseApi.injectEndpoints({
     endpoints: (builder) => ({
         getProducts: builder.query<ProductsResponse, ProductsQueryParams>({
@@ -73,25 +83,29 @@ export const productApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Product", id: "LIST" }],
         }),
-        searchProducts: builder.query<ProductsResponse, SearchProductsParams>({
-            query: ({ name, brand, limit = 10 }) => {
+        searchProducts: builder.query<ProductsResponse, ClientSearchParams>({
+            query: ({ q, brands, categories, sizes, min_rating, page = 1, limit = 30 }) => {
                 const params = new URLSearchParams();
-                if (name) params.append("name", name);
-                if (brand) params.append("brand", brand);
-                params.append("limit", limit.toString());
-                return `products/search?${params.toString()}`;
+                params.set("q", q);
+                params.set("page", String(page));
+                params.set("limit", String(limit));
+                if (brands) params.set("brands", brands);
+                if (categories) params.set("categories", categories);
+                if (sizes) params.set("sizes", sizes);
+                if (min_rating) params.set("min_rating", String(min_rating));
+                return `search-products/search?${params.toString()}`;
             },
             transformResponse: (response: ProductsResponse) => response,
             providesTags: [{ type: "Product", id: "LIST" }],
+            keepUnusedDataFor: 0
         }),
-
         getProductFilters: builder.query<ProductFilterResponse, string>({
             query: (query: string) => `filters?q=${query}`,
             transformResponse: (response: FilterResponse) => response.data,
             providesTags: [
                 { type: "Product", id: "FILTERS" }
             ],
-
+            keepUnusedDataFor: 0
         }),
 
         clientSearchProducts: builder.query<Product[], string>({

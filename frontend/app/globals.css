@@ -47,6 +47,18 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
+.font-auth {
+  font-family: var(--font-poppins), var(--font-geist-sans), sans-serif;
+}
+
+.font-brand {
+  font-family: var(--font-brand), var(--font-poppins), serif;
+}
+
+.font-auth-brand {
+  font-family: var(--font-brand), var(--font-poppins), serif;
+}
+
 
 :root {
   --radius: 0.425rem;
