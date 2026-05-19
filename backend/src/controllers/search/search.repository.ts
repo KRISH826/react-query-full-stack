@@ -27,33 +27,31 @@ export const searchProductQuery = async (
     let orderClause = "ORDER BY p.created_at DESC";
 
     if (keyword) {
-        scoreSelect = `(
-            (ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i})) * 0.6) + 
-            (GREATEST(
-                similarity(p.productname, $${i}),
-                similarity(COALESCE(p.description, ''), $${i}),
-                similarity(COALESCE(p.brand, ''), $${i}),
-                word_similarity(p.productname, $${i})
-            ) * 0.4) + 
-            (GREATEST(
-                COALESCE((SELECT MAX(similarity(pi.image_url, $${i})) FROM product_images pi WHERE pi.product_id = p.id), 0),
-                COALESCE((SELECT MAX(similarity(v.sku, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0),
-                COALESCE((SELECT MAX(similarity(v.size, $${i})) FROM product_variants v WHERE v.product_id = p.id), 0)
-            ) * 0.4)
-        ) AS score`;
+        scoreSelect = `
+            CASE
+                WHEN p.search_vector @@ websearch_to_tsquery('english', $${i})
+                THEN ts_rank_cd(p.search_vector, websearch_to_tsquery('english', $${i}), 32) + 1.0
+                ELSE ts_rank_cd(p.search_vector,
+                    replace(websearch_to_tsquery('english', $${i})::text, ' & ', ' | ')::tsquery, 32
+                ) * 0.5
+            END AS score
+        `;
 
         conditions.push(`(
             p.search_vector @@ websearch_to_tsquery('english', $${i})
+            OR (
+                p.search_vector @@ replace(
+                    websearch_to_tsquery('english', $${i})::text, ' & ', ' | '
+                )::tsquery
+                AND ts_rank_cd(p.search_vector,
+                    replace(websearch_to_tsquery('english', $${i})::text, ' & ', ' | ')::tsquery, 32
+                ) > 0.03
+            )
             OR EXISTS (
                 SELECT 1
                 FROM unnest(string_to_array($${i}, ' ')) AS kw
-                WHERE word_similarity(p.productname, kw) > 0.15
-                OR word_similarity(COALESCE(p.description, ''), kw) > 0.15
-                OR word_similarity(COALESCE(p.brand, ''), kw) > 0.15
+                WHERE word_similarity(p.productname, kw) > 0.2
             )
-            OR p.productname ILIKE '%' || $${i} || '%'
-            OR COALESCE(p.description, '') ILIKE '%' || $${i} || '%'
-            OR COALESCE(p.brand, '') ILIKE '%' || $${i} || '%'
         )`);
 
         orderClause = "ORDER BY score DESC, p.created_at DESC";

@@ -9,22 +9,26 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
 
     if (keyword) {
         conditions.push(`(
-            search_vector @@ websearch_to_tsquery('english', $${i})
-            OR EXISTS (
-                SELECT 1
-                FROM unnest(string_to_array($${i}, ' ')) AS kw
-                WHERE word_similarity(productname, kw) > 0.15
-                OR word_similarity(COALESCE(brand, ''), kw) > 0.15
-                OR word_similarity(COALESCE(description, ''), kw) > 0.15
-            )
-            OR productname ILIKE '%' || $${i} || '%'
-            OR COALESCE(brand, '') ILIKE '%' || $${i} || '%'
-            OR COALESCE(description, '') ILIKE '%' || $${i} || '%'
-            OR EXISTS (
-                SELECT 1 FROM jsonb_array_elements(categories) c
-                WHERE c->>'name' ILIKE '%' || $${i} || '%'
-            )
-        )`);
+        -- AND match: dono words hone chahiye
+        search_vector @@ websearch_to_tsquery('english', $${i})
+
+        -- OR match: koi ek word mile, but minimum relevance threshold
+        OR (
+            search_vector @@ replace(
+                websearch_to_tsquery('english', $${i})::text, ' & ', ' | '
+            )::tsquery
+            AND ts_rank_cd(search_vector,
+                replace(websearch_to_tsquery('english', $${i})::text, ' & ', ' | ')::tsquery, 32
+            ) > 0.03
+        )
+
+        -- Typo fallback
+        OR EXISTS (
+            SELECT 1
+            FROM unnest(string_to_array($${i}, ' ')) AS kw
+            WHERE word_similarity(productname, kw) > 0.2
+        )
+    )`);
         values.push(keyword);
         i++;
     }
