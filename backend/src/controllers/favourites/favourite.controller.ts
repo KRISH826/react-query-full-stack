@@ -33,6 +33,21 @@ export class favouriteController {
         }
     }
 
+    static async clearFavouriteController(req: AuthRequest, res: Response, next: NextFunction) {
+        try {
+            const userId = req.user!.id;
+            const productIds = req.body.productIds as string[];
+            const favourite = await FavouriteService.clearFavourite(userId, productIds);
+            res.status(200).json({
+                success: true,
+                message: "Favourite Deleted Successfully",
+                favourite
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async getFavourites(req: AuthRequest, res: Response, next: NextFunction) {
         try {
             const userId = req.user!.id as string;

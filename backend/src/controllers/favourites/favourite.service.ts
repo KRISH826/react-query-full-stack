@@ -31,6 +31,12 @@ export class FavouriteService {
         return favourite;
     }
 
+    static async clearFavourite(userId: string, productIds: string[]) {
+        const favourites = await Promise.all(productIds.map((id) => removeFavourite(userId, id)));
+        await cache.delPattern(`favourites:${userId}:*`);
+        return favourites;
+    }
+
     static async findAllFavourites(
         userId: string,
         page: number = 1,
