@@ -1,53 +1,81 @@
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { useDeleteCartMutation } from '@/services/cartApi'
-import { Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
+"use client";
 
-type cart = {
-    id: string
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { useDeleteCartMutation } from "@/services/cartApi";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface DeleteCartProductProps {
+    id: string;
+    productName?: string;
 }
 
-const DeleteCartProduct = ({ id }: cart) => {
+const DeleteCartProduct = ({ id, productName }: DeleteCartProductProps) => {
     const [deleteCartProduct, { isLoading }] = useDeleteCartMutation();
+
     const handleDeleteProduct = async () => {
         try {
-            await deleteCartProduct({ variant_id: id });
-        } catch (error: unknown) {
+            await deleteCartProduct({ variant_id: id }).unwrap();
+            toast.success("Item removed from cart.");
+        } catch (error) {
             const err = error as { data?: { message?: string } };
-            const errorMessage = err?.data?.message || "Login failed";
+            const errorMessage = err?.data?.message || "Failed to remove the cart item.";
             toast.error(errorMessage);
-        } finally {
-            toast.success("Cart Item Deleted SuccessFully")
         }
+    };
 
-    }
     return (
-        <>
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <button className="text-red-500 p-1 cursor-pointer hover:text-red-600 transition">
-                        <Trash2 size={24} />
-                    </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete your account and remove your data from our servers.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteProduct}>
-                            {
-                                isLoading ? "Deleting..." : "Continue"
-                            }
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </>
-    )
-}
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                <button
+                    type="button"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 hover:text-rose-700"
+                    aria-label="Remove cart item"
+                >
+                    <Trash2 className="size-4" />
+                </button>
+            </AlertDialogTrigger>
 
-export default DeleteCartProduct
+            <AlertDialogContent className="sm:max-w-md">
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Remove this item?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {productName
+                            ? `${productName} will be removed from your cart. You can always add it again later.`
+                            : "This item will be removed from your cart. You can always add it again later."}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Keep item</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={handleDeleteProduct}
+                        className="bg-rose-600 hover:bg-rose-700"
+                    >
+                        {isLoading ? (
+                            <span className="inline-flex items-center gap-2">
+                                <Spinner className="size-4" />
+                                Removing...
+                            </span>
+                        ) : (
+                            "Remove item"
+                        )}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+};
+
+export default DeleteCartProduct;
