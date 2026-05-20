@@ -9,12 +9,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
 import DeleteDialog from "./DeleteDialog";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface FavouritesItemsProps {
     item: FavouriteItem;
+    isSelected: boolean;
+    onSelect: (productId: string) => void;
 }
 
-const FavouritesItems = ({ item }: FavouritesItemsProps) => {
+const FavouritesItems = ({ item, isSelected, onSelect }: FavouritesItemsProps) => {
     const router = useRouter();
     const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
     const product = item.product;
@@ -45,7 +48,15 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
     };
 
     return (
-        <div className="group flex gap-4 p-4 sm:p-5 bg-background rounded-2xl border border-border transition-all duration-200 hover:shadow-md hover:border-border/80 w-full">
+        <div className={`group flex relative gap-4 px-4 py-5 bg-background rounded-2xl border transition-all duration-200 hover:shadow-md w-full
+            ${isSelected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-border/80"}`}>
+            <div className="flex absolute top-7 left-6 z-10 items-center shrink-0">
+                <Checkbox
+                    defaultChecked={isSelected}
+                    onChange={() => onSelect(item.product_id)}
+                    className="w-5! h-5! border bg-secondary"
+                />
+            </div>
 
             {/* Image */}
             <div
@@ -59,7 +70,6 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
             </div>
-
             {/* Content */}
             <div className="flex flex-1 min-w-0 flex-col justify-between gap-3">
 

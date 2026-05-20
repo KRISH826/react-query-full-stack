@@ -1,24 +1,27 @@
 "use client";
 
-import { useGetFavouritesQuery } from "@/services/favouriteApi";
+import { useClearFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
 import { Spinner } from "@/components/ui/spinner";
 import FavouritesItems from "./FavouritesItems";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CalendarHeart } from "lucide-react";
+import { ArrowLeft, CalendarHeart, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { usePagination } from "@/hooks/usePagination";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { toast } from "sonner";
 
 const FavouritePage = () => {
     const [page, setPage] = useState(1);
     const token = useSelector((state: RootState) => state.auth.accessToken);
+    const [clearFavourite, { isLoading: isClearLoading, error: clearError }] = useClearFavouriteMutation();
     const { data, isLoading, error } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
     const totalPages = data?.totalPages ?? 1;
     const pages = usePagination(page, totalPages);
     const router = useRouter();
+    const [selectIds, setSelectIds] = useState<string[]>([]);
 
     if (isLoading) {
         return (
@@ -34,6 +37,22 @@ const FavouritePage = () => {
 
     const hasItems = data?.data && data.data.length > 0;
 
+    const handleSelect = (productId: string) => {
+        setSelectIds((prev) => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
+    }
+
+
+    const SelectedRemoveFavourites = async () => {
+        if (selectIds.length === 0) return;
+        try {
+            await clearFavourite({ productIds: selectIds }).unwrap();
+            setSelectIds([]);
+            toast.success(`${selectIds.length} item(s) removed from wishlist.`);
+        } catch (error) {
+            toast.error("Failed to remove selected items.");
+        }
+    };
+
     return (
         <section className="py-10 bg-background/30">
             <div className="container mx-auto">
@@ -44,10 +63,24 @@ const FavouritePage = () => {
                             {hasItems ? `You have ${data.total} items saved.` : "Your wishlist is empty."}
                         </p>
                     </div>
-                    <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border w-auto">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Shopping
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {
+                            hasItems && (
+
+                                <Button onClick={SelectedRemoveFavourites} variant="destructive" className="cursor-pointer border-border w-auto">
+                                    {
+                                        isClearLoading ?
+                                            <Spinner className="mr-1.5 h-4 w-4" /> : <Trash2 className="mr-1.5 h-4 w-4" />
+                                    }
+                                    Remove Favourites
+                                </Button>
+                            )
+                        }
+                        <Button onClick={() => router.push("/product")} variant="outline" className="cursor-pointer border-border w-auto">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Shopping
+                        </Button>
+                    </div>
                 </div>
 
                 {/* List Container - Changed from Grid to Flex Column */}
@@ -64,7 +97,7 @@ const FavouritePage = () => {
                 ) : (
                     <div className="flex flex-col gap-4 w-full">
                         {data.data.map((item) => (
-                            <FavouritesItems key={item.product_id} item={item} />
+                            <FavouritesItems onSelect={handleSelect} isSelected={selectIds.includes(item.product_id)}  key={item.product_id} item={item} />
                         ))}
                     </div>
                 )}
