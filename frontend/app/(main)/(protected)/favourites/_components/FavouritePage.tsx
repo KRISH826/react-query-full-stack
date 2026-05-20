@@ -12,6 +12,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const FavouritePage = () => {
     const [page, setPage] = useState(1);
@@ -83,6 +84,19 @@ const FavouritePage = () => {
                     </div>
                 </div>
 
+                <div className="flex gap-5 mb-2.5 items-center">
+                    <div className="flex gap-2 items-center">
+                        <Checkbox /> <span className="font-medium text-primary text-base">Select All</span>
+                    </div>
+                    {
+                        selectIds.length > 0 && (
+                            <div className="text-primary text-base">
+                                {selectIds.length} item(s) selected
+                            </div>
+                        )
+                    }
+
+                </div>
                 {/* List Container - Changed from Grid to Flex Column */}
                 {!hasItems ? (
                     <div className="flex flex-col items-center justify-center h-80 rounded-2xl border border-dashed border-border bg-card/50">
@@ -97,7 +111,7 @@ const FavouritePage = () => {
                 ) : (
                     <div className="flex flex-col gap-4 w-full">
                         {data.data.map((item) => (
-                            <FavouritesItems onSelect={handleSelect} isSelected={selectIds.includes(item.product_id)}  key={item.product_id} item={item} />
+                            <FavouritesItems onSelect={handleSelect} isSelected={selectIds.includes(item.product_id)} key={item.product_id} item={item} />
                         ))}
                     </div>
                 )}

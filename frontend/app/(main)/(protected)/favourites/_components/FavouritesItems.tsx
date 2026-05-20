@@ -52,9 +52,9 @@ const FavouritesItems = ({ item, isSelected, onSelect }: FavouritesItemsProps) =
             ${isSelected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-border/80"}`}>
             <div className="flex absolute top-7 left-6 z-10 items-center shrink-0">
                 <Checkbox
-                    defaultChecked={isSelected}
-                    onChange={() => onSelect(item.product_id)}
-                    className="w-5! h-5! border bg-secondary"
+                    checked={isSelected}
+                    onCheckedChange={() => onSelect(item.product_id)}
+                    className="size-5 border bg-secondary"
                 />
             </div>
 
