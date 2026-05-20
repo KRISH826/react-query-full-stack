@@ -20,10 +20,15 @@ const OrderSummary = () => {
     const isCheckoutPage = pathname === "/checkout";
     const cartItemsCount = data?.items?.length ?? 0;
     const isCartEmpty = !isBuyNow && cartItemsCount === 0;
+    const shouldRenderSummary = isCheckoutPage || isBuyNow || cartItemsCount > 0;
 
     const buyNowAmount = Number(searchParams.get("amount") ?? 0);
     const cartTotal = Number(data?.total ?? 0);
     const displayTotal = isBuyNow ? buyNowAmount : cartTotal;
+
+    if (!shouldRenderSummary) {
+        return null;
+    }
 
     return (
         <div className="sticky top-20 h-fit overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">

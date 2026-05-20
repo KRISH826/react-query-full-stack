@@ -21,6 +21,7 @@ const CartPage = () => {
     const cartItems = data?.items ?? [];
     const itemCount = cartItems.length;
     const formattedTotal = Number(data?.total ?? 0).toLocaleString("en-IN");
+    const shouldShowOrderSummary = !isLoading && itemCount > 0;
 
     const handleClearCart = async () => {
         try {
@@ -103,8 +104,13 @@ const CartPage = () => {
                         </div>
                     </div>
 
-                    <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-                        <div className="space-y-4">
+                    <div
+                        className={shouldShowOrderSummary
+                            ? "grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]"
+                            : "space-y-4"
+                        }
+                    >
+                        <div className={`space-y-4 ${!shouldShowOrderSummary ? "w-full" : ""}`}>
                             {isLoading ? (
                                 <div className="flex min-h-[22rem] items-center justify-center rounded-3xl border border-stone-200 bg-white shadow-sm">
                                     <div className="flex flex-col items-center gap-3 text-center text-stone-500">
@@ -113,7 +119,7 @@ const CartPage = () => {
                                     </div>
                                 </div>
                             ) : itemCount === 0 ? (
-                                <div className="rounded-3xl border border-dashed border-stone-300 bg-white/80 p-10 text-center shadow-sm">
+                                <div className="w-full rounded-3xl border border-dashed border-stone-300 bg-white/80 p-10 text-center shadow-sm">
                                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-stone-100 text-stone-700">
                                         <ShoppingBag className="size-8" />
                                     </div>
@@ -159,7 +165,7 @@ const CartPage = () => {
                             )}
                         </div>
 
-                        <OrderSummary />
+                        {shouldShowOrderSummary && <OrderSummary />}
                     </div>
                 </div>
             </div>
