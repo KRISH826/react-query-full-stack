@@ -49,7 +49,7 @@ const FavouritePage = () => {
             await clearFavourite({ productIds: selectIds }).unwrap();
             setSelectIds([]);
             toast.success(`${selectIds.length} item(s) removed from wishlist.`);
-        } catch (error) {
+        } catch {
             toast.error("Failed to remove selected items.");
         }
     };
