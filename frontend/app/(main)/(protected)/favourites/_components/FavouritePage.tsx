@@ -42,6 +42,19 @@ const FavouritePage = () => {
         setSelectIds((prev) => prev.includes(productId) ? prev.filter(id => id !== productId) : [...prev, productId]);
     }
 
+    const handleAllSelect = () => {
+        if (!hasItems) return;
+        const allIds = data.data.map(({ product_id }) => product_id);
+        const allSelected = allIds.every(id => selectIds.includes(id));
+
+        if (allSelected) {
+            setSelectIds([]);
+            return;
+        }
+
+        setSelectIds(allIds);
+    }
+
 
     const SelectedRemoveFavourites = async () => {
         if (selectIds.length === 0) return;
@@ -84,19 +97,24 @@ const FavouritePage = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-5 mb-2.5 items-center">
-                    <div className="flex gap-2 items-center">
-                        <Checkbox /> <span className="font-medium text-primary text-base">Select All</span>
-                    </div>
-                    {
-                        selectIds.length > 0 && (
-                            <div className="text-primary text-base">
-                                {selectIds.length} item(s) selected
+                {
+                    hasItems && (
+                        <div className="flex gap-5 mb-2.5 items-center">
+                            <div className="flex gap-2 items-center">
+                                <Checkbox checked={hasItems && selectIds.length === data.data.length}
+                                    onCheckedChange={handleAllSelect} /> <span className="font-medium text-primary text-base">Select All</span>
                             </div>
-                        )
-                    }
+                            {
+                                selectIds.length > 0 && (
+                                    <div className="text-primary text-base">
+                                        {selectIds.length} item(s) selected
+                                    </div>
+                                )
+                            }
 
-                </div>
+                        </div>
+                    )
+                }
                 {/* List Container - Changed from Grid to Flex Column */}
                 {!hasItems ? (
                     <div className="flex flex-col items-center justify-center h-80 rounded-2xl border border-dashed border-border bg-card/50">
