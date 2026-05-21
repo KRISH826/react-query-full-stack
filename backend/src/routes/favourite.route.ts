@@ -8,5 +8,6 @@ const router = express.Router();
 router.get("/", requireAuth, requireRole("customer"), favouriteController.getFavourites);
 router.post("/:productId", requireAuth, requireRole("customer"), favouriteController.addFavouriteController);
 router.delete("/:productId", requireAuth, favouriteController.removeFavouriteController)
+router.delete("/", requireAuth, favouriteController.clearFavouriteController);
 
 export default router;

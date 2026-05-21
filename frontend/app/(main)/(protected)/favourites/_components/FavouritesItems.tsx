@@ -1,20 +1,25 @@
 "use client";
 
-import { FavouriteItem } from "@/types/favourite";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 import { useAddToCartMutation } from "@/services/cartApi";
+import { FavouriteItem } from "@/types/favourite";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
-import { toast } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import DeleteDialog from "./DeleteDialog";
-import { Button } from "@/components/ui/button";
 
 interface FavouritesItemsProps {
     item: FavouriteItem;
+    isSelected: boolean;
+    onSelect: (productId: string) => void;
 }
 
-const FavouritesItems = ({ item }: FavouritesItemsProps) => {
+const formatCurrency = (price?: number | null) => `Rs.${Number(price ?? 0).toLocaleString("en-IN")}`;
+
+const FavouritesItems = ({ item, isSelected, onSelect }: FavouritesItemsProps) => {
     const router = useRouter();
     const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
     const product = item.product;
@@ -23,13 +28,14 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
     const offerPrice = activeVariant?.offer_price_override;
     const originalPrice = activeVariant?.price_override;
     const displayPrice = offerPrice ?? originalPrice;
-    const hasDiscount = offerPrice && originalPrice && originalPrice > offerPrice;
-    const discountPercent = hasDiscount
+    const hasDiscount = Boolean(offerPrice && originalPrice && originalPrice > offerPrice);
+    const discountPercent = hasDiscount && originalPrice && offerPrice
         ? Math.round(((originalPrice - offerPrice) / originalPrice) * 100)
         : 0;
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.stopPropagation();
+
         try {
             await addToCart({
                 product_id: item.product_id,
@@ -37,7 +43,7 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
                 quantity: 1,
             }).unwrap();
             toast.success("Added to bag");
-        } catch (error: unknown) {
+        } catch (error) {
             const err = error as { data?: { message?: string } };
             const errorMessage = err?.data?.message || "Failed to add item.";
             toast.error(errorMessage);
@@ -45,78 +51,105 @@ const FavouritesItems = ({ item }: FavouritesItemsProps) => {
     };
 
     return (
-        <div className="group flex gap-4 p-4 sm:p-5 bg-background rounded-2xl border border-border transition-all duration-200 hover:shadow-md hover:border-border/80 w-full">
+        <div
+            className={`group px-2 py-5 transition-colors sm:px-1 ${
+                isSelected ? "rounded-2xl bg-primary/5" : ""
+            }`}
+        >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                <div className="flex items-start gap-3">
+                    <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => onSelect(item.product_id)}
+                        className="mt-1 size-5 border-stone-300 bg-white data-[state=checked]:border-stone-900 data-[state=checked]:bg-stone-900"
+                    />
 
-            {/* Image */}
-            <div
-                onClick={() => router.push(`/product/${item.product_id}`)}
-                className="relative shrink-0 h-24 w-24 sm:h-32 sm:w-32 md:h-36 md:w-36 overflow-hidden rounded-xl bg-secondary/20 cursor-pointer border border-border/40"
-            >
-                <Image
-                    src={image}
-                    alt={product.productname}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-            </div>
-
-            {/* Content */}
-            <div className="flex flex-1 min-w-0 flex-col justify-between gap-3">
-
-                {/* Top Row: Brand + Name + Delete */}
-                <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 space-y-0.5">
-                        {product.brand && (
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate">
-                                {product.brand}
-                            </p>
-                        )}
-                        <h2
-                            onClick={() => router.push(`/product/${item.product_id}`)}
-                            className="text-sm sm:text-base font-semibold text-foreground cursor-pointer hover:underline underline-offset-4 line-clamp-2 leading-snug"
-                        >
-                            {product.productname}
-                        </h2>
-                    </div>
-                    <div className="shrink-0">
-                        <DeleteDialog productId={item.product_id} />
+                    <div
+                        onClick={() => router.push(`/product/${item.product_id}`)}
+                        className="relative h-26 w-24 shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 sm:h-32 sm:w-28 md:h-36 md:w-32"
+                    >
+                        <Image
+                            src={image}
+                            alt={product.productname}
+                            fill
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
                     </div>
                 </div>
 
-                {/* Bottom Row: Price + Button */}
-                <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex min-w-0 flex-1 flex-col gap-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="min-w-0 space-y-2">
+                            <div className="flex flex-wrap items-center gap-2 text-xs">
+                                {product.brand && (
+                                    <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
+                                        {product.brand}
+                                    </span>
+                                )}
+                                {hasDiscount && (
+                                    <span className="rounded-full bg-rose-50 px-2.5 py-1 font-medium text-rose-600">
+                                        {discountPercent}% off
+                                    </span>
+                                )}
+                            </div>
 
-                    {/* Price */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-lg sm:text-xl font-bold text-foreground">
-                            ₹{displayPrice?.toLocaleString("en-IN")}
-                        </span>
-                        {hasDiscount && (
-                            <>
-                                <span className="text-xs sm:text-sm text-muted-foreground line-through">
-                                    ₹{originalPrice.toLocaleString("en-IN")}
-                                </span>
-                                <span className="text-[10px] sm:text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded">
-                                    {discountPercent}% OFF
-                                </span>
-                            </>
-                        )}
+                            <h2
+                                onClick={() => router.push(`/product/${item.product_id}`)}
+                                className="line-clamp-2 cursor-pointer text-base font-semibold leading-snug text-stone-900 hover:underline underline-offset-4 sm:text-lg"
+                            >
+                                {product.productname}
+                            </h2>
+
+                            <p className="text-sm text-stone-500">
+                                Saved for later. Move it to your bag whenever you are ready.
+                            </p>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <div className="text-left sm:text-right">
+                                <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">
+                                    Price
+                                </p>
+                                <div className="mt-1 flex flex-wrap items-center gap-2 sm:justify-end">
+                                    <span className="text-lg font-semibold text-stone-900 sm:text-xl">
+                                        {formatCurrency(displayPrice)}
+                                    </span>
+                                    {hasDiscount && originalPrice && (
+                                        <span className="text-sm text-stone-400 line-through">
+                                            {formatCurrency(originalPrice)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <DeleteDialog productId={item.product_id} />
+                        </div>
                     </div>
 
-                    {/* Add to Bag */}
-                    <Button
-                        onClick={handleAddToCart}
-                        disabled={isAddingToCart}
-                        size="sm"
-                        className="h-9 sm:h-10 px-4 sm:px-5 rounded-lg font-semibold text-xs sm:text-sm shrink-0"
-                    >
-                        {isAddingToCart ? (
-                            <Spinner className="size-3.5 mr-1.5" />
-                        ) : (
-                            <ShoppingBag className="size-3.5 mr-1.5" />
-                        )}
-                        Add to Bag
-                    </Button>
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className="flex flex-wrap gap-2 text-xs text-stone-600 sm:text-sm">
+                            <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
+                                Wishlist pick
+                            </span>
+                            <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
+                                Ready to add
+                            </span>
+                        </div>
+
+                        <Button
+                            onClick={handleAddToCart}
+                            disabled={isAddingToCart}
+                            size="sm"
+                            className="h-10 shrink-0 rounded-xl px-4 text-sm font-semibold"
+                        >
+                            {isAddingToCart ? (
+                                <Spinner className="mr-1.5 size-3.5" />
+                            ) : (
+                                <ShoppingBag className="mr-1.5 size-3.5" />
+                            )}
+                            Add to Bag
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

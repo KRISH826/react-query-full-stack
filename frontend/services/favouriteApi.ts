@@ -45,7 +45,6 @@ export const favouriteApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: [{ type: "Favourite", id: "USER_FAVOURITES" }],
         }),
-
         removeFavourite: builder.mutation<BackendMutationResponse, { productId: string }>({
             query: ({ productId }) => ({
                 url: `favourites/${productId}`,
@@ -75,6 +74,37 @@ export const favouriteApi = baseApi.injectEndpoints({
                 { type: "Favourite", id: productId },
                 { type: "Favourite", id: "USER_FAVOURITES" }
             ],
+        }),
+
+        clearFavourite: builder.mutation<BackendMutationResponse, { productIds: string[] }>({
+            query: ({productIds}) => ({
+                url: `favourites`,
+                method: "DELETE",
+                body: {
+                    productIds
+                }
+            }),
+            async onQueryStarted({ productIds }, { dispatch, queryFulfilled }) {
+                const patchResult = dispatch(
+                    favouriteApi.util.updateQueryData(
+                        "getFavourites",
+                        { page: 1, limit: 20 },
+                        (draft) => {
+                            const initialCount = draft.data.length;
+                            draft.data = draft.data.filter(item => !productIds.includes(item.product_id));
+                            if (draft.data.length < initialCount) {
+                                draft.total = Math.max(0, draft.total - productIds.length);
+                            }
+                        }
+                    )
+                );
+                try {
+                    await queryFulfilled;
+                } catch {
+                    patchResult.undo()
+                }
+            },
+            invalidatesTags: [{ type: "Favourite", id: "USER_FAVOURITES" }],
         })
     })
 })
@@ -83,4 +113,5 @@ export const {
     useGetFavouritesQuery,
     useAddFavouriteMutation,
     useRemoveFavouriteMutation,
+    useClearFavouriteMutation
 } = favouriteApi;

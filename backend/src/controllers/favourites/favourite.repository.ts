@@ -42,6 +42,11 @@ export async function findFavourite(
     return rows[0] || null;
 }
 
+export async function clearFavourite(product_id: string, db: Pool | PoolClient = pool) {
+    const {rows} = await db.query(`DELETE FROM favourite_products WHERE id = $1 RETURNING *`, [product_id]);
+    return rows[0] || null;
+}
+
 export async function findAllFavouritesByUser(
     userId: string,
     page: number = 1,

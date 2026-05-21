@@ -24,12 +24,12 @@ const DeleteDialog = ({ productId }: DeleteDialogProps) => {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="text-destructive hover:bg-destructive/20  bg-destructive/10 hover:text-destructive cursor-pointer transition-colors"
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 transition-colors hover:bg-rose-100 hover:text-rose-700 cursor-pointer"
                 >
-                    <Trash2 className="size-5" />
+                    <Trash2 className="size-4.5" />
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
