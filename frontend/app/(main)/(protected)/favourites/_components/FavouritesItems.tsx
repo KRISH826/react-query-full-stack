@@ -51,9 +51,10 @@ const FavouritesItems = ({ item, isSelected, onSelect }: FavouritesItemsProps) =
     };
 
     return (
-        <div className={`px-5 py-5 transition-colors sm:px-6 ${isSelected ? "bg-stone-50/80" : "bg-white"}`}>
-            <div className="grid gap-4 md:grid-cols-[auto_7rem_minmax(0,1fr)_auto] md:items-center md:gap-5">
-                <div className="flex items-start md:pt-1">
+        <div className={`group relative py-5 px-4 sm:px-6 transition-colors duration-200 ${isSelected ? "bg-stone-50/50" : "bg-white"}`}>
+            <div className="flex items-start gap-4 sm:gap-6">
+                {/* Checkbox Selection */}
+                <div className="flex items-center pt-1.5 sm:pt-2">
                     <Checkbox
                         checked={isSelected}
                         onCheckedChange={() => onSelect(item.product_id)}
@@ -61,86 +62,102 @@ const FavouritesItems = ({ item, isSelected, onSelect }: FavouritesItemsProps) =
                     />
                 </div>
 
+                {/* Product Image */}
                 <div
                     onClick={() => router.push(`/product/${item.product_id}`)}
-                    className="relative h-28 w-24 cursor-pointer overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 sm:h-32 sm:w-28"
+                    className="relative h-20 w-16 sm:h-28 sm:w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-stone-100 bg-stone-50"
                 >
                     <Image
                         src={image}
                         alt={product.productname}
                         fill
-                        className="object-cover transition-transform duration-500 hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                 </div>
 
-                <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                        {product.brand && (
-                            <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
-                                {product.brand}
+                {/* Product Info Block */}
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 space-y-1">
+                        {/* Badges */}
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold tracking-wide uppercase">
+                            {product.brand && (
+                                <span className="text-stone-500">
+                                    {product.brand}
+                                </span>
+                            )}
+                            {hasDiscount && (
+                                <span className="rounded-full bg-rose-50 px-2 py-0.5 font-bold text-rose-600">
+                                    {discountPercent}% off
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Product Title */}
+                        <h3
+                            onClick={() => router.push(`/product/${item.product_id}`)}
+                            className="cursor-pointer text-sm sm:text-base font-semibold leading-snug text-stone-900 hover:text-stone-700 hover:underline underline-offset-4"
+                        >
+                            {product.productname}
+                        </h3>
+
+                        {/* Description */}
+                        <p className="text-xs text-stone-500 line-clamp-1 sm:line-clamp-2 mt-1">
+                            {product.description || "Saved to wishlist. Move to bag when ready."}
+                        </p>
+
+                        {/* Status/Wishlist details for Desktop */}
+                        <div className="hidden sm:flex flex-wrap gap-2 mt-2">
+                            <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-[10px] font-medium text-stone-600 uppercase tracking-wider">
+                                Wishlist pick
                             </span>
-                        )}
-                        {hasDiscount && (
-                            <span className="rounded-full bg-rose-50 px-2.5 py-1 font-medium text-rose-600">
-                                {discountPercent}% off
+                            <span className="inline-flex items-center rounded-full bg-stone-100 px-2.5 py-0.5 text-[10px] font-medium text-stone-600 uppercase tracking-wider">
+                                Ready to add
                             </span>
-                        )}
+                        </div>
                     </div>
 
-                    <h3
-                        onClick={() => router.push(`/product/${item.product_id}`)}
-                        className="mt-3 cursor-pointer text-lg font-semibold leading-snug text-stone-900 hover:underline underline-offset-4"
-                    >
-                        {product.productname}
-                    </h3>
-
-                    <p className="mt-2 max-w-2xl text-sm text-stone-500">
-                        Saved for later. Move it to your bag whenever you are ready.
-                    </p>
-
-                    <div className="mt-4 flex flex-wrap gap-2 text-xs text-stone-600">
-                        <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
-                            Wishlist pick
-                        </span>
-                        <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
-                            Ready to add
-                        </span>
-                    </div>
-                </div>
-
-                <div className="flex flex-col gap-4 md:items-end">
-                    <div className="flex items-start gap-3 md:justify-end">
-                        <div className="text-left md:text-right">
-                            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">
+                    {/* Price and Actions */}
+                    <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end gap-3 sm:gap-4 sm:shrink-0 w-full sm:w-auto">
+                        {/* Price Details */}
+                        <div className="text-left sm:text-right">
+                            <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">
                                 Price
                             </p>
-                            <div className="mt-1 flex flex-wrap items-center gap-2 md:justify-end">
-                                <span className="text-2xl font-semibold text-stone-900">
+                            <div className="mt-0.5 flex flex-wrap items-baseline gap-1.5 sm:justify-end">
+                                <span className="text-base sm:text-lg font-bold text-stone-900">
                                     {formatCurrency(displayPrice)}
                                 </span>
                                 {hasDiscount && originalPrice && (
-                                    <span className="text-sm text-stone-400 line-through">
+                                    <span className="text-xs text-stone-400 line-through">
                                         {formatCurrency(originalPrice)}
                                     </span>
                                 )}
                             </div>
                         </div>
 
-                        <DeleteDialog productId={item.product_id} />
-                    </div>
+                        {/* Action buttons (Delete & Add to Bag) */}
+                        <div className="flex items-center gap-2">
+                            {/* Delete button */}
+                            <div className="shrink-0">
+                                <DeleteDialog productId={item.product_id} />
+                            </div>
 
-                    <Button
-                        onClick={handleAddToCart}
-                        disabled={isAddingToCart}
-                        className="h-11 rounded-xl px-5 text-sm font-semibold"
-                    >
-                        {isAddingToCart ? (
-                            <Spinner className="mr-1.5 size-3.5" />
-                        ) : (
-                            <ShoppingBag className="mr-1.5 size-3.5" />
-                        )}
-                        Add to Bag
-                    </Button>
+                            {/* Add to Bag */}
+                            <Button
+                                onClick={handleAddToCart}
+                                disabled={isAddingToCart}
+                                size="sm"
+                                className="h-9 rounded-lg px-4 text-xs font-semibold"
+                            >
+                                {isAddingToCart ? (
+                                    <Spinner className="mr-1.5 size-3" />
+                                ) : (
+                                    <ShoppingBag className="mr-1.5 size-3" />
+                                )}
+                                Add to Bag
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
