@@ -2,7 +2,7 @@ import { Pool, PoolClient } from "pg";
 import { pool } from "../../db/db";
 
 export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClient = pool) => {
-    const { keyword, gender } = filters;
+    const { keyword, gender, max_price } = filters;
     const conditions: string[] = ["1=1", "status = 'active'"];
     const values: any[] = [];
     let i = 1;
@@ -38,6 +38,18 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
         values.push(gender);
         i++;
     }
+
+    if (max_price) {
+    conditions.push(`EXISTS (
+        SELECT 1 FROM product_variants pv 
+        WHERE pv.product_id = product_full_mv.id    -- or whatever the PK alias is
+        AND COALESCE(pv.offer_price_override, pv.price_override) <= $${i}
+        
+    )`);
+
+    values.push(max_price); 
+    i++;                     
+}
 
     const query = `
         WITH filtered_products AS (

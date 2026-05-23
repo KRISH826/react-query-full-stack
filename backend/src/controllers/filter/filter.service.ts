@@ -9,7 +9,7 @@ export class FilterService {
 
         return {
             parsed,
-            cacheKey: `filters:keyword:${parsed.keyword || "all"}:gender:${parsed.gender || "all"}`,
+            cacheKey: `filters:keyword:${parsed.keyword || "all"}:gender:${parsed.gender || "all"}:max_price:${parsed.max_price || "all"}`,
         };
     }
 
