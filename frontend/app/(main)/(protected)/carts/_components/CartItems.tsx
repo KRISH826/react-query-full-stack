@@ -59,103 +59,120 @@ const CartItems = ({ cart }: CartItemsProps) => {
     };
 
     return (
-        <div className="group rounded-2xl border border-stone-200 bg-gradient-to-r from-white via-white to-stone-50/80 p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                <div className="relative h-28 w-full shrink-0 overflow-hidden rounded-2xl bg-stone-100 sm:h-32 sm:w-32">
+        <div className="group relative py-5 transition-all duration-200">
+            <div className="flex gap-4 sm:gap-6">
+                {/* Product Image */}
+                <div className="relative h-20 w-20 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-xl bg-stone-50 border border-stone-100/80">
                     <Image
                         src={cart.imageUrl || "/placeholder.png"}
                         alt={cart.productName || "Cart product"}
                         fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                 </div>
 
-                <div className="flex min-w-0 flex-1 flex-col gap-4">
-                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="min-w-0 space-y-2">
-                            <div className="flex flex-wrap items-center gap-2 text-xs">
-                                {cart.brand && (
-                                    <span className="rounded-full bg-stone-100 px-2.5 py-1 font-medium text-stone-700">
-                                        {cart.brand}
-                                    </span>
-                                )}
-                                <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 font-medium text-sky-700">
-                                    <Package2 className="size-3.5" />
-                                    In stock
+                {/* Product Details & Top Row */}
+                <div className="flex flex-1 flex-col justify-between min-w-0">
+                    <div className="space-y-1">
+                        {/* Badges */}
+                        <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold tracking-wide uppercase">
+                            {cart.brand && (
+                                <span className="text-stone-500">
+                                    {cart.brand}
                                 </span>
-                            </div>
+                            )}
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700">
+                                <span className="h-1 w-1 rounded-full bg-emerald-500" />
+                                In stock
+                            </span>
+                        </div>
 
-                            <h2 className="line-clamp-2 text-lg font-semibold text-stone-900">
+                        {/* Title & Delete Button */}
+                        <div className="flex items-start justify-between gap-3">
+                            <h2 className="line-clamp-2 text-sm sm:text-base font-semibold text-stone-900 leading-snug">
                                 {cart.productName}
                             </h2>
-
-                            <div className="flex flex-wrap gap-2 text-xs text-stone-600">
-                                {cart.size && (
-                                    <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 font-medium">
-                                        Size: {cart.size}
-                                    </span>
-                                )}
-                                <span className="rounded-full border border-stone-200 bg-white px-2.5 py-1 font-medium">
-                                    Qty in cart: {quantity}
-                                </span>
+                            <div className="shrink-0 -mt-1">
+                                <DeleteCartProduct id={cart.variantId} productName={cart.productName} />
                             </div>
                         </div>
 
-                        <div className="flex items-start justify-between gap-3 sm:justify-end">
-                            <div className="text-left sm:text-right">
-                                <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500">
-                                    Unit price
-                                </p>
-                                <div className="mt-1 flex flex-wrap items-center gap-2 sm:justify-end">
-                                    <span className="text-lg font-semibold text-stone-900">
-                                        {formatCurrency(effectivePrice)}
-                                    </span>
-                                    {hasDiscount && (
-                                        <span className="text-sm text-stone-400 line-through">
-                                            {formatCurrency(cart.price)}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                        {/* Size Spec */}
+                        {cart.size && (
+                            <p className="text-xs text-stone-500 font-medium">
+                                Size: <span className="text-stone-800">{cart.size}</span>
+                            </p>
+                        )}
+                    </div>
 
-                            <DeleteCartProduct id={cart.variantId} productName={cart.productName} />
+                    {/* Unit Price (shown only on mobile here under the title) */}
+                    <div className="mt-1 flex items-baseline gap-2 sm:hidden">
+                        <span className="text-sm font-semibold text-stone-900">
+                            {formatCurrency(effectivePrice)}
+                        </span>
+                        {hasDiscount && (
+                            <span className="text-xs text-stone-400 line-through">
+                                {formatCurrency(cart.price)}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Inner dashed separator inside item */}
+            <div className="my-4 border-t border-dashed border-stone-200/60" />
+
+            {/* Controls Row (No nested card, fully responsive) */}
+            <div className="flex items-center justify-between gap-4">
+                {/* Quantity Controls */}
+                <div className="flex items-center rounded-full border border-stone-200 bg-stone-50/60 p-0.5">
+                    <button
+                        type="button"
+                        onClick={() => handleUpdateCart(quantity - 1)}
+                        disabled={quantity === 1}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition-all hover:bg-white hover:shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
+                        aria-label="Decrease quantity"
+                    >
+                        <Minus className="size-3.5" />
+                    </button>
+
+                    <span className="w-8 text-center text-xs font-bold text-stone-800">
+                        {quantity}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={() => handleUpdateCart(quantity + 1)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full text-stone-600 transition-all hover:bg-white hover:shadow-sm active:scale-95"
+                        aria-label="Increase quantity"
+                    >
+                        <Plus className="size-3.5" />
+                    </button>
+                </div>
+
+                {/* Pricing (Unit & Total) */}
+                <div className="flex items-center gap-6">
+                    {/* Unit Price for Desktop */}
+                    <div className="hidden sm:block text-right">
+                        <span className="text-[10px] font-medium text-stone-400 block uppercase tracking-wider">Unit Price</span>
+                        <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                            <span className="text-sm font-semibold text-stone-850">
+                                {formatCurrency(effectivePrice)}
+                            </span>
+                            {hasDiscount && (
+                                <span className="text-xs text-stone-400 line-through">
+                                    {formatCurrency(cart.price)}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-3 rounded-2xl border border-stone-200/80 bg-white/90 p-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="inline-flex w-fit items-center overflow-hidden rounded-full border border-stone-200 bg-stone-50">
-                            <button
-                                type="button"
-                                onClick={() => handleUpdateCart(quantity - 1)}
-                                disabled={quantity === 1}
-                                className="flex h-10 w-10 items-center justify-center text-stone-700 transition-colors hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-50"
-                                aria-label="Decrease quantity"
-                            >
-                                <Minus className="size-4" />
-                            </button>
-
-                            <span className="flex h-10 min-w-12 items-center justify-center px-3 text-sm font-semibold text-stone-900">
-                                {quantity}
-                            </span>
-
-                            <button
-                                type="button"
-                                onClick={() => handleUpdateCart(quantity + 1)}
-                                className="flex h-10 w-10 items-center justify-center text-stone-700 transition-colors hover:bg-stone-100"
-                                aria-label="Increase quantity"
-                            >
-                                <Plus className="size-4" />
-                            </button>
-                        </div>
-
-                        <div className="text-left sm:text-right">
-                            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">
-                                Line total
-                            </p>
-                            <p className="mt-1 text-xl font-semibold text-stone-900">
-                                {formatCurrency(lineTotal)}
-                            </p>
-                        </div>
+                    {/* Total Price */}
+                    <div className="text-right">
+                        <span className="text-[10px] font-medium text-stone-400 block uppercase tracking-wider">Total</span>
+                        <span className="text-base sm:text-lg font-bold text-stone-900 mt-0.5 block">
+                            {formatCurrency(lineTotal)}
+                        </span>
                     </div>
                 </div>
             </div>

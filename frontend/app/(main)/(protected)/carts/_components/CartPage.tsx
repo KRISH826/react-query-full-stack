@@ -138,24 +138,24 @@ const CartPage = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="rounded-3xl border border-stone-200 bg-white p-3 shadow-sm sm:p-4">
-                                        <div className="mb-4 flex flex-col gap-3 border-b border-stone-200 px-2 pb-4 sm:flex-row sm:items-center sm:justify-between">
+                                    <div className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6 lg:p-8">
+                                        <div className="mb-5 flex flex-col gap-3 border-b border-stone-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
                                             <div>
-                                                <h2 className="text-lg font-semibold text-stone-900">
-                                                    Cart items
+                                                <h2 className="text-xl font-bold tracking-tight text-stone-900">
+                                                    Cart Items
                                                 </h2>
-                                                <p className="text-sm text-stone-500">
-                                                    Everything you picked, organized for a quick review.
+                                                <p className="text-sm text-stone-500 mt-0.5">
+                                                    Review your selection before checking out.
                                                 </p>
                                             </div>
 
-                                            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                                            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                                                 <Truck className="size-3.5" />
                                                 Free shipping available
                                             </span>
                                         </div>
 
-                                        <div className="space-y-3">
+                                        <div className="divide-y divide-stone-100">
                                             {cartItems.map((cart: CartItem) => (
                                                 <CartItems key={cart.variantId} cart={cart} />
                                             ))}
