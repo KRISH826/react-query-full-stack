@@ -50,7 +50,8 @@ export const searchProductQuery = async (
             OR EXISTS (
                 SELECT 1
                 FROM unnest(string_to_array($${i}, ' ')) AS kw
-                WHERE word_similarity(p.productname, kw) > 0.2
+                WHERE word_similarity(kw, productname) > 0.15  
+                OR word_similarity(kw, brand) > 0.15  
             )
         )`);
 
