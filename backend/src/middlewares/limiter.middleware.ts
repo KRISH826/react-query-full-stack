@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { Request } from "express";
 import {RedisReply, RedisStore} from "rate-limit-redis"
 import { config } from "../config/config";
@@ -28,7 +28,7 @@ export const createRateLimiter = ({
         skip: () => config.app.env !== "production",
 
         keyGenerator: (req: Request) => {
-            return req.ip || req.socket.remoteAddress || "unknown";
+            return ipKeyGenerator(req.ip ?? req.socket.remoteAddress ?? "unknown");
         },
 
          store: new RedisStore({
