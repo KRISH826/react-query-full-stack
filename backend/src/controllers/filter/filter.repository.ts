@@ -26,8 +26,8 @@ export const getFilteredProductsQuery = async (filters: any, db: Pool | PoolClie
         OR EXISTS (
             SELECT 1
             FROM unnest(string_to_array($${i}, ' ')) AS kw
-            WHERE word_similarity(productname, kw) > 0.15
-            WHERE word_similarity(productname, kw) > 0.15
+            WHERE word_similarity(kw, productname) > 0.15  
+            OR word_similarity(kw, brand) > 0.15        
         )
     )`);
         values.push(keyword);
