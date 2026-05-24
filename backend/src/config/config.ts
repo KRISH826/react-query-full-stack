@@ -55,6 +55,7 @@ export const config = {
         access_key: process.env.AWS_SES_ACCESS_KEY_ID,
         secret_key: process.env.AWS_SES_SECRET_ACCESS_KEY,
         email_from: process.env.EMAIL_FROM,
+        ses_region: process.env.AWS_SES_REGION
     },
     cognito: {
         user_pool_id: process.env.AWS_COGNITO_USER_POOL_ID,

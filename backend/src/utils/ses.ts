@@ -2,10 +2,10 @@ import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses"
 import { config } from "../config/config"
 
 export const sesClient = new SESClient({
-    region: config.s3.region,
+    region: config.ses.ses_region,
     credentials: {
         accessKeyId: config.ses.access_key!,
-        secretAccessKey: config.ses.secret_key!
+        secretAccessKey: config.ses.secret_key!,
     }
 })
 
