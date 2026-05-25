@@ -74,46 +74,50 @@ export function BasicInfo({ form }: { form: UseFormReturn<ProductFormValues> }) 
           <FormField
             control={form.control}
             name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold">Gender</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder="Select Gender" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="w-full" position="popper">
-                    <SelectItem value="MALE">Male</SelectItem>
-                    <SelectItem value="FEMALE">Female</SelectItem>
-                    <SelectItem value="UNISEX">Unisex</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              return (
+                <FormItem>
+                  <FormLabel className="font-semibold">Gender</FormLabel>
+                  <Select key={field.value} onValueChange={field.onChange} value={field.value || ""}>
+                    <FormControl>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder="Select Gender" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="w-full" position="popper">
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                      <SelectItem value="UNISEX">Unisex</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
           <FormField
             control={form.control}
             name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="font-semibold">Publish Status</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="w-full" position="popper">
-                    {Object.values(ProductStatus).map((s) => (
-                      <SelectItem key={s} value={s}>{s.toUpperCase()}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              return (
+                <FormItem>
+                  <FormLabel className="font-semibold">Publish Status</FormLabel>
+                  <Select key={field.value} onValueChange={field.onChange} value={field.value || ""}>
+                    <FormControl>
+                      <SelectTrigger className='w-full'>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="w-full" position="popper">
+                      {Object.values(ProductStatus).map((s) => (
+                        <SelectItem key={s} value={s}>{s.toUpperCase()}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
           />
         </div>
 
