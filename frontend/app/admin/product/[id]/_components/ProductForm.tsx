@@ -42,9 +42,6 @@ const ProductForm = ({ productId }: { productId?: string }) => {
         }
     })
 
-    console.log('gender is', existingProduct?.gender);
-    console.log('status is', existingProduct?.status);
-
     useEffect(() => {
         if (existingProduct) {
             form.reset({
