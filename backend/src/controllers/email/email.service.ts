@@ -2,8 +2,8 @@ import { renderTemplate } from "../../helper/emailrender";
 import { buildOrderItems } from "../../helper/orderemail";
 import { HttpError } from "../../middlewares/error.middleware";
 import { OrderDB, OrderItemDB } from "../../models/order";
+import { sendEmail } from "../../utils/brevo";
 import { cache } from "../../utils/cache";
-import { sendEmail } from "../../utils/ses";
 import { getEmailTemplateRepo } from "./email.repository";
 
 const TEMPLATE_CACHE_TTL = 60 * 60 * 24; // 24 hours
