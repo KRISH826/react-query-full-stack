@@ -57,6 +57,11 @@ export const config = {
         email_from: process.env.EMAIL_FROM,
         ses_region: process.env.AWS_SES_REGION
     },
+    brevo: {
+        api_key: process.env.BREVO_API_KEY,
+        email_form: process.env.BREVO_EMAIL_FROM,
+        sender: process.env.BREVO_SENDER_NAME
+    },
     cognito: {
         user_pool_id: process.env.AWS_COGNITO_USER_POOL_ID,
         client_id: process.env.AWS_COGNITO_CLIENT_ID,
