@@ -87,10 +87,10 @@ const AiSearch = () => {
                         {/* Suggestion Chips */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150 fill-mode-both">
                             {[
-                                { title: 'Find a perfect gift', desc: 'Curated ideas for upcoming events & holidays' },
+                                { title: 'Find a perfect outfit', desc: 'Curated clothing ideas for events & holidays' },
                                 { title: 'Trending summer outfits', desc: 'Discover new styles and fresh fashion drops' },
-                                { title: 'Laptop recommendations', desc: 'Compare tech devices under a $1,000 budget' },
-                                { title: 'Compare smartwatches', desc: 'Find the best fitness tracking fit for your needs' }
+                                { title: 'Workwear recommendations', desc: 'Build polished office looks for your budget' },
+                                { title: 'Compare denim styles', desc: 'Find the best jeans fit for your wardrobe' }
                             ].map((item, idx) => (
                                 <button
                                     key={idx}
