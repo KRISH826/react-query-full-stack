@@ -1,7 +1,6 @@
 // ai.service.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ProductAITags } from "../../models/aimodel";
-import { aiClient } from "../../utils/deepseek";
 import { PRODUCT_TAG_PROMPT } from "./ai.prompt";
 import { config } from "../../config/config";
 
