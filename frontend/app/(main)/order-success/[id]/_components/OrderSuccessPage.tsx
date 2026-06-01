@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, ArrowRight, ShoppingBag, Package, Truck, Calendar, MapPin, ReceiptText } from "lucide-react";
+import { CheckCircle2, ArrowRight, ShoppingBag, Calendar, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter, useParams } from "next/navigation";
 import { useGetOrderByIdQuery } from "@/services/orderApi";
@@ -70,7 +70,6 @@ const OrderSuccessPage = () => {
                             </p>
                         </div>
                     </div>
-
                     {/* Metadata Row: ID & Date */}
                     <div className="flex justify-between items-center bg-stone-50/60 border border-stone-100 rounded-xl p-3 text-xs text-stone-600">
                         <div>

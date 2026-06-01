@@ -1,7 +1,6 @@
-import { useCreatePaymentMutation, useVerifyPaymentMutation } from "@/services/orderApi";
+import { useCreatePaymentMutation, useVerifyPaymentMutation, useCancelPaymentMutation } from "@/services/orderApi";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { waitForOrderConfirmation } from "@/lib/paymenPolling";
 
 interface RazorpayInstance {
     on(event: string, handler: () => void): void;
@@ -15,6 +14,7 @@ interface RazorpayWindow extends Window {
 export const useRazorpay = () => {
     const [createPayment] = useCreatePaymentMutation();
     const [verifyPayment] = useVerifyPaymentMutation();
+    const [cancelPayment] = useCancelPaymentMutation();
     const router = useRouter();
 
     const loadScript = () =>
@@ -78,8 +78,13 @@ export const useRazorpay = () => {
             },
 
             modal: {
-                ondismiss: () => {
-                    toast("Payment popup closed");
+                ondismiss: async () => {
+                    toast.error("Payment cancelled");
+                    try {
+                        await cancelPayment(orderId).unwrap();
+                    } catch (err) {
+                        console.error("Failed to cancel payment:", err);
+                    }
                 },
             },
 
@@ -100,18 +105,6 @@ export const useRazorpay = () => {
         });
 
         razor.open();
-
-        // 🔥 SMART POLLING (fallback)
-        waitForOrderConfirmation({
-            orderId,
-            onSuccess: () => {
-                router.push(`/order-success/${orderId}`);
-            },
-            onFallback: () => {
-                toast("Payment processing… check orders page");
-                router.push(`/order-success/${orderId}`);
-            },
-        });
     };
 
     return { initiatePayment };
