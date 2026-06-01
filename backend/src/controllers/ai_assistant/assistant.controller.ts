@@ -2,7 +2,7 @@ import { AssistantService } from "./assistant.service";
 import { Request, Response, NextFunction } from "express";
 
 export class AssistantController {
-    static async handleAssistantQuery(req: Request, res: Response, next: NextFunction) {
+    static async assistantChat(req: Request, res: Response, next: NextFunction) {
         try {
             const { message, page = 1, limit = 30 } = req.body;
             // Step 1: Parse the intent and extract filters

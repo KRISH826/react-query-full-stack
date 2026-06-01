@@ -17,7 +17,8 @@ import favouriteRouter from "./routes/favourite.route";
 import reviewRouter from "./routes/review.routes";
 import filterRouter from "./routes/filter.route";
 import webhookRouter from "./routes/webhook.route";
-import mailRouter from "./routes/testemail.route"
+import mailRouter from "./routes/testemail.route";
+import assistantRouter from "./routes/assistant.route";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
@@ -68,7 +69,8 @@ app.use("/api/search-products", searchRouter);
 app.use("/api/favourites", favouriteRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/filters", filterRouter);
-app.use("/api/mail", mailRouter)
+app.use("/api/assistant", assistantRouter);
+app.use("/api/mail", mailRouter);
 
 app.get("/health", (req: Request, res: Response) => {
     res.send("Health is Perfect!")
