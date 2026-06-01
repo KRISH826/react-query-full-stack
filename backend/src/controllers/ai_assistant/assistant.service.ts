@@ -6,14 +6,14 @@ import { AssistantProductQuery } from "./assistant.repository";
 import {ParsedIntentSearch} from "../../models/assistant"
 
 export class AssistantService {
-    static async getAssistantResponse(userMessage: string, page: number = 1, limit: number = 10, extraFilters: { brands?: string[]; categories?: string[]; sizes?: string[] } ): Promise<AssistantResponse> {
+    static async getAssistantResponse(userMessage: string, page: number = 1, limit: number = 10, extraFilters?: { brands?: string[]; categories?: string[]; sizes?: string[] } ): Promise<AssistantResponse> {
         const parsedResult = await this.parsedWithDeepSeek(userMessage);
 
         const searchFilters = {
             max_price:  parsedResult.filter.max_price  ?? undefined,
-            brands:     parsedResult.filter.brands?.length     ? parsedResult.filter.brands     : extraFilters.brands,
-            categories: parsedResult.filter.categories?.length ? parsedResult.filter.categories : extraFilters.categories,
-            sizes:      extraFilters.sizes,
+            brands:     parsedResult.filter.brands?.length     ? parsedResult.filter.brands     : extraFilters?.brands,
+            categories: parsedResult.filter.categories?.length ? parsedResult.filter.categories : extraFilters?.categories,
+            sizes:      extraFilters?.sizes,
         };
 
         const searchResults = await AssistantProductQuery(
