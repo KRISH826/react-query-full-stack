@@ -3,7 +3,7 @@
 import Loading from "@/components/ui/common/Loading";
 import { ProductCardSkeletonGrid } from "@/components/ui/common/ProductCardSkeleton";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useGetProductFiltersQuery, useSearchProductsQuery } from "@/services/productApi";
 import { Product } from "@/types/product";
 import { SlidersHorizontal } from "lucide-react";
@@ -150,25 +150,43 @@ const ProductSearchPage = () => {
                                 </Button>
                             </SheetTrigger>
 
-                            <SheetContent side="left" className="scrollbar-hide w-[80vw] max-w-90 overflow-y-auto bg-white/95 p-3 sm:w-90 sm:p-4">
+                            <SheetContent side="left" className="sm:w-[80vw] w-full sm:max-w-90 max-w-full sm:bg-white/95 bg-white p-0 sm:w-90">
                                 <SheetTitle className="sr-only">Product Filters</SheetTitle>
-                                <ProductFilter
-                                    filters={filters}
-                                    productsCount={filteredProducts.length}
-                                    selectedBrands={selectedBrands}
-                                    toggleBrand={toggleBrand}
-                                    selectedCategories={selectedCategories}
-                                    toggleCategory={toggleCategory}
-                                    selectedSizes={selectedSizes}
-                                    toggleSize={toggleSize}
-                                    selectedRating={selectedRating}
-                                    setSelectedRating={setSelectedRating}
-                                    priceLimit={effectivePriceLimit}
-                                    setPriceLimit={(nextPrice) => setPriceLimit(nextPrice)}
-                                    clearAllFilters={clearAllFilters}
-                                    activeFilterCount={activeFilterCount}
-                                    isMobile={true}
-                                />
+                                <div className="scrollbar-hide flex-1 overflow-y-auto p-3 pb-4 sm:p-4">
+                                    <ProductFilter
+                                        filters={filters}
+                                        productsCount={filteredProducts.length}
+                                        selectedBrands={selectedBrands}
+                                        toggleBrand={toggleBrand}
+                                        selectedCategories={selectedCategories}
+                                        toggleCategory={toggleCategory}
+                                        selectedSizes={selectedSizes}
+                                        toggleSize={toggleSize}
+                                        selectedRating={selectedRating}
+                                        setSelectedRating={setSelectedRating}
+                                        priceLimit={effectivePriceLimit}
+                                        setPriceLimit={(nextPrice) => setPriceLimit(nextPrice)}
+                                        clearAllFilters={clearAllFilters}
+                                        activeFilterCount={activeFilterCount}
+                                        isMobile={true}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 border-t border-stone-200 bg-white/95 p-3 sm:p-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-10 rounded-full"
+                                        onClick={clearAllFilters}
+                                        disabled={activeFilterCount === 0}
+                                    >
+                                        Clear filters
+                                    </Button>
+                                    <SheetClose asChild>
+                                        <Button type="button" className="h-10 rounded-full">
+                                            Apply filters
+                                        </Button>
+                                    </SheetClose>
+                                </div>
                             </SheetContent>
                         </Sheet>
                     </div>

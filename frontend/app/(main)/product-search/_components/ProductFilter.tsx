@@ -56,7 +56,7 @@ const ProductFilter = ({
                     </div>
                 </div>
 
-                {activeFilterCount > 0 && (
+                {!isMobile && activeFilterCount > 0 && (
                     <Button
                         type="button"
                         variant="outline"
