@@ -48,8 +48,8 @@ export class AssistantService {
                     {role: "user", content: message}
                 ],
                 response_format:{type: "json_object"},
-                max_tokens: 1000,
-                temperature: 0.4,
+                max_tokens: 2000,
+                temperature: 0.2,
             });
 
             const rawJson = response.choices[0].message?.content;

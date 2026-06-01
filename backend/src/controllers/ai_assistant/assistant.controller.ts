@@ -24,7 +24,7 @@ export class AssistantController {
                 products: intent.products,
                 page: intent.page,
                 totalPages: intent.totalPages,
-                intent: intent.intent,
+                intent: intent.intent.intent,
             });
         } catch (error) {
             console.error("Error in AssistantController:", error);
