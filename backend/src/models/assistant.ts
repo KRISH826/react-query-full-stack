@@ -14,7 +14,7 @@ export interface ParsedIntentSearch {
 export interface ParsedIntent {
     message: string;
     intent: string;
-    filter: {
+    filters: {
         max_price: number | null;
         brands: string[];
         categories: string[]

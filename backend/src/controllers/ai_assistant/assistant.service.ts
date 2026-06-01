@@ -10,9 +10,9 @@ export class AssistantService {
         const parsedResult = await this.parsedWithDeepSeek(userMessage);
 
         const searchFilters = {
-            max_price:  parsedResult.filter.max_price  ?? undefined,
-            brands:     parsedResult.filter.brands?.length     ? parsedResult.filter.brands     : extraFilters?.brands,
-            categories: parsedResult.filter.categories?.length ? parsedResult.filter.categories : extraFilters?.categories,
+            max_price:  parsedResult.filters.max_price  ?? undefined,
+            brands:     parsedResult.filters.brands?.length     ? parsedResult.filters.brands     : extraFilters?.brands,
+            categories: parsedResult.filters.categories?.length ? parsedResult.filters.categories : extraFilters?.categories,
             sizes:      extraFilters?.sizes,
         };
 
@@ -42,14 +42,14 @@ export class AssistantService {
             })
 
             const response = await openAi.chat.completions.create({
-                model: "deepseek-reasoner", // Targets DeepSeek-R1
+                model: "deepseek-chat", // Targets DeepSeek-R1
                 messages: [
                     {role: "system", content: AI_ASSISTANT_PARSE_PROMPT},
                     {role: "user", content: message}
                 ],
                 response_format:{type: "json_object"},
-                max_tokens: 800,
-                temperature: 0.2,
+                max_tokens: 1000,
+                temperature: 0.4,
             });
 
             const rawJson = response.choices[0].message?.content;
@@ -59,7 +59,18 @@ export class AssistantService {
 
             return JSON.parse(rawJson) as ParsedIntent;
         } catch (error) {
-            throw new Error("Failed to parse AI response");
-        }    
+            console.error("[AssistantService] DeepSeek Parsing Error Raw Stack:", error);
+            // Return a safe default ParsedIntent so callers can proceed
+            return {
+                intent: "search",
+                message: "Could not parse the user message; returning default search intent.",
+                filters: {
+                    max_price: undefined,
+                    brands: [],
+                    categories: [],
+                    sizes: [],
+                },
+            } as unknown as ParsedIntent;
+        }
     }
 }
