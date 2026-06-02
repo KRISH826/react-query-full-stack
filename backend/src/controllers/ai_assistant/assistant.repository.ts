@@ -31,10 +31,6 @@ export const AssistantProductQuery = async (
     const scoreParts: string[] = ["0"];
     let orderClause = "ORDER BY p.created_at DESC";
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  HARD FILTERS — products that don't match are EXCLUDED entirely
-    // ═══════════════════════════════════════════════════════════════════════
-
     // 1. keyword → HARD: product must match on search_vector OR ai_tags
     if (keyword) {
         conditions.push(`(
