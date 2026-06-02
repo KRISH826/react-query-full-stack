@@ -1,7 +1,6 @@
 // ai.service.ts
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ProductAITags } from "../../models/aimodel";
-import { aiClient } from "../../utils/deepseek";
 import { PRODUCT_TAG_PROMPT } from "./ai.prompt";
 import { config } from "../../config/config";
 
@@ -38,7 +37,7 @@ export class AiService {
                 Categories: ${product.category_names.join(", ")}
                 Description: ${product.description}
 
-                VISION TASK: Look at the product image. Identify the exact color, fabric texture, 
+                VISION TASK: give me age recommended thats the first priority.Look at the product image. Identify the exact color, fabric texture, 
                 neckline, and fit. Use these visual signals to refine the JSON output.
                 image description will be minimum 200 words ! maximum 500 words 
             `;
