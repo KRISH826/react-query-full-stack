@@ -9,7 +9,14 @@ import { AirecommendationResponse } from '@/types/airecommended'
 import { useAiproductSearchMutation } from '@/services/searchApi'
 import ProductCard from '@/app/(main)/product/_components/ProductCard'
 import { Product } from '@/types/product'
-import { ProductCardSkeletonGrid } from '@/components/ui/common/ProductCardSkeleton'
+import ProductCardSkeleton from '@/components/ui/common/ProductCardSkeleton'
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 
 type aiConetent =
     | { role: "user"; content: string }
@@ -150,7 +157,7 @@ const AiSearch = () => {
                                 <div
                                     className={`max-w-[72%] px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${msg.role === "user"
                                         ? "bg-primary text-primary-foreground rounded-br-sm"
-                                        : "bg-transparent max-w-full"
+                                        : "bg-transparent max-w-full!"
                                         }`}
                                 >
                                     {typeof msg.content === "string" ? (
@@ -184,11 +191,17 @@ const AiSearch = () => {
                                                     })}
                                                 </div>
                                             )}
-                                            <div className="grid mt-4 grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                                {msg.content.products.map((product: Product) => (
-                                                    <ProductCard key={product.id} product={product} />
-                                                ))}
-                                            </div>
+                                            <Carousel className="w-full mt-4 max-w-full">
+                                                <CarouselContent className="-ml-2 md:-ml-4">
+                                                    {msg.content.products.map((product: Product) => (
+                                                        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                            <ProductCard product={product} />
+                                                        </CarouselItem>
+                                                    ))}
+                                                </CarouselContent>
+                                                <CarouselPrevious className="-left-10 hidden sm:flex" />
+                                                <CarouselNext className="-right-10 hidden sm:flex" />
+                                            </Carousel>
                                         </div>
                                     )}
                                 </div>
@@ -203,13 +216,21 @@ const AiSearch = () => {
                                             <div className="h-4 bg-muted-foreground/20 rounded-md w-1/2"></div>
                                         </div>
                                         <div className="flex flex-wrap gap-2 mt-3">
-                                            {[1, 2, 3, 4, 5].map((i) => (
+                                            {[1, 2, 3, 4].map((i) => (
                                                 <div key={i} className="h-6 w-16 bg-primary/10 rounded-md animate-pulse"></div>
                                             ))}
                                         </div>
-                                        <div className="grid mt-4 grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            <ProductCardSkeletonGrid count={4} />
-                                        </div>
+                                        <Carousel className="w-full mt-4 max-w-full">
+                                            <CarouselContent className="-ml-2 md:-ml-4">
+                                                {Array.from({ length: 4 }).map((_, i) => (
+                                                    <CarouselItem key={i} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                        <ProductCardSkeleton />
+                                                    </CarouselItem>
+                                                ))}
+                                            </CarouselContent>
+                                            <CarouselPrevious className="-left-4.5 hidden sm:flex" />
+                                            <CarouselNext className="-right-4.5 hidden sm:flex" />
+                                        </Carousel>
                                     </div>
                                 </div>
                             </div>
@@ -236,6 +257,7 @@ const AiSearch = () => {
                                         e.preventDefault();
                                         if (query.trim()) {
                                             setQuery('');
+                                            handleSend();
                                             // Handle send action
                                         }
                                     }
