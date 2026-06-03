@@ -49,8 +49,10 @@ export async function updateProfile(id: string, data: ProfileDto, db: Pool | Poo
         address=$3,
         postcode=$4,
         country=$5,
-        city=$6
-        WHERE id=$7 RETURNING *`,
+        city=$6,
+        state=$7,
+        gender=$8
+        WHERE id=$9 RETURNING *`,
         [
             data.name ?? null,
             data.profileimage ?? null,
@@ -58,6 +60,8 @@ export async function updateProfile(id: string, data: ProfileDto, db: Pool | Poo
             data.postcode ?? null,
             data.country ?? null,
             data.city ?? null,
+            data.state ?? null,
+            data.gender ?? null,
             id
         ]
     )
@@ -79,3 +83,4 @@ export async function deleteExpiredVerificationUsers(db: Pool | PoolClient = poo
     )
     return rows || [];
 }
+

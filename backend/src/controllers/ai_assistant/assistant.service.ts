@@ -42,13 +42,13 @@ export class AssistantService {
             })
 
             const response = await openAi.chat.completions.create({
-                model: "deepseek-chat", // Targets DeepSeek-R1
+                model: "deepseek-v4-flash",
                 messages: [
                     {role: "system", content: AI_ASSISTANT_PARSE_PROMPT},
                     {role: "user", content: message}
                 ],
                 response_format:{type: "json_object"},
-                max_tokens: 2000,
+                max_tokens: 1000,
                 temperature: 0.2,
             });
 

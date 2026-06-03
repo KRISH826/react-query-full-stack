@@ -16,7 +16,7 @@ export const AssistantProductQuery = async (
     intent: ParsedIntentSearch,
     filters: any,
     page: number = 1,
-    limit: number = 30,
+    limit: number = 10,
     db: Pool | PoolClient = pool,
 ): Promise<SearchProductsResult> => {
     const { keyword, gender, age_group, style, occasion, season, vibe_keywords } = intent;

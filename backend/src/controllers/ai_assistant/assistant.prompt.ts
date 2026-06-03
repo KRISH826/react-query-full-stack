@@ -88,11 +88,11 @@ OUTPUT FORMAT (STRICT JSON ONLY — NO MARKDOWN)
   "intent": {
     "keyword": "ALWAYS a specific product — shirt/tshirt/kurta/jeans/dress/saree/shorts (YOU decide)",
     "gender": "MALE | FEMALE | UNISEX | null" -- default always from your userprofile, otherwise decide based on signals in the message,
-    "age_group": "child | teen | young | adult | senior | null",
-    "age_raw": <number or null>,
+    "age_group": "child | teen | young | adult | senior | null | default if you detect no signals but it's for 'I' (the user) — you can assume they're a young adult unless the message suggests otherwise",
+    "age_raw": <number or null> or default if you detect no signals but it's for 'I' (the user) — you can assume 20-35,
     "style": "streetwear | casual | formal | sporty | traditional | elegant | bohemian | vintage | minimal | luxury | null",
     "occasion": "daily | office | party | wedding | festive | vacation | lounge | gym | travel | null",
-    "season": "summer | winter | monsoon | spring | all-season | null",
+    "season": "summer | winter | monsoon | spring | all-season | null | default indian current season based on current month",
     "vibe_keywords": ["max 4 emotional/aesthetic words the outfit should feel like"],
   },
   "filters": {
