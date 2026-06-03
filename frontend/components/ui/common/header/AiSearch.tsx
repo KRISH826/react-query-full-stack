@@ -1,15 +1,41 @@
 'use client'
 
 import React, { useId, useState } from 'react'
-import { Sparkles, Send, Mic, Image as ImageIcon, X } from 'lucide-react'
+import { Sparkles, Send, Mic, Image as ImageIcon, X, ArrowsUpFromLine } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../../dialog'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Button } from '../../button'
+import { AirecommendationResponse } from '@/types/airecommended'
+import { useAiproductSearchMutation } from '@/services/searchApi'
+
+type aiConetent =
+    | { role: "user"; content: string }
+    | { role: "assistant"; content: AirecommendationResponse | string };
 
 const AiSearch = () => {
     const [query, setQuery] = useState('');
     const gradientId = useId().replace(/:/g, '')
-    const gradientUrl = `url(#${gradientId})`
+    const gradientUrl = `url(#${gradientId})`;
+    const [aiSearch, { isLoading }] = useAiproductSearchMutation();
+    const [message, setMessage] = useState<aiConetent[]>([]);
+
+    const handleSend = async () => {
+        if (!query.trim()) return;
+
+        const userMessage = query;
+
+        setMessage((prev) => [...prev, { role: "user", content: userMessage }]);
+        setQuery('');
+
+        try {
+            const response = await aiSearch(userMessage).unwrap();
+            console.log(response);
+            setMessage((prev) => [...prev, { role: "assistant", content: response }]);
+        } catch (error) {
+            console.error("AI Search error:", error);
+            setMessage((prev) => [...prev, { role: "assistant", content: "Something went wrong, please try again" }])
+        }
+    }
 
     return (
         <Dialog>
@@ -20,10 +46,10 @@ const AiSearch = () => {
                     size="icon"
                 >
                     <div className="relative flex items-center justify-center">
-                            <Sparkles
-                                className="h-4 w-4 text-[#6f56ff] transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
-                                strokeWidth={1.8}
-                            />
+                        <Sparkles
+                            className="h-4 w-4 text-[#6f56ff] transition-all duration-700 ease-in-out group-hover:rotate-180 group-hover:scale-125"
+                            strokeWidth={1.8}
+                        />
                         <div className="absolute inset-0 bg-linear-to-tr from-[#4285f4] via-[#9b72cb] to-[#f49c4f] blur-md opacity-0 group-hover:opacity-30 transition-opacity duration-700 rounded-full scale-150" />
                     </div>
                 </Button>
@@ -142,6 +168,7 @@ const AiSearch = () => {
                                 <Button
                                     size="icon"
                                     disabled={!query.trim()}
+                                    onClick={handleSend}
                                     className={`rounded-full h-9 w-9 transition-all ${query.trim()
                                         ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/20'
                                         : 'bg-muted text-muted-foreground'
