@@ -16,7 +16,7 @@ const AiSearch = () => {
     const [query, setQuery] = useState('');
     const gradientId = useId().replace(/:/g, '')
     const gradientUrl = `url(#${gradientId})`;
-    const [aiSearch, { isLoading }] = useAiproductSearchMutation();
+    const [aiproductSearch, { isLoading }] = useAiproductSearchMutation();
     const [message, setMessage] = useState<aiConetent[]>([]);
 
     const handleSend = async () => {
@@ -28,7 +28,7 @@ const AiSearch = () => {
         setQuery('');
 
         try {
-            const response = await aiSearch(userMessage).unwrap();
+            const response = await aiproductSearch(userMessage).unwrap();
             console.log(response);
             setMessage((prev) => [...prev, { role: "assistant", content: response }]);
         } catch (error) {
