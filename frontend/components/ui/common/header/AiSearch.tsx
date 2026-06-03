@@ -9,6 +9,7 @@ import { AirecommendationResponse } from '@/types/airecommended'
 import { useAiproductSearchMutation } from '@/services/searchApi'
 import ProductCard from '@/app/(main)/product/_components/ProductCard'
 import { Product } from '@/types/product'
+import { ProductCardSkeletonGrid } from '@/components/ui/common/ProductCardSkeleton'
 
 type aiConetent =
     | { role: "user"; content: string }
@@ -152,20 +153,38 @@ const AiSearch = () => {
                                         : "bg-transparent max-w-full"
                                         }`}
                                 >
-                                    {msg.role === "assistant" && isLoading && idx === message.length - 1 ? (
-                                        // ✅ Loading dots - last assistant message + isLoading
-                                        <div className="flex gap-1 items-center py-1">
-                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
-                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:150ms]" />
-                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:300ms]" />
-                                        </div>
-                                    ) : typeof msg.content === "string" ? (
+                                    {typeof msg.content === "string" ? (
                                         <span className='font-medium'>{msg.content}</span>
                                     ) : (
                                         // AirecommendationResponse - apna renderer lagao yahan
                                         <div className="w-full">
-                                            <p className='font-medium bg-secondary px-4 py-2.5 text-sm rounded-2xl rounded-bl-sm!'>{msg.content.message}</p>
-                                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                            <p className='font-medium bg-secondary max-w-[60%] shadow px-4 py-2.5 text-sm rounded-2xl rounded-bl-sm!'>{msg.content.message}</p>
+                                            {msg.content.intent && (
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {[
+                                                        msg.content.intent.gender,
+                                                        msg.content.intent.age_group,
+                                                        msg.content.intent.style,
+                                                        msg.content.intent.occasion,
+                                                        msg.content.intent.season
+                                                    ].filter(Boolean).map((val, i) => {
+                                                        const colorClasses = [
+                                                            "bg-violet-500/15 text-violet-700 dark:text-violet-400",
+                                                            "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400",
+                                                            "bg-blue-500/15 text-blue-700 dark:text-blue-400",
+                                                            "bg-sky-500/15 text-sky-700 dark:text-sky-400",
+                                                            "bg-lime-500/15 text-lime-700 dark:text-lime-400"
+                                                        ];
+                                                        const colorClass = colorClasses[i % colorClasses.length];
+                                                        return (
+                                                            <span key={i} className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize ${colorClass}`}>
+                                                                {val}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                            <div className="grid mt-4 grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                                 {msg.content.products.map((product: Product) => (
                                                     <ProductCard key={product.id} product={product} />
                                                 ))}
@@ -175,13 +194,33 @@ const AiSearch = () => {
                                 </div>
                             </div>
                         ))}
+                        {isLoading && (
+                            <div className="flex w-full justify-start">
+                                <div className="max-w-full px-4 py-2.5 text-sm leading-relaxed rounded-2xl bg-transparent w-full">
+                                    <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                        <div className='bg-secondary max-w-[60%] shadow px-4 py-3 rounded-2xl rounded-bl-sm! animate-pulse space-y-2.5'>
+                                            <div className="h-4 bg-muted-foreground/20 rounded-md w-3/4"></div>
+                                            <div className="h-4 bg-muted-foreground/20 rounded-md w-1/2"></div>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-3">
+                                            {[1, 2, 3, 4, 5].map((i) => (
+                                                <div key={i} className="h-6 w-16 bg-primary/10 rounded-md animate-pulse"></div>
+                                            ))}
+                                        </div>
+                                        <div className="grid mt-4 grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                            <ProductCardSkeletonGrid count={4} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 </div>
 
                 {/* ChatGPT Style Input Area */}
                 <div className="shrink-0 py-5 bg-muted/20 relative z-10 border-t border-border/40 shadow-sm">
-                    <div className="max-w-4xl sm:px-0 px-4 mx-auto">
+                    <div className="max-w-5xl sm:px-0 px-4 mx-auto">
                         <div className="relative flex items-end bg-background/20 backdrop-blur-md rounded-2xl border border-input focus:border-indigo-400 focus:ring-indigo-400 transition-all p-2">
                             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground shrink-0 rounded-full hidden sm:flex h-9 w-9">
                                 <ImageIcon className="h-4 w-4" />
