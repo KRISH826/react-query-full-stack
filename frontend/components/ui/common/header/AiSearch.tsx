@@ -7,6 +7,8 @@ import { DialogClose } from '@radix-ui/react-dialog'
 import { Button } from '../../button'
 import { AirecommendationResponse } from '@/types/airecommended'
 import { useAiproductSearchMutation } from '@/services/searchApi'
+import ProductCard from '@/app/(main)/product/_components/ProductCard'
+import { Product } from '@/types/product'
 
 type aiConetent =
     | { role: "user"; content: string }
@@ -25,8 +27,8 @@ const AiSearch = () => {
         const userMessage = query;
 
         setMessage((prev) => [...prev, { role: "user", content: userMessage }]);
+        console.log(message)
         setQuery('');
-
         try {
             const response = await aiproductSearch(userMessage).unwrap();
             console.log(response);
@@ -91,48 +93,90 @@ const AiSearch = () => {
                 </div>
 
                 {/* Main Chat/Conversation Area */}
-                <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-center p-6 md:p-8">
-                    <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center space-y-10">
-                        {/* Hero Section */}
-                        <div className="text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center">
-                            <div className="flex items-center justify-center h-16 w-16 mb-2">
-                                <Sparkles
-                                    className="h-10 w-10 text-primary"
-                                    style={{ stroke: "url(#geminiGradient)", fill: "url(#geminiGradient)", fillOpacity: 0.1 }}
-                                    strokeWidth={1.5}
-                                />
-                            </div>
-                            <h2 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">
-                                How can I help you today?
-                            </h2>
-                            <p className="text-muted-foreground text-sm md:text-base">
-                                Ask me anything or try an example below.
-                            </p>
-                        </div>
+                <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-start p-6 md:p-8">
+                    {
+                        message.length === 0 && <>
+                            <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center space-y-10">
+                                {/* Hero Section */}
+                                <div className="text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col items-center">
+                                    <div className="flex items-center justify-center h-16 w-16 mb-2">
+                                        <Sparkles
+                                            className="h-10 w-10 text-primary"
+                                            style={{ stroke: "url(#geminiGradient)", fill: "url(#geminiGradient)", fillOpacity: 0.1 }}
+                                            strokeWidth={1.5}
+                                        />
+                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-medium text-foreground tracking-tight">
+                                        How can I help you today?
+                                    </h2>
+                                    <p className="text-muted-foreground text-sm md:text-base">
+                                        Ask me anything or try an example below.
+                                    </p>
+                                </div>
 
-                        {/* Suggestion Chips */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150 fill-mode-both">
-                            {[
-                                { title: 'Find a perfect outfit', desc: 'Curated clothing ideas for events & holidays' },
-                                { title: 'Trending summer outfits', desc: 'Discover new styles and fresh fashion drops' },
-                                { title: 'Workwear recommendations', desc: 'Build polished office looks for your budget' },
-                                { title: 'Compare denim styles', desc: 'Find the best jeans fit for your wardrobe' }
-                            ].map((item, idx) => (
-                                <button
-                                    key={idx}
-                                    onClick={() => setQuery(item.title)}
-                                    className="group flex flex-col items-start p-4 rounded-xl border border-border/50 bg-card hover:bg-muted/50 transition-colors text-left shadow-xs hover:shadow-sm"
+                                {/* Suggestion Chips */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150 fill-mode-both">
+                                    {[
+                                        { title: 'Find a perfect outfit', desc: 'Curated clothing ideas for events & holidays' },
+                                        { title: 'Trending summer outfits', desc: 'Discover new styles and fresh fashion drops' },
+                                        { title: 'Workwear recommendations', desc: 'Build polished office looks for your budget' },
+                                        { title: 'Compare denim styles', desc: 'Find the best jeans fit for your wardrobe' }
+                                    ].map((item, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setQuery(item.title)}
+                                            className="group flex flex-col items-start p-4 rounded-xl border border-border/50 bg-card hover:bg-muted/50 transition-colors text-left shadow-xs hover:shadow-sm"
+                                        >
+                                            <span className="font-medium text-[15px] text-foreground mb-1">
+                                                {item.title}
+                                            </span>
+                                            <span className="text-[13px] text-muted-foreground leading-snug">
+                                                {item.desc}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    }
+                    <div className="w-full max-w-5xl mx-auto flex flex-col gap-4">
+                        {message.map((msg, idx) => (
+                            <div
+                                key={idx}
+                                className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"
+                                    }`}
+                            >
+                                <div
+                                    className={`max-w-[72%] px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${msg.role === "user"
+                                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                                        : "bg-transparent max-w-full"
+                                        }`}
                                 >
-                                    <span className="font-medium text-[15px] text-foreground mb-1">
-                                        {item.title}
-                                    </span>
-                                    <span className="text-[13px] text-muted-foreground leading-snug">
-                                        {item.desc}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                                    {msg.role === "assistant" && isLoading && idx === message.length - 1 ? (
+                                        // ✅ Loading dots - last assistant message + isLoading
+                                        <div className="flex gap-1 items-center py-1">
+                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:0ms]" />
+                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:150ms]" />
+                                            <span className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:300ms]" />
+                                        </div>
+                                    ) : typeof msg.content === "string" ? (
+                                        <span className='font-medium'>{msg.content}</span>
+                                    ) : (
+                                        // AirecommendationResponse - apna renderer lagao yahan
+                                        <div className="w-full">
+                                            <p className='font-medium bg-secondary px-4 py-2.5 text-sm rounded-2xl rounded-bl-sm!'>{msg.content.message}</p>
+                                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                                {msg.content.products.map((product: Product) => (
+                                                    <ProductCard key={product.id} product={product} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
+
                 </div>
 
                 {/* ChatGPT Style Input Area */}
