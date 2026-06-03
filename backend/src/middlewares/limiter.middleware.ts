@@ -18,13 +18,10 @@ export const createRateLimiter = ({
 
     return rateLimit({
         windowMs: windowMinutes * 60 * 1000,
-
         max: maxRequests,
-
         standardHeaders: true,
         legacyHeaders: false,
 
-                // Skip in development
         skip: () => config.app.env !== "production",
 
         keyGenerator: (req: Request) => {
