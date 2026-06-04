@@ -16,7 +16,7 @@ export const AssistantProductQuery = async (
     intent: ParsedIntentSearch,
     filters: any,
     page: number = 1,
-    limit: number = 30,
+    limit: number = 10,
     db: Pool | PoolClient = pool,
 ): Promise<SearchProductsResult> => {
     const { keyword, gender, age_group, style, occasion, season, vibe_keywords } = intent;
@@ -30,10 +30,6 @@ export const AssistantProductQuery = async (
     // ── SCORE expression parts (soft ranking) ───────────────────────────────
     const scoreParts: string[] = ["0"];
     let orderClause = "ORDER BY p.created_at DESC";
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  HARD FILTERS — products that don't match are EXCLUDED entirely
-    // ═══════════════════════════════════════════════════════════════════════
 
     // 1. keyword → HARD: product must match on search_vector OR ai_tags
     if (keyword) {

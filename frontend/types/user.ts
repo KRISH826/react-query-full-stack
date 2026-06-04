@@ -1,4 +1,5 @@
 export type UserRole = "customer" | "admin";
+export type Gender = "male" | "female" | "unisex";
 
 export interface User {
     id: string;
@@ -7,6 +8,8 @@ export interface User {
     profileimage: string;
     address: string;
     city: string;
+    state: string;
+    gender: Gender;
     postcode: string;
     country: string;
     role: UserRole;

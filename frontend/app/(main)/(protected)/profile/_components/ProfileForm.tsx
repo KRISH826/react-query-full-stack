@@ -8,11 +8,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { User } from '@/types/user'
+import { User, Gender } from '@/types/user'
 import { User as UserIcon, Mail, MapPin, Building2, Hash, Globe, Save, Camera, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 import { useUpdateProfileMutation } from '@/services/userApi'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface ProfileFormProps {
     user?: User
@@ -32,6 +33,8 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
             name: user?.name || "",
             address: user?.address || "",
             city: user?.city || "",
+            state: user?.state || "",
+            gender: user?.gender || ("" as unknown as Gender),
             postcode: user?.postcode || "",
             country: user?.country || "",
             profileImage: user?.profileimage || "",
@@ -43,6 +46,8 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
             setValue("name", user.name || "");
             setValue("address", user.address || "");
             setValue("city", user.city || "");
+            setValue("state", user.state || "");
+            setValue("gender", user.gender || ("" as unknown as Gender));
             setValue("postcode", user.postcode || "");
             setValue("country", user.country || "");
             setValue("profileImage", user.profileimage || "");
@@ -60,6 +65,8 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
         formData.append("name", data.name);
         formData.append("address", data.address);
         formData.append("city", data.city);
+        formData.append("state", data.state);
+        formData.append("gender", data.gender);
         formData.append("postcode", data.postcode);
         formData.append("country", data.country);
 
@@ -181,7 +188,7 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="city" className="text-sm font-bold text-gray-700 text-gray-700">City</Label>
+                                    <Label htmlFor="city" className="text-sm font-bold text-gray-700">City</Label>
                                     <div className="relative">
                                         <Input
                                             id="city"
@@ -192,6 +199,39 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                                         <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                     </div>
                                     {errors.city && <p className="text-xs text-red-500 font-medium">{errors.city.message}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="gender" className="text-sm font-bold text-gray-700">Gender</Label>
+                                    <div className="relative">
+                                        <Select 
+                                            value={watch("gender")} 
+                                            onValueChange={(value) => setValue("gender", value as Gender, { shouldValidate: true })}
+                                        >
+                                            <SelectTrigger id="gender" className="h-11! w-full">
+                                                <SelectValue placeholder="Select Gender" />
+                                            </SelectTrigger>
+                                            <SelectContent position="popper">
+                                                <SelectItem value="male">Male</SelectItem>
+                                                <SelectItem value="female">Female</SelectItem>
+                                                <SelectItem value="unisex">Unisex</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    {errors.gender && <p className="text-xs text-red-500 font-medium">{errors.gender.message}</p>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="state" className="text-sm font-bold text-gray-700">State</Label>
+                                    <div className="relative">
+                                        <Input
+                                            id="state"
+                                            placeholder="State"
+                                            className="h-11 pl-10 focus:ring-primary/20"
+                                            {...register("state")}
+                                        />
+                                        <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    </div>
+                                    {errors.state && <p className="text-xs text-red-500 font-medium">{errors.state.message}</p>}
                                 </div>
 
                                 <div className="space-y-2">

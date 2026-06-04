@@ -3,6 +3,8 @@
  */
 export type UserRole = "customer" | "admin";
 
+export type Gender = "male" | "female" | "unisex" | null;
+
 /**
  * Exact representation of DB row (internal use only)
  */
@@ -17,6 +19,8 @@ export interface UserDB {
     postcode: string | null;
     country: string | null;
     city: string | null;
+    state: string | null;
+    gender: Gender;
     created_at: Date;
     updated_at: Date;
     expires_at: Date;
@@ -47,6 +51,8 @@ export interface UserResponseDTO {
     postcode: string | null;
     country: string | null;
     city: string | null;
+    state: string | null;
+    gender: Gender;
     address: string | null;
     created_at: Date;
     updated_at: Date;
@@ -81,4 +87,6 @@ export interface ProfileDto {
     country: string | null;
     city: string | null;
     address: string | null;
+    state: string | null;
+    gender: Gender;
 }

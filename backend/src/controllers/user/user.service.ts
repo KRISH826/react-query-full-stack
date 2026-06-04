@@ -344,6 +344,8 @@ export class AuthService {
                 postcode: data.postcode ?? existingUser.postcode,
                 country: data.country ?? existingUser.country,
                 city: data.city ?? existingUser.city,
+                state: data.state ?? existingUser.state,
+                gender: data.gender ?? existingUser.gender,
             }, client);
 
             if (!user) {
