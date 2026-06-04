@@ -79,7 +79,7 @@ export const AssistantProductQuery = async (
         scoreParts.push(`
             CASE WHEN to_tsvector('english', COALESCE(p.ai_tags->>'image_description', ''))
                       @@ plainto_tsquery('english', $${i})
-            THEN 1.5 ELSE 0 END
+            THEN 0.5 ELSE 0 END
         `);
 
         orderClause = "ORDER BY ai_score DESC, p.created_at DESC";
@@ -93,76 +93,6 @@ export const AssistantProductQuery = async (
         values.push(gender);
         i++;
     }
-
-    // 3. age_group → HARD filter on ai_tags JSONB
-    //    Only include products that have ai_tags AND match the age_group
-    if (age_group) {
-        conditions.push(`(
-            p.ai_tags IS NOT NULL
-            AND p.ai_tags->>'age_group' = $${i}
-        )`);
-        values.push(age_group);
-        i++;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  SOFT SCORING — matched products get ranked higher, not excluded
-    // ═══════════════════════════════════════════════════════════════════════
-
-    const hardFilterValues = [...values];
-
-    // style match → score boost
-    if (style) {
-        scoreParts.push(`CASE WHEN p.ai_tags->>'style' = $${i} THEN 2.0 ELSE 0 END`);
-        values.push(style);
-        i++;
-    }
-
-    // occasion match → score boost
-    if (occasion) {
-        scoreParts.push(`CASE WHEN p.ai_tags->>'occasion' = $${i} THEN 2.0 ELSE 0 END`);
-        values.push(occasion);
-        i++;
-    }
-
-    // season match → score boost
-    if (season) {
-
-        const blockedSeasons: Record<string, string> = {
-            "summer": "winter",
-            "monsoon": "winter",
-            "spring": "winter",
-            "winter": "summer",
-        }
-        const blocked = blockedSeasons[season];
-        if(blocked) {
-            conditions.push(`(p.ai_tags ->> 'season' IS NULL OR p.ai_tags->>'season' != $${i}::text)`)
-            values.push(blocked);
-            i++;
-        }
-        scoreParts.push(`
-            CASE WHEN p.ai_tags->>'season' = $${i}
-              OR p.ai_tags->>'season' = 'all-season'
-            THEN 1.0 ELSE 0 END
-        `);
-        values.push(season);
-        i++;
-    }
-
-    // vibe_keywords → score boost per match
-    if (vibe_keywords && vibe_keywords.length > 0) {
-        scoreParts.push(`(
-            SELECT COALESCE(COUNT(*), 0) * 0.5
-            FROM unnest($${i}::text[]) AS vk
-            WHERE p.ai_tags->'vibe' ? vk
-        )`);
-        values.push(vibe_keywords);
-        i++;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  EXTRA HARD FILTERS (price, brand, category, size)
-    // ═══════════════════════════════════════════════════════════════════════
 
     if (max_price) {
         conditions.push(`EXISTS (
@@ -198,6 +128,58 @@ export const AssistantProductQuery = async (
         values.push(sizes);
         i++;
     }
+
+    const hardFilterValues = [...values];
+
+    // style match → score boost
+    if (style) {
+        scoreParts.push(`CASE WHEN p.ai_tags->>'style' = $${i} THEN 4.0 ELSE 0 END`);
+        values.push(style);
+        i++;
+    }
+
+     // 3. age_group → HARD filter on ai_tags JSONB
+    //    Only include products that have ai_tags AND match the age_group
+     if (age_group) {
+        scoreParts.push(`CASE WHEN p.ai_tags->>'age_group' = $${i} THEN 2.0 ELSE 0 END`);
+        values.push(age_group);
+        i++;
+    }
+
+
+    // occasion match → score boost
+    if (occasion) {
+        scoreParts.push(`CASE WHEN p.ai_tags->>'occasion' = $${i} THEN 4.0 ELSE 0 END`);
+        values.push(occasion);
+        i++;
+    }
+
+    if (season) {
+        scoreParts.push(`
+            CASE WHEN p.ai_tags->>'season' = $${i}
+              OR p.ai_tags->>'season' = 'all-season'
+            THEN 2.0 ELSE 0 END
+        `);
+        values.push(season);
+        i++;
+    }
+
+    // vibe_keywords → score boost per match
+    if (vibe_keywords && vibe_keywords.length > 0) {
+        scoreParts.push(`(
+            SELECT COALESCE(COUNT(*), 0) * 0.5
+            FROM unnest(ARRAY(SELECT jsonb_array_elements_text($${i}::jsonb))) AS vk
+            WHERE p.ai_tags->'vibe' ? vk
+        )`);
+        values.push(JSON.stringify(vibe_keywords));
+        i++;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  EXTRA HARD FILTERS (price, brand, category, size)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    
 
     // ── COUNT ────────────────────────────────────────────────────────────────
     const countResult = await db.query(
