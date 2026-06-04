@@ -2,8 +2,8 @@ import { ProductWithImagesDTO, ProductWithImagesResponseDTO } from "./product";
 
 export interface ParsedIntentSearch {
     keyword: string | null;
-    gender: string | null;
-    age_group: string | null;
+    gender:"MALE" | "FEMALE" | "UNISEX" | null;  // ✅ string se specific union
+    age_group:"child" | "teen" | "young" | "adult" | "senior" | null;
     age_raw: number | null;
     style: string | null;
     occasion: string | null;
@@ -13,7 +13,7 @@ export interface ParsedIntentSearch {
 
 export interface ParsedIntent {
     message: string;
-    intent: string;
+    intent: ParsedIntentSearch;
     filters: {
         max_price: number | null;
         brands: string[];
