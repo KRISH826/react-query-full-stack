@@ -3,6 +3,13 @@ import { AuthService } from "../user/user.service";
 import { AssistantService } from "./assistant.service";
 import { Request, Response, NextFunction } from "express";
 
+type AssistantGender = "MALE" | "FEMALE" | "UNISEX" | null;
+
+const toAssistantGender = (gender: "male" | "female" | "unisex" | null): AssistantGender => {
+    if (!gender) return null;
+    return gender.toUpperCase() as Exclude<AssistantGender, null>;
+};
+
 export class AssistantController {
     static async assistantChat(req: AuthRequest, res: Response, next: NextFunction) {
         try {
@@ -11,10 +18,10 @@ export class AssistantController {
             const limit = Number(req.query.limit ?? 30);
             const userId = req.user?.id;
 
-            let userGender: "MALE" | "FEMALE" | "UNISEX" | null = null;
+            let userGender: AssistantGender = null;
             const user = await AuthService.findUserById(userId as string);
             if (user) {
-                userGender = user.gender ?? null;
+                userGender = toAssistantGender(user.gender);
             }
 
 

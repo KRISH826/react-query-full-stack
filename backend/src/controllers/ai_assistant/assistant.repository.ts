@@ -22,7 +22,7 @@ export const AssistantProductQuery = async (
     const { keyword, gender, age_group, style, occasion, season, vibe_keywords } = intent;
     const { max_price, brands, categories, sizes } = filters;
 
-    const offset    = (page - 1) * limit;
+    const offset = (page - 1) * limit;
     const conditions: string[] = ["p.deleted_at IS NULL", "p.status = 'active'"];
     const values: any[] = [];
     let i = 1;
@@ -127,6 +127,19 @@ export const AssistantProductQuery = async (
 
     // season match → score boost
     if (season) {
+
+        const blockedSeasons: Record<string, string> = {
+            "summer": "winter",
+            "monsoon": "winter",
+            "spring": "winter",
+            "winter": "summer",
+        }
+        const blocked = blockedSeasons[season];
+        if(blocked) {
+            conditions.push(`(p.ai_tags ->> 'season' IS NULL OR p.ai_tags->>'season' != $${i}::text)`)
+            values.push(blocked);
+            i++;
+        }
         scoreParts.push(`
             CASE WHEN p.ai_tags->>'season' = $${i}
               OR p.ai_tags->>'season' = 'all-season'
@@ -187,15 +200,15 @@ export const AssistantProductQuery = async (
     }
 
     // ── COUNT ────────────────────────────────────────────────────────────────
-     const countResult = await db.query(
+    const countResult = await db.query(
         `SELECT COUNT(*) FROM products p WHERE ${conditions.join(" AND ")}`,
         hardFilterValues,
     );
     const total = Number.parseInt(countResult.rows[0].count, 10);
 
     // ── MAIN QUERY ────────────────────────────────────────────────────────────
-    const scoreExpr       = `(${scoreParts.join(" + ")})`;
-    const limitPlaceholder  = i;
+    const scoreExpr = `(${scoreParts.join(" + ")})`;
+    const limitPlaceholder = i;
     const offsetPlaceholder = i + 1;
 
     const query = `
