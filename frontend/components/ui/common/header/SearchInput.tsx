@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import AiSearch from './AiSearch'
 import { DropdownItem } from '@/app/(main)/product-search/_components/DropDownItem'
 import { useRecentSearches } from '@/hooks/useRecentSearch'
+import { useSelector } from 'react-redux'
+import { useGetProfileQuery } from '@/services/userApi'
+import { RootState } from '@/store/store'
 
 const TRENDING_SEARCHES = [
     { text: "Men's T-Shirts", icon: TrendingUp },
@@ -33,6 +36,10 @@ const SearchInput = () => {
     const inputRef = useRef<HTMLInputElement>(null)
     const router = useRouter();
     const { addSearch, recents } = useRecentSearches();
+    const token = useSelector((state: RootState) => state.auth.accessToken);
+    const { data: user } = useGetProfileQuery(undefined, {
+        skip: !token,
+    });
 
     const handleSearch = (searchQuery: string) => {
         const normalized = searchQuery.trim();
@@ -175,8 +182,9 @@ const SearchInput = () => {
             >
                 <Search className="h-4 w-4" />
             </button>
-
-            <AiSearch />
+            {
+                user && <AiSearch />
+            }
         </div>
     )
 }
