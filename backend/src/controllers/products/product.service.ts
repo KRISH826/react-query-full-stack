@@ -162,6 +162,8 @@ export class ProductService {
             }, client);
 
             const validFiles = files?.filter((f) => f.size > 0);
+            let base64ImageString: string | undefined;
+            let imageMimeType: string | undefined;
             if (validFiles?.length) {
                 const currentImagesCount = existingProduct.images?.length || 0;
                 for (let i = 0; i < validFiles.length; i++) {
@@ -174,9 +176,24 @@ export class ProductService {
                 }
 
                 const firstFile = validFiles[0];
-                const base64ImageString = firstFile.buffer.toString('base64');
-                const imageMimeType = firstFile.mimetype;
-                const aiTags = await AiService.generateProductTags({
+                base64ImageString = firstFile.buffer.toString('base64');
+                imageMimeType = firstFile.mimetype;
+            } else if (existingProduct.images.length) {
+                const primaryImage = existingProduct.images.find(img => img.isprimary) 
+                ?? existingProduct.images[0];
+                if(primaryImage.image_url) {
+                    try {
+                        const response = await fetch(primaryImage.image_url);
+                        const arrayBuffer = await response.arrayBuffer();
+                        base64ImageString = Buffer.from(arrayBuffer).toString('base64');
+                        imageMimeType = response.headers.get('content-type') || 'image/jpeg';
+                    } catch (error) {
+                        console.warn("Could not fetch existing image for AI:", error);
+                    }
+                }
+            }
+            
+            const aiTags = await AiService.generateProductTags({
                     description: product.description ?? existingProduct.description,
                     brand: product.brand ?? existingProduct.brand ?? undefined,
                     gender: product.gender ?? existingProduct.gender,
@@ -189,7 +206,6 @@ export class ProductService {
                 if (aiTags) {
                     await saveProductAITags(id, aiTags, client);
                 }
-            }
 
             if (categoryIds.length > 0) {
                 await deleteProductCategories(id, client);

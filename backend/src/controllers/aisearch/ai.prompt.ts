@@ -33,8 +33,8 @@ OUTPUT FORMAT (STRICT JSON ONLY)
     RELIGIOUS: pooja, temple, church, mosque, mandir, religious-ceremony
     FITNESS: gym, workout, yoga, running, sports, cycling, hiking, trekking
     SPECIAL: graduation, farewell, reunion, college-fest, cultural-event, concert, movie-date, family-gathering, festival-celebration
-    "],
-  "season": ["pick ALL that apply: summer, winter, monsoon, spring, all-season, festive-season"],
+    "] i need array of occassion,
+  "season": ["pick ALL that apply: summer, winter, monsoon, spring, all-season, festive-season"] i need array of session,
   "fit": "slim | regular | relaxed | oversized | tailored | body-fit | flowy | unknown",
   "pattern": "solid | printed | striped | checked | embroidered | textured | graphic | unknown",
   "fabric_hint": "cotton | linen | denim | polyester | wool | silk | chiffon | knit | blend | unknown",
