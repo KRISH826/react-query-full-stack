@@ -155,9 +155,9 @@ const AiSearch = () => {
                                     }`}
                             >
                                 <div
-                                    className={`max-w-[72%] px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${msg.role === "user"
-                                        ? "bg-primary text-primary-foreground rounded-br-sm"
-                                        : "bg-transparent max-w-full!"
+                                    className={`px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${msg.role === "user"
+                                        ? "max-w-[72%] bg-primary text-primary-foreground rounded-br-sm"
+                                        : "w-full max-w-full bg-transparent"
                                         }`}
                                 >
                                     {typeof msg.content === "string" ? (

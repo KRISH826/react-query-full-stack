@@ -149,20 +149,23 @@ export const AssistantProductQuery = async (
 
     // occasion match → score boost
     if (occasion) {
-        scoreParts.push(`CASE WHEN p.ai_tags->>'occasion' = $${i} THEN 4.0 ELSE 0 END`);
-        values.push(occasion);
-        i++;
-    }
+    scoreParts.push(`
+        CASE WHEN p.ai_tags->'occasion' @> $${i}::jsonb
+        THEN 4.0 ELSE 0 END
+    `);
+    values.push(JSON.stringify([occasion])); // wrap in array for @> operator
+    i++;
+}
 
-    if (season) {
-        scoreParts.push(`
-            CASE WHEN p.ai_tags->>'season' = $${i}
-              OR p.ai_tags->>'season' = 'all-season'
-            THEN 2.0 ELSE 0 END
-        `);
-        values.push(season);
-        i++;
-    }
+   if (season) {
+    scoreParts.push(`
+        CASE WHEN p.ai_tags->'season' @> $${i}::jsonb
+          OR p.ai_tags->'season' @> '["all-season"]'::jsonb
+        THEN 2.0 ELSE 0 END
+    `);
+    values.push(JSON.stringify([season])); // wrap in array for @> operator
+    i++;
+}
 
     // vibe_keywords → score boost per match
     if (vibe_keywords && vibe_keywords.length > 0) {
@@ -178,8 +181,6 @@ export const AssistantProductQuery = async (
     // ═══════════════════════════════════════════════════════════════════════
     //  EXTRA HARD FILTERS (price, brand, category, size)
     // ═══════════════════════════════════════════════════════════════════════
-
-    
 
     // ── COUNT ────────────────────────────────────────────────────────────────
     const countResult = await db.query(
