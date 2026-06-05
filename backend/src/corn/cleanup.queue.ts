@@ -19,7 +19,7 @@ export const cleanupQueue = new Queue("cleanup-unverified-users", {
 })
 
 export const startUpCleanScheduler = async () => {
-    const repeatInterval = 15 * 60 * 1000;
+    const repeatInterval = 7 * 60 * 1000;
     const existingJobs = await cleanupQueue.getRepeatableJobs();
     const hasCleanupJob = existingJobs.some(
         (job) => job.name === "cleanup" && Number(job.every) === repeatInterval
