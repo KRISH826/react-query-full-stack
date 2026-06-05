@@ -23,8 +23,18 @@ OUTPUT FORMAT (STRICT JSON ONLY)
   "age_group": "child | teen | young | adult | senior",
   "style": "streetwear | casual | formal | sporty | traditional | elegant | bohemian | vintage | minimal | luxury",
   "gender": "male | female | unisex",
-  "occasion": "daily | office | party | wedding | festive | vacation | lounge | gym | travel | unknown",
-  "season": "summer | winter | monsoon | spring | all-season | unknown",
+  "occasion": ["pick ALL that apply — BE GENEROUS, add every occasion this product could work for:
+    DAILY/CASUAL: daily, casual-outing, weekend, coffee-date, brunch, lunch-date, shopping, travel, vacation, beach, picnic, road-trip
+    ROMANTIC: date-night, anniversary, valentines-day, honeymoon, proposal, first-date, dinner-date, husband-gift, wife-gift, boyfriend-gift, girlfriend-gift
+    PROFESSIONAL: office, business-meeting, interview, conference, work-from-home, client-meeting
+    CELEBRATIONS: birthday, party, night-out, club, cocktail-party, house-party, new-year
+    INDIAN FESTIVALS: durga-puja, kali-puja, diwali, dussehra, navratri, holi, eid, ramzan, christmas, onam, baisakhi, ganesh-chaturthi, janmashtami, raksha-bandhan, karwa-chauth, teej, pongal, bihu, lohri, ugadi
+    WEDDINGS: wedding, engagement, reception, sangeet, mehendi, haldi, baarat, wedding-guest
+    RELIGIOUS: pooja, temple, church, mosque, mandir, religious-ceremony
+    FITNESS: gym, workout, yoga, running, sports, cycling, hiking, trekking
+    SPECIAL: graduation, farewell, reunion, college-fest, cultural-event, concert, movie-date, family-gathering, festival-celebration
+    "] i need array of occassion,
+  "season": ["pick ALL that apply: summer, winter, monsoon, spring, all-season, festive-season"] i need array of session,
   "fit": "slim | regular | relaxed | oversized | tailored | body-fit | flowy | unknown",
   "pattern": "solid | printed | striped | checked | embroidered | textured | graphic | unknown",
   "fabric_hint": "cotton | linen | denim | polyester | wool | silk | chiffon | knit | blend | unknown",

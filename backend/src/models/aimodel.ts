@@ -27,8 +27,8 @@ export interface ProductAITags {
     age_group: AgeGroup;
     style: StyleType;
     gender: ProductGender;
-    occasion?: string;
-    season?: string;
+    occasion?: string[];
+    season?: string[];
     fit?: string;
     pattern?: string;
     fabric_hint?: string;

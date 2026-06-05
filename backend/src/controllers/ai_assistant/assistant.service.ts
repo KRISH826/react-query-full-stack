@@ -1,39 +1,42 @@
 import OpenAI from "openai";
 import { AssistantResponse, ParsedIntent } from "../../models/assistant";
 import { config } from "../../config/config";
-import { AI_ASSISTANT_PARSE_PROMPT } from "./assistant.prompt";
+import { getAiAssistantPrompt } from "./assistant.prompt";
 import { AssistantProductQuery } from "./assistant.repository";
-import {ParsedIntentSearch} from "../../models/assistant"
+import { ParsedIntentSearch } from "../../models/assistant"
 
 export class AssistantService {
-    static async getAssistantResponse(userMessage: string, page: number = 1, limit: number = 10, extraFilters?: { brands?: string[]; categories?: string[]; sizes?: string[] } ): Promise<AssistantResponse> {
-        const parsedResult = await this.parsedWithDeepSeek(userMessage);
+    static async getAssistantResponse(userMessage: string, page: number = 1, limit: number = 10,
+        extraFilters?: { brands?: string[]; categories?: string[]; sizes?: string[], },
+        userGender?:  "MALE" | "FEMALE" | "UNISEX" | null 
+    ): Promise<AssistantResponse> {
+        const parsedResult = await this.parsedWithDeepSeek(userMessage, userGender);
 
         const searchFilters = {
-            max_price:  parsedResult.filters.max_price  ?? undefined,
-            brands:     parsedResult.filters.brands?.length     ? parsedResult.filters.brands     : extraFilters?.brands,
+            max_price: parsedResult.filters.max_price ?? undefined,
+            brands: parsedResult.filters.brands?.length ? parsedResult.filters.brands : extraFilters?.brands,
             categories: parsedResult.filters.categories?.length ? parsedResult.filters.categories : extraFilters?.categories,
-            sizes:      extraFilters?.sizes,
+            sizes: extraFilters?.sizes,
         };
 
         const searchResults = await AssistantProductQuery(
-            parsedResult.intent as unknown as ParsedIntentSearch,
+            parsedResult.intent,   // ParsedIntentSearch directly
             searchFilters,
             page,
             limit
         );
 
-       return {
-            success:    true,
-            message:    parsedResult.message,
-            products:   searchResults.data,
-            page:       searchResults.page,
+        return {
+            success: true,
+            message: parsedResult.message,
+            products: searchResults.data,
+            page: searchResults.page,
             totalPages: searchResults.totalPages,
-            intent:     parsedResult,
+            intent: parsedResult,
         };
     }
 
-    private static async parsedWithDeepSeek(message: string): Promise<ParsedIntent> {
+    private static async parsedWithDeepSeek(message: string, userGender: "MALE" | "FEMALE" | "UNISEX" | null = null): Promise<ParsedIntent> {
         try {
             const openAi = new OpenAI({
                 baseURL: config.deepseek.api_url,
@@ -44,10 +47,10 @@ export class AssistantService {
             const response = await openAi.chat.completions.create({
                 model: "deepseek-v4-flash",
                 messages: [
-                    {role: "system", content: AI_ASSISTANT_PARSE_PROMPT},
-                    {role: "user", content: message}
+                    { role: "system", content: getAiAssistantPrompt(userGender) },
+                    { role: "user", content: message }
                 ],
-                response_format:{type: "json_object"},
+                response_format: { type: "json_object" },
                 max_tokens: 1000,
                 temperature: 0.2,
             });
