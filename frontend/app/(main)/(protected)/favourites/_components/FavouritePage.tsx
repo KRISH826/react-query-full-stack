@@ -92,7 +92,7 @@ const FavouritePage = () => {
     return (
         <section className="bg-stone-50/80 py-8 md:py-10">
             <div className="container mx-auto">
-                <div className="mx-auto max-w-6xl">
+                <div>
                     <div className="mb-6 flex flex-col gap-4 border-b border-stone-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">
