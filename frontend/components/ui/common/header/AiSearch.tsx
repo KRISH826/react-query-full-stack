@@ -183,18 +183,16 @@ const AiSearch = () => {
                                                                     msg.content.intent.age_group,
                                                                     msg.content.intent.style,
                                                                     msg.content.intent.occasion,
-                                                                    msg.content.intent.season
                                                                 ].filter(Boolean).map((val, i) => {
                                                                     const colorClasses = [
                                                                         "bg-violet-500/15 text-violet-700 dark:text-violet-400",
                                                                         "bg-indigo-500/15 text-indigo-700 dark:text-indigo-400",
                                                                         "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-                                                                        "bg-sky-500/15 text-sky-700 dark:text-sky-400",
-                                                                        "bg-lime-500/15 text-lime-700 dark:text-lime-400"
+                                                                        "bg-sky-500/15 text-sky-700 dark:text-sky-400"
                                                                     ];
                                                                     const colorClass = colorClasses[i % colorClasses.length];
                                                                     return (
-                                                                        <span key={i} className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize ${colorClass}`}>
+                                                                        <span key={i} className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize! ${colorClass}`}>
                                                                             {val}
                                                                         </span>
                                                                     );

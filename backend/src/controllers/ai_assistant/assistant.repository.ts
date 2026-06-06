@@ -133,7 +133,7 @@ export const AssistantProductQuery = async (
 
     // style match → score boost
     if (style) {
-        scoreParts.push(`CASE WHEN p.ai_tags->>'style' = $${i} THEN 4.0 ELSE 0 END`);
+        scoreParts.push(`CASE WHEN p.ai_tags->>'style' = $${i} THEN 6.0 ELSE 0 END`);
         values.push(style);
         i++;
     }
@@ -149,23 +149,24 @@ export const AssistantProductQuery = async (
 
     // occasion match → score boost
     if (occasion) {
-    scoreParts.push(`
-        CASE WHEN p.ai_tags->'occasion' @> $${i}::jsonb
-        THEN 4.0 ELSE 0 END
-    `);
-    values.push(JSON.stringify([occasion])); // wrap in array for @> operator
-    i++;
-}
+        scoreParts.push(`
+            CASE WHEN p.ai_tags->'occasion' @> $${i}::jsonb
+            THEN 6.0 ELSE 0 END
+        `);
+        values.push(JSON.stringify([occasion])); // wrap in array for @> operator
+        i++;
+    }
 
    if (season) {
-    scoreParts.push(`
-        CASE WHEN p.ai_tags->'season' @> $${i}::jsonb
-          OR p.ai_tags->'season' @> '["all-season"]'::jsonb
-        THEN 2.0 ELSE 0 END
-    `);
-    values.push(JSON.stringify([season])); // wrap in array for @> operator
-    i++;
-}
+        scoreParts.push(`
+            CASE WHEN p.ai_tags->'season' @> $${i}::jsonb
+            OR p.ai_tags->'season' @> '["all-season"]'::jsonb THEN 3.0
+            WHEN p.ai_tags IS NULL THEN 0
+            ELSE -3.0 END
+        `);
+        values.push(JSON.stringify([season])); // wrap in array for @> operator
+        i++;
+    }
 
     // vibe_keywords → score boost per match
     if (vibe_keywords && vibe_keywords.length > 0) {
@@ -199,6 +200,7 @@ export const AssistantProductQuery = async (
             SELECT p.*, ${scoreExpr} AS ai_score
             FROM products p
             WHERE ${conditions.join(" AND ")}
+            AND (${scoreExpr}) > 2.0
             ${orderClause}
             LIMIT $${limitPlaceholder} OFFSET $${offsetPlaceholder}
         )
