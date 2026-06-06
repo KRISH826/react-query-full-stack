@@ -46,6 +46,7 @@ export default function RootLayout({
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="lazyOnload"
         />
+        <meta name="google-site-verification" content="dJ86Hm8GfWsV5KyHx7p6j-WWSEBF0boB_qlhzHIUFdg" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} ${brandFont.variable} antialiased`}>
         <Providers>
