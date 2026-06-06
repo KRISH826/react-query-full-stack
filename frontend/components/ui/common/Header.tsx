@@ -7,6 +7,7 @@ import Profile from "./header/Profile";
 import SearchInput from "./header/SearchInput";
 import MobileMenu from "./header/MobileMenu";
 import BrandLogo from "@/components/branding/BrandLogo";
+import DesktopNav from "./header/DesktopNav";
 
 const Header = () => {
     const scrollHeader = useRef<HTMLDivElement>(null);
@@ -25,15 +26,20 @@ const Header = () => {
     return (
         <header ref={scrollHeader} className="sticky top-0 z-50 w-full bg-background transition-all duration-300">
             <div className="container">
-                {/* Top Row: Logo + Actions */}
+                {/* Top Row: Logo + Nav + Search + Actions */}
                 <div className="flex h-16 items-center justify-between gap-4">
-                    <BrandLogo compact showTagline={false} className="shrink-0" />
+                    <div className="flex items-center gap-6 lg:gap-8 shrink-0">
+                        <BrandLogo compact showTagline={false} />
+                        <DesktopNav />
+                    </div>
+                    
                     {/* Search — hidden on mobile in this row, visible in bottom row */}
-                    <div className="hidden md:flex flex-1">
+                    <div className="hidden md:flex flex-1 justify-end lg:justify-center max-w-2xl">
                         <SearchInput />
                     </div>
+                    
                     {/* Actions */}
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                         <Favourites />
                         <Cart />
                         <Profile />
