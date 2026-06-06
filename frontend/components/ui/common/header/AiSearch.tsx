@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useId, useState } from 'react'
-import { Sparkles, Send, Mic, Image as ImageIcon, X, ArrowsUpFromLine } from 'lucide-react'
+import { Sparkles, Send, Mic, Image as ImageIcon, X, ArrowsUpFromLine, SearchX } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../../dialog'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { Button } from '../../button'
@@ -76,7 +76,7 @@ const AiSearch = () => {
             {
                 user && user?.city && user?.country && user.gender ? (
                     <>
-                        <DialogContent className="max-w-none! w-[95vw]! lg:w-[85vw]! h-[95vh]! m-0 p-0 overflow-hidden rounded-xl md:rounded-2xl border border-border shadow-2xl flex flex-col bg-background/95 backdrop-blur-xl sm:rounded-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-300 [&>button.absolute]:hidden">
+                        <DialogContent className="max-w-none! w-[95vw]! sm:w-[92vw]! md:w-[90vw]! lg:w-[85vw]! h-[95vh]! m-0 p-0 overflow-hidden rounded-xl sm:rounded-2xl border border-border shadow-2xl flex flex-col bg-background/95 backdrop-blur-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-300 [&>button.absolute]:hidden">
                             <DialogTitle className="sr-only">AI Assistant Search</DialogTitle>
 
                             {/* SVG definition for the Gemini-style gradient */}
@@ -199,17 +199,27 @@ const AiSearch = () => {
                                                                 })}
                                                             </div>
                                                         )}
-                                                        <Carousel className="w-full mt-4 max-w-full">
-                                                            <CarouselContent className="-ml-2 md:-ml-4">
-                                                                {msg.content.products.map((product: Product) => (
-                                                                    <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
-                                                                        <ProductCard product={product} />
-                                                                    </CarouselItem>
-                                                                ))}
-                                                            </CarouselContent>
-                                                            <CarouselPrevious className="-left-10 hidden sm:flex" />
-                                                            <CarouselNext className="-right-10 hidden sm:flex" />
-                                                        </Carousel>
+                                                        {msg.content.products && msg.content.products.length > 0 ? (
+                                                            <Carousel className="w-full mt-4 max-w-full">
+                                                                <CarouselContent className="-ml-2 md:-ml-4">
+                                                                    {msg.content.products.map((product: Product) => (
+                                                                        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                                            <ProductCard product={product} />
+                                                                        </CarouselItem>
+                                                                    ))}
+                                                                </CarouselContent>
+                                                                <CarouselPrevious className="-left-10 hidden sm:flex" />
+                                                                <CarouselNext className="-right-10 hidden sm:flex" />
+                                                            </Carousel>
+                                                        ) : (
+                                                            <div className="mt-4 flex flex-col items-center justify-center py-6 px-4 bg-muted/30 rounded-xl border border-dashed border-border/50 text-center">
+                                                                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center mb-3">
+                                                                    <SearchX className="h-5 w-5 text-muted-foreground" />
+                                                                </div>
+                                                                <p className="text-sm font-medium text-foreground">No perfect match found</p>
+                                                                <p className="text-xs text-muted-foreground mt-1 max-w-[250px]">Try adjusting your search terms or asking for something else.</p>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
