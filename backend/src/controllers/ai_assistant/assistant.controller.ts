@@ -3,11 +3,16 @@ import { AuthService } from "../user/user.service";
 import { AssistantService } from "./assistant.service";
 import { Request, Response, NextFunction } from "express";
 
-type AssistantGender = "MALE" | "FEMALE" | "UNISEX" | null;
+type AssistantGender = "Male" | "Female" | "Unisex" | null;
 
 const toAssistantGender = (gender: "male" | "female" | "unisex" | null): AssistantGender => {
     if (!gender) return null;
-    return gender.toUpperCase() as Exclude<AssistantGender, null>;
+    const genderMap: Record<Exclude<typeof gender, null>, Exclude<AssistantGender, null>> = {
+        male: "Male",
+        female: "Female",
+        unisex: "Unisex",
+    };
+    return genderMap[gender];
 };
 
 export class AssistantController {
