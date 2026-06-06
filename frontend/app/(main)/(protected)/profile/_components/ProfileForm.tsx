@@ -203,8 +203,8 @@ const ProfileForm = ({ user }: ProfileFormProps) => {
                                 <div className="space-y-2">
                                     <Label htmlFor="gender" className="text-sm font-bold text-gray-700">Gender</Label>
                                     <div className="relative">
-                                        <Select 
-                                            value={watch("gender")} 
+                                        <Select
+                                            value={watch("gender")}
                                             onValueChange={(value) => setValue("gender", value as Gender, { shouldValidate: true })}
                                         >
                                             <SelectTrigger id="gender" className="h-11! w-full">
