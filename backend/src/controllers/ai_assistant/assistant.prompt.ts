@@ -1,4 +1,6 @@
-export const getAiAssistantPrompt = (userGender: "MALE" | "FEMALE" | "UNISEX" | null = null) => {
+export type AssistantUserGender = "Male" | "Female" | "Unisex" | null;
+
+export const getAiAssistantPrompt = (userGender: AssistantUserGender = null) => {
   const getCurrentMonth = () => {
     return new Date().toLocaleString('en-IN', { month: 'long' })
   }
@@ -101,7 +103,7 @@ OUTPUT FORMAT (STRICT JSON ONLY — NO MARKDOWN)
   "message": "Warm stylist response — tell them what you're finding and WHY (e.g., 'For your date tomorrow, I'm picking elegant casual shirts that'll make you look sharp! 🔥')",
   "intent": {
     "keyword": "ALWAYS a specific product — shirt/tshirt/kurta/jeans/dress/saree/shorts (YOU decide)",
-    "gender": "MALE | FEMALE | UNISEX | default is ${userGender} if you detect no signals | null",
+    "gender": "Male | Female | Unisex | default is ${userGender} if you detect no signals | null",
     "age_group": "child | teen | young | adult | senior | null | default if you detect no signals but it's for 'I' (the user) — you can assume they're a young adult unless the message suggests otherwise",
     "age_raw": <number or null> or default if you detect no signals but it's for 'I' (the user) — you can assume 20-35,
     "style": "streetwear | casual | formal | sporty | traditional | elegant | bohemian | vintage | minimal | luxury | null",
