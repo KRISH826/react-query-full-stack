@@ -14,7 +14,7 @@ const menuData = [
 const DesktopNav = () => {
     const pathName = usePathname();
     return (
-        <nav className="hidden lg:flex items-center gap-4 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
             {menuData.map((item) => (
                 <Link
                     key={item.label}
