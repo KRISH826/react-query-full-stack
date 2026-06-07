@@ -204,7 +204,7 @@ const AiSearch = () => {
                                                                 <CarouselContent className="-ml-2 md:-ml-4">
                                                                     {msg.content.products.map((product: Product) => (
                                                                         <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-[65%] sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
-                                                                            <ProductCard product={product} />
+                                                                            <ProductCard product={product} hideDescription />
                                                                         </CarouselItem>
                                                                     ))}
                                                                 </CarouselContent>

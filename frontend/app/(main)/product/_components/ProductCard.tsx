@@ -16,9 +16,10 @@ import { RootState } from "@/store/store";
 
 type Props = {
     product: Product;
+    hideDescription?: boolean;
 };
 
-const ProductCard = ({ product }: Props) => {
+const ProductCard = ({ product, hideDescription }: Props) => {
     const router = useRouter();
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const { data: favouritesData } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
@@ -113,9 +114,11 @@ const ProductCard = ({ product }: Props) => {
                     {product.brand}
                 </h2>
 
-                <p className="mt-0.5 line-clamp-1 text-[10px] md:text-sm text-gray-500">
-                    {product.productname}
-                </p>
+                {!hideDescription && (
+                    <p className="mt-0.5 line-clamp-1 text-[10px] md:text-sm text-gray-500">
+                        {product.productname}
+                    </p>
+                )}
 
                 <div className="scale-90 origin-left md:scale-100">
                     <ProductRating
