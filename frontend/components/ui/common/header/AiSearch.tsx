@@ -111,7 +111,7 @@ const AiSearch = () => {
                             </div>
 
                             {/* Main Chat/Conversation Area */}
-                            <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-start p-6 md:p-8">
+                            <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-start p-3 md:p-8">
                                 {
                                     message.length === 0 && <>
                                         <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center space-y-10">
@@ -165,7 +165,7 @@ const AiSearch = () => {
                                                 }`}
                                         >
                                             <div
-                                                className={`max-w-[72%] px-4 py-2.5 text-sm leading-relaxed rounded-2xl ${msg.role === "user"
+                                                className={`w-full md:w-auto max-w-full md:max-w-[72%] px-4 py-2.5 text-sm! md:text-sm leading-relaxed rounded-2xl ${msg.role === "user"
                                                     ? "bg-primary text-primary-foreground rounded-br-sm"
                                                     : "bg-transparent max-w-full!"
                                                     }`}
@@ -175,7 +175,7 @@ const AiSearch = () => {
                                                 ) : (
                                                     // AirecommendationResponse - apna renderer lagao yahan
                                                     <div className="w-full">
-                                                        <p className='font-medium bg-secondary max-w-[60%] shadow px-4 py-2.5 text-sm rounded-2xl rounded-bl-sm!'>{msg.content.message}</p>
+                                                        <p className='font-medium bg-secondary w-full md:w-auto max-w-full md:max-w-[60%] shadow px-4 py-2.5 text-sm! md:text-sm rounded-2xl rounded-bl-sm!'>{msg.content.message}</p>
                                                         {msg.content.intent && (
                                                             <div className="flex flex-wrap gap-2 mt-3">
                                                                 {[
@@ -203,7 +203,7 @@ const AiSearch = () => {
                                                             <Carousel className="w-full mt-4 max-w-full">
                                                                 <CarouselContent className="-ml-2 md:-ml-4">
                                                                     {msg.content.products.map((product: Product) => (
-                                                                        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                                        <CarouselItem key={product.id} className="pl-2 md:pl-4 basis-[65%] sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
                                                                             <ProductCard product={product} />
                                                                         </CarouselItem>
                                                                     ))}
@@ -229,7 +229,7 @@ const AiSearch = () => {
                                         <div className="flex w-full justify-start">
                                             <div className="max-w-full px-4 py-2.5 text-sm leading-relaxed rounded-2xl bg-transparent w-full">
                                                 <div className="w-full animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                                    <div className='bg-secondary max-w-[60%] shadow px-4 py-3 rounded-2xl rounded-bl-sm! animate-pulse space-y-2.5'>
+                                                    <div className='bg-secondary w-full md:w-auto max-w-full md:max-w-[60%] shadow px-4 py-3 rounded-2xl rounded-bl-sm! animate-pulse space-y-2.5'>
                                                         <div className="h-4 bg-muted-foreground/20 rounded-md w-3/4"></div>
                                                         <div className="h-4 bg-muted-foreground/20 rounded-md w-1/2"></div>
                                                     </div>
@@ -241,7 +241,7 @@ const AiSearch = () => {
                                                     <Carousel className="w-full mt-4 max-w-full">
                                                         <CarouselContent className="-ml-2 md:-ml-4">
                                                             {Array.from({ length: 4 }).map((_, i) => (
-                                                                <CarouselItem key={i} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 xl:basis-1/4">
+                                                                <CarouselItem key={i} className="pl-2 md:pl-4 basis-[65%] sm:basis-1/2 md:basis-1/3 xl:basis-1/4">
                                                                     <ProductCardSkeleton />
                                                                 </CarouselItem>
                                                             ))}
