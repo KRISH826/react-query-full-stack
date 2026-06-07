@@ -117,7 +117,7 @@ const MobileMenu = () => {
                                     <Button
                                         variant="outline"
                                         className="justify-start gap-2"
-                                        onClick={() => router.push("/profile/orders")}
+                                        onClick={() => router.push("/orders")}
                                     >
                                         <Package className="h-4 w-4" />
                                         Orders
@@ -136,15 +136,27 @@ const MobileMenu = () => {
                                 </SheetClose>
                             </>
                         ) : (
-                            <SheetClose asChild>
-                                <Button
-                                    className="justify-start gap-2"
-                                    onClick={() => router.push("/login")}
-                                >
-                                    <User className="h-4 w-4" />
-                                    Sign In
-                                </Button>
-                            </SheetClose>
+                            <>
+                                <SheetClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="justify-start gap-2"
+                                        onClick={() => router.push("/login")}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        Sign In
+                                    </Button>
+                                </SheetClose>
+                                <SheetClose asChild>
+                                    <Button
+                                        className="justify-start gap-2"
+                                        onClick={() => router.push("/register")}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        Register
+                                    </Button>
+                                </SheetClose>
+                            </>
                         )}
                     </div>
                 </div>
