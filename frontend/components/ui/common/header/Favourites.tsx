@@ -26,11 +26,11 @@ const Favourites = () => {
         <Button
             variant="ghost"
             onClick={navigateFavourites}
-            className="relative hidden sm:inline-flex items-center gap-1.5 px-3 h-9 cursor-pointer"
+            className="relative inline-flex items-center gap-1.5 px-3 h-9 cursor-pointer"
             disabled={isLoading}
         >
             <Heart className="h-4 w-4" />
-            <span className="text-xs font-medium">Wishlist</span>
+            <span className="hidden sm:inline text-xs font-medium">Wishlist</span>
         </Button>
     );
 };
