@@ -19,7 +19,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     } catch (error) {
         console.error("Sitemap fetch failed:", error);
     }
-
     return [
         { url: `${process.env.NEXT_PUBLIC_SITE_URL}/`, changeFrequency: "daily", priority: 1.0 },
         { url: `${process.env.NEXT_PUBLIC_SITE_URL}/product`, changeFrequency: "daily", priority: 0.9 },
