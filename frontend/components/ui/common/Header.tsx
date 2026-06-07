@@ -36,12 +36,14 @@ const Header = () => {
                     <div className="flex items-center gap-1">
                         <Favourites />
                         <Cart />
-                        <Profile />
+                        <div className="hidden md:block">
+                            <Profile />
+                        </div>
                         <MobileMenu />
                     </div>
                 </div>
 
-                {/* Bottom Row: Search (Mobile Only) */}
+                {/* Bottom Row: Search bar (Mobile Only) */}
                 <div className="pb-3 md:hidden">
                     <SearchInput />
                 </div>

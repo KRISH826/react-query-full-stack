@@ -7,8 +7,14 @@ import {
     Heart,
     Menu,
     ShoppingCart,
+    LogOut,
+    Package,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useDispatch } from "react-redux";
+import { baseApi } from "@/services/baseQuery";
+import { useGetProfileQuery, useLogoutMutation } from "@/services/userApi";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -19,11 +25,8 @@ import {
     SheetHeader,
     SheetTitle,
 } from "@/components/ui/sheet";
-import MobileCategoryList from "./MobileCategoryList";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useGetProfileQuery } from "@/services/userApi";
-import { useGetCartQuery } from "@/services/cartApi";
 import BrandLogo from "@/components/branding/BrandLogo";
 
 const MobileMenu = () => {
@@ -32,9 +35,8 @@ const MobileMenu = () => {
     const { data: user, isLoading } = useGetProfileQuery(undefined, {
         skip: !token,
     });
-    const { data: cartData } = useGetCartQuery(undefined, { skip: !token });
-
-    const cartCount = cartData?.items?.length ?? 0;
+    const [logout] = useLogoutMutation();
+    const dispatch = useDispatch();
 
     const handleProtectedNavigate = (path: string) => {
         if (!user && !isLoading) {
@@ -42,6 +44,23 @@ const MobileMenu = () => {
             return;
         }
         router.push(path);
+    };
+
+    const handleLogout = async () => {
+        try {
+            await logout().unwrap();
+            toast.success("Logout successful");
+            router.replace("/login");
+            setTimeout(() => {
+                dispatch(baseApi.util.resetApiState());
+            }, 100);
+        } catch {
+            toast.error("Logout failed, but session cleared");
+            router.replace("/login");
+            setTimeout(() => {
+                dispatch(baseApi.util.resetApiState());
+            }, 100);
+        }
     };
 
     const navLinks = [
@@ -77,42 +96,56 @@ const MobileMenu = () => {
                                 </Link>
                             </SheetClose>
                         ))}
-                        <MobileCategoryList />
                     </nav>
 
                     {/* Mobile Actions */}
                     <div className="flex flex-col gap-2 pt-4 border-t">
-                        <SheetClose asChild>
-                            <Button
-                                variant="outline"
-                                className="justify-start gap-2"
-                                onClick={() => handleProtectedNavigate("/favourites")}
-                            >
-                                <Heart className="h-4 w-4" />
-                                Wishlist
-                            </Button>
-                        </SheetClose>
+                        {user ? (
+                            <>
+                                <SheetClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="justify-start gap-2"
+                                        onClick={() => router.push("/profile")}
+                                    >
+                                        <User className="h-4 w-4" />
+                                        Profile
+                                    </Button>
+                                </SheetClose>
 
-                        <SheetClose asChild>
-                            <Button
-                                variant="outline"
-                                className="justify-start gap-2"
-                                onClick={() => handleProtectedNavigate("/carts")}
-                            >
-                                <ShoppingCart className="h-4 w-4" />
-                                Cart ({cartCount})
-                            </Button>
-                        </SheetClose>
+                                <SheetClose asChild>
+                                    <Button
+                                        variant="outline"
+                                        className="justify-start gap-2"
+                                        onClick={() => router.push("/profile/orders")}
+                                    >
+                                        <Package className="h-4 w-4" />
+                                        Orders
+                                    </Button>
+                                </SheetClose>
 
-                        <SheetClose asChild>
-                            <Button
-                                className="justify-start gap-2"
-                                onClick={() => handleProtectedNavigate("/profile")}
-                            >
-                                <User className="h-4 w-4" />
-                                {user ? "Account" : "Sign In"}
-                            </Button>
-                        </SheetClose>
+                                <SheetClose asChild>
+                                    <Button
+                                        variant="destructive"
+                                        className="justify-start gap-2 bg-red-50 text-red-600 hover:bg-red-100 border-none"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        Logout
+                                    </Button>
+                                </SheetClose>
+                            </>
+                        ) : (
+                            <SheetClose asChild>
+                                <Button
+                                    className="justify-start gap-2"
+                                    onClick={() => router.push("/login")}
+                                >
+                                    <User className="h-4 w-4" />
+                                    Sign In
+                                </Button>
+                            </SheetClose>
+                        )}
                     </div>
                 </div>
             </SheetContent>

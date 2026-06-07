@@ -25,10 +25,10 @@ const Cart = () => {
         <Button
             variant="ghost"
             onClick={handleCart}
-            className="relative hidden sm:inline-flex items-center gap-1.5 px-3 h-9 cursor-pointer"
+            className="relative inline-flex items-center gap-1.5 px-3 h-9 cursor-pointer"
         >
             <ShoppingCart className="h-4 w-4" />
-            <span className="text-xs font-medium">Cart</span>
+            <span className="hidden sm:inline text-xs font-medium">Cart</span>
             {
                 (data?.items?.length ?? 0) > 0 && (
                     <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground">
