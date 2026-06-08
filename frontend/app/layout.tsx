@@ -28,10 +28,70 @@ const brandFont = Bodoni_Moda({
   weight: ["500", "600", "700"],
 });
 
+
 export const metadata: Metadata = {
-  title: "Zovara",
-  description: "Zovara premium fashion store",
-};
+  metadataBase: new URL("https://www.dropculture.krishnendupanja.online"),
+
+  title: {
+    default: "DropCulture — Premium Fashion Store",
+    template: "%s | DropCulture",
+  },
+  description: "DropCulture is your destination for premium fashion. Shop curated collections of clothing, accessories, and lifestyle products for men and women.",
+
+  keywords: [
+    "DropCulture",
+    "premium fashion",
+    "online fashion store",
+    "men fashion",
+    "women fashion",
+    "clothing",
+    "accessories",
+    "lifestyle",
+    "streetwear",
+    "luxury fashion India",
+  ],
+
+  authors: [{ name: "DropCulture", url: "https://www.dropculture.krishnendupanja.online" }],
+  creator: "DropCulture",
+  publisher: "DropCulture",
+
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://www.dropculture.krishnendupanja.online",
+    siteName: "DropCulture",
+    title: "DropCulture — Premium Fashion Store",
+    description:
+      "DropCulture is your destination for premium fashion. Shop curated collections for men and women.",
+    // images: [
+    //   {
+    //     url: "/og-image.jpg", // 1200x630 image public/ folder mein daalo
+    //     width: 1200,
+    //     height: 630,
+    //     alt: "DropCulture — Premium Fashion Store",
+    //   },
+    // ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "DropCulture — Premium Fashion Store",
+    description:
+      "DropCulture is your destination for premium fashion. Shop curated collections for men and women.",
+    // images: ["/og-image.jpg"],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+}
 
 export default function RootLayout({
   children,
