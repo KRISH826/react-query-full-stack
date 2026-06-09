@@ -2,9 +2,8 @@ import BrandLogo from "@/components/branding/BrandLogo";
 
 type AuthBrandProps = {
   className?: string;
-  light?: boolean;
 };
 
-export default function AuthBrand({ className, light = false }: AuthBrandProps) {
-  return <BrandLogo className={className} light={light} />;
+export default function AuthBrand({ className }: AuthBrandProps) {
+  return <BrandLogo logoClassName="w-54" className={className} />;
 }

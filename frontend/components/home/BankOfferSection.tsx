@@ -29,7 +29,7 @@ const BankOfferSection = () => {
                                 <WalletCards className="h-4 w-4 text-primary" />
                                 Bank Offers
                             </p>
-                            <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Save More With Every Checkout</h2>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-primary tracking-tight">Save More Shopping Fashion at DropCulture</h2>
                         </div>
                         <p className="hidden md:block text-sm text-muted-foreground">
                             Auto-applied offers for eligible cards.

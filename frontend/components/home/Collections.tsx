@@ -11,10 +11,10 @@ const Collections = () => {
                 <div className="flex justify-between items-end mb-8 sm:mb-12">
                     <div>
                         <h2 className="text-2xl sm:text-3xl font-bold text-primary dark:text-secondary mb-2">
-                            Curated Collections
+                            Curated Fashion Collections
                         </h2>
                         <p className="text-muted-foreground">
-                            Explore our thoughtfully selected styles for every occasion.
+                            Shop GenZ streetwear, summer fashion & winter clothing at DropCulture India.
                         </p>
                     </div>
                 </div>

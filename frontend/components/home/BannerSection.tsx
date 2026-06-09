@@ -1,7 +1,6 @@
 import { ArrowRight, ShieldCheck, Sparkles, Truck } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import React from 'react'
 
 const BannerSection = () => {
     return (
@@ -27,11 +26,11 @@ const BannerSection = () => {
                         </span>
 
                         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.05] mb-4 sm:mb-6 text-white tracking-tight">
-                            Elevate <br />Your Essentials.
+                            DropCulture — <br />Elevate Your Essentials.
                         </h1>
 
                         <p className="text-base sm:text-lg text-white/90 mb-7 sm:mb-10 max-w-xl leading-relaxed">
-                            Discover a curated collection of premium fashion designed for the modern individual. Elevate your everyday with Zovara.
+                            Discover a curated collection of premium fashion at DropCulture. Shop clothing, streetwear & accessories for men and women in India.
                         </p>
 
                         <div className="flex flex-wrap gap-3 sm:gap-4 mb-8 sm:mb-10">

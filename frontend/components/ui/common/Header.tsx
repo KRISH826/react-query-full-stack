@@ -27,7 +27,7 @@ const Header = () => {
             <div className="container">
                 {/* Top Row: Logo + Actions */}
                 <div className="flex h-16 items-center justify-between gap-4">
-                    <BrandLogo compact showTagline={false} className="shrink-0" />
+                    <BrandLogo className="shrink-0" />
                     {/* Search — hidden on mobile in this row, visible in bottom row */}
                     <div className="hidden md:flex flex-1">
                         <SearchInput />
