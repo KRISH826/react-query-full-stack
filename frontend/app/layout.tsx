@@ -63,14 +63,14 @@ export const metadata: Metadata = {
     title: "DropCulture — Premium Fashion Store",
     description:
       "DropCulture is your destination for premium fashion. Shop curated collections for men and women.",
-    images: [
-      {
-        url: "/og-image.jpg", // 1200x630 image public/ folder mein daalo
-        width: 1200,
-        height: 630,
-        alt: "DropCulture — Premium Fashion Store",
-      },
-    ],
+    // images: [
+    //   {
+    //     url: "/og-image.jpg", // 1200x630 image public/ folder mein daalo
+    //     width: 1200,
+    //     height: 630,
+    //     alt: "DropCulture — Premium Fashion Store",
+    //   },
+    // ],
   },
 
   twitter: {
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     title: "DropCulture — Premium Fashion Store",
     description:
       "DropCulture is your destination for premium fashion. Shop curated collections for men and women.",
-    images: ["/og-image.jpg"],
+    // images: ["/og-image.jpg"],
   },
 
   robots: {
