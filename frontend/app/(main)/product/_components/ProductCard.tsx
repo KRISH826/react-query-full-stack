@@ -36,7 +36,7 @@ const ProductCard = ({ product, hideDescription }: Props) => {
         return variants.every(variant => variant.stock_quantity === 0);
     }, [variants]);
 
-
+    
     const addedWishList = favouritesData?.data?.some((fav) => fav.product_id === product.id);
 
     const handlerProductDetails = (id: string) => {

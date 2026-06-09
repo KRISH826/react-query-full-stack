@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Heart, Share2 } from "lucide-react";
-import { useAddFavouriteMutation } from "@/services/favouriteApi";
+import { useAddFavouriteMutation, useGetFavouritesQuery } from "@/services/favouriteApi";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -21,14 +21,17 @@ import { RootState } from "@/store/store";
 type ImageGalleryProps = {
     images: ProductImage[];
     productId: string;
+    productName?: string;  // add karon to use in share text
 };
 
-const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
+const ImageGallery = ({ images, productId, productName }: ImageGalleryProps) => {
     const token = useSelector((state: RootState) => state.auth.accessToken);
     const [selected, setSelected] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
     const hasImages = !!images?.length;
     const [addFavourite, { isLoading: isFavLoading }] = useAddFavouriteMutation();
+    const { data: favouritesData } = useGetFavouritesQuery({ page: 1, limit: 20 }, { skip: !token });
+    const addedWishList = favouritesData?.data?.some((fav) => fav.product_id === productId);
 
     const handleWishList = async (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -41,6 +44,25 @@ const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
             toast.success("Favourites Added SuccessFully")
         } catch {
             toast.error("Failed To Add Favourites");
+        }
+    }
+
+    const handleShare = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation();
+        const shareUrl = `${window.location.origin}/product/${productId}`;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: productName || "Check out this product",
+                    text: `Hey! Check out this product on DropCulture 🛍️\n${productName}`,
+                    url: shareUrl,
+                });
+            } catch (error) {
+                console.error("Error sharing product:", error);
+            }
+        }else {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success("Link copied to clipboard!");
         }
     }
 
@@ -73,12 +95,12 @@ const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
                 <CarouselContent className="ml-0">
                     {images.map((img) => (
                         <CarouselItem key={img.id} className="pl-0">
-                            <div className="relative h-95 2xl:h-140 xl:[480px] md:[h-420px] w-full">
+                            <div className="relative h-90 2xl:h-134 xl:[450px] md:[h-400px] w-full">
                                 <Image
                                     src={img.image_url}
                                     alt={img.alt_text || "product"}
                                     fill
-                                    className="object-cover"
+                                    className="object-contain"
                                     priority
                                 />
                                 <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 sm:right-6 sm:top-6">
@@ -86,8 +108,9 @@ const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
                                         type="button"
                                         variant="outline"
                                         size="icon"
-                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary/70 bg-white/80 backdrop-blur-lg text-slate-800 shadow-sm hover:bg-secondary"
+                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary bg-secondary/30 backdrop-blur-lg text-slate-800 shadow hover:bg-secondary"
                                         aria-label="Share product"
+                                        onClick={handleShare}
                                     >
                                         <Share2 className="h-4 text-blue-600 w-4" />
                                     </Button>
@@ -95,12 +118,12 @@ const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
                                         type="button"
                                         variant="outline"
                                         size="icon"
-                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary/70 bg-white/80 backdrop-blur-lg text-slate-800 shadow-sm hover:bg-secondary hover:text-red-500"
+                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary bg-secondary/30 backdrop-blur-lg text-slate-800 shadow hover:bg-secondary"
                                         aria-label="Add to favourites"
                                         onClick={handleWishList}
                                         disabled={isFavLoading}
                                     >
-                                        <Heart className="h-4 w-4 text-red-500" />
+                                        <Heart className={`h-4 w-4 text-red-500 ${addedWishList ? "fill-red-500" : ""}`} />
                                     </Button>
                                 </div>
                             </div>
