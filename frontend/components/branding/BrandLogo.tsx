@@ -1,28 +1,24 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
   readonly className?: string;
-  readonly compact?: boolean;
   readonly href?: string;
-  readonly light?: boolean;
-  readonly showTagline?: boolean;
+  readonly logoClassName?: string;
 };
 
 export default function BrandLogo({
-  className,
-  compact = false,
   href = "/",
-  light = false,
-  showTagline = true,
+  className = "",
+  logoClassName = "",
 }: BrandLogoProps) {
   return (
     <Link
       href={href}
-      className="my-1"
+      className={`block my-1 ${className}`}
     >
-      <Image className="w-44" width={200} height={44} src="/images/logo.png" alt="Brand Logo" />
+      <Image className={cn("w-44 h-12", logoClassName)} width={250} height={60} src="/images/logo.png" alt="Brand Logo" />
     </Link>
   );
 }
