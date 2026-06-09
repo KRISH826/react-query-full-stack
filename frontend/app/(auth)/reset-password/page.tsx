@@ -8,7 +8,7 @@ export default function Page() {
     <AuthPageShell
       title="Reset Password"
       description="Enter the code sent to your email and your new password"
-      imageSrc="/images/login2.jpg"
+      imageSrc="/images/login2.webp"
       footer={
         <p className="px-8 text-center text-sm text-muted-foreground">
           Back to{" "}
