@@ -6,5 +6,5 @@ type AuthBrandProps = {
 };
 
 export default function AuthBrand({ className, light = false }: AuthBrandProps) {
-  return <BrandLogo className={className} light={light} />;
+  return <BrandLogo className={className} compact={false} showTagline={false} light={light} />;
 }

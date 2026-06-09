@@ -17,7 +17,7 @@ const Footer = () => {
                     <div className="space-y-5">
                         <BrandLogo showTagline={false} className="w-fit" />
 
-                        <p className="text-sm text-muted-foreground leading-relaxed">
+                        <p className="text-sm mt-3 text-muted-foreground leading-relaxed">
                             Discover premium fashion crafted with elegance and comfort.
                             Elevate your everyday style with our latest collections.
                         </p>
