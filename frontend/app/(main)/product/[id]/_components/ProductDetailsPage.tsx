@@ -23,7 +23,7 @@ const ProductDetailsPage = () => {
             <div className="container mx-auto">
                 <div className='grid grid-cols-1 items-start gap-8 md:grid-cols-[45%_55%]'>
                     <div className='lg:sticky lg:top-24 self-start'>
-                        <ImageGallery images={data.images || []} />
+                        <ImageGallery images={data.images || []} productId={data.id} />
                     </div>
                     <div>
                         <ProductContent product={data} />

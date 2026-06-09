@@ -11,11 +11,39 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Button } from "@/components/ui/button";
+import { Heart, Share2 } from "lucide-react";
+import { useAddFavouriteMutation } from "@/services/favouriteApi";
+import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
-const ImageGallery = ({ images }: { images: ProductImage[] }) => {
+type ImageGalleryProps = {
+    images: ProductImage[];
+    productId: string;
+};
+
+const ImageGallery = ({ images, productId }: ImageGalleryProps) => {
+    const token = useSelector((state: RootState) => state.auth.accessToken);
     const [selected, setSelected] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
     const hasImages = !!images?.length;
+    const [addFavourite, { isLoading: isFavLoading }] = useAddFavouriteMutation();
+
+    const handleWishList = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!token) {
+            toast.error("Please login to add favourites");
+            return;
+        }
+        try {
+            await addFavourite({ productId }).unwrap();
+            toast.success("Favourites Added SuccessFully")
+        } catch {
+            toast.error("Failed To Add Favourites");
+        }
+    }
+
 
     useEffect(() => {
         if (!api) return;
@@ -23,7 +51,6 @@ const ImageGallery = ({ images }: { images: ProductImage[] }) => {
         const onSelect = () => {
             setSelected(api.selectedScrollSnap());
         };
-
         onSelect();
         api.on("select", onSelect);
         api.on("reInit", onSelect);
@@ -46,14 +73,36 @@ const ImageGallery = ({ images }: { images: ProductImage[] }) => {
                 <CarouselContent className="ml-0">
                     {images.map((img) => (
                         <CarouselItem key={img.id} className="pl-0">
-                            <div className="relative h-[350px] 2xl:h-[500px] xl:[430px] md:[h-400px] w-full">
+                            <div className="relative h-95 2xl:h-140 xl:[480px] md:[h-420px] w-full">
                                 <Image
                                     src={img.image_url}
                                     alt={img.alt_text || "product"}
                                     fill
-                                    className="object-contain p-4 sm:p-6"
+                                    className="object-cover"
                                     priority
                                 />
+                                <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 sm:right-6 sm:top-6">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary/70 bg-white/80 backdrop-blur-lg text-slate-800 shadow-sm hover:bg-secondary"
+                                        aria-label="Share product"
+                                    >
+                                        <Share2 className="h-4 text-blue-600 w-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-10 w-10 rounded-full cursor-pointer border-secondary/70 bg-white/80 backdrop-blur-lg text-slate-800 shadow-sm hover:bg-secondary hover:text-red-500"
+                                        aria-label="Add to favourites"
+                                        onClick={handleWishList}
+                                        disabled={isFavLoading}
+                                    >
+                                        <Heart className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                </div>
                             </div>
                         </CarouselItem>
                     ))}
