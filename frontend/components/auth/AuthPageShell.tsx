@@ -27,7 +27,7 @@ export default function AuthPageShell({
           <Image src={imageSrc} width={1080} height={1080} alt="Fashion" className="h-full w-full object-cover" />
           <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
         </div>
-        <AuthBrand light className="relative z-20" />
+        <AuthBrand className="relative z-20" />
         <div className="relative z-20 mt-auto max-w-md text-white/78">
           <blockquote className="text-base leading-7 text-balance">
             &ldquo;{authQuote}&rdquo;

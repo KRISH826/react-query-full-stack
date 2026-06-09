@@ -78,7 +78,7 @@ export const metadata: Metadata = {
     title: "DropCulture — Premium Fashion Store",
     description:
       "DropCulture is your destination for premium fashion. Shop curated collections for men and women.",
-    // images: ["/og-image.jpg"],
+    images: ["/og-image.jpg"],
   },
 
   robots: {

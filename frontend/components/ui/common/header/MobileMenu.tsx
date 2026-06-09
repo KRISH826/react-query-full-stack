@@ -76,10 +76,10 @@ const MobileMenu = () => {
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[280px] px-4">
+            <SheetContent side="left" className="w-70 px-4">
                 <SheetHeader>
                     <SheetTitle className="text-left">
-                        <BrandLogo compact showTagline={false} className="w-fit" />
+                        <BrandLogo className="w-fit" />
                     </SheetTitle>
                 </SheetHeader>
 

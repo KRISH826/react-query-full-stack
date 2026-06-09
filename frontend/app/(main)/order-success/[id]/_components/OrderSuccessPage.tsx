@@ -28,8 +28,8 @@ const OrderSuccessPage = () => {
         return (
             <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
                 <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <Skeleton className="h-[500px] lg:col-span-2 rounded-3xl" />
-                    <Skeleton className="h-[500px] lg:col-span-3 rounded-3xl" />
+                    <Skeleton className="h-125 lg:col-span-2 rounded-3xl" />
+                    <Skeleton className="h-125 lg:col-span-3 rounded-3xl" />
                 </div>
             </div>
         );
@@ -48,7 +48,7 @@ const OrderSuccessPage = () => {
 
     return (
         <section className="bg-stone-50/40 py-8 sm:py-12 flex items-center justify-center min-h-[75vh]">
-            <div className="mx-auto max-w-[460px] w-full px-4">
+            <div className="mx-auto max-w-115 w-full px-4">
                 {/* Compact Premium Success Card */}
                 <div className="bg-white rounded-3xl border border-stone-200/70 p-5 sm:p-6 shadow-sm flex flex-col space-y-5">
 
