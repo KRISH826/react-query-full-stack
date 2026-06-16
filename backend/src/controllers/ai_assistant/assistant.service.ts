@@ -25,10 +25,12 @@ export class AssistantService {
         userGender?: AssistantUserGender
     ): Promise<AssistantResponse> {
         const parsedResult = await this.parsedWithDeepSeek(userMessage, userGender);
+        const aiDetectedGender = parsedResult.intent.gender;
         // ✅ Always override gender with actual user gender
-        const resolvedGender = userGender && userGender !== "Unisex"
-            ? userGender
-            : parsedResult.intent.gender;
+        const resolvedGender = aiDetectedGender && aiDetectedGender !== "UNISEX"
+            ? aiDetectedGender        // ← AI ne message se jo detect kiya (sister → Female)
+            : userGender ?? null;     // ← Tabhi profile gender use karo jab AI kuch detect na kare
+
         parsedResult.intent.gender = normalizeGenderForSearch(resolvedGender);
         const searchFilters = {
             max_price: parsedResult.filters.max_price ?? undefined,
