@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useId, useState } from 'react'
+import React, { useId, useRef, useState } from 'react'
 import { Sparkles, Send, Mic, Image as ImageIcon, X, ArrowsUpFromLine, SearchX } from 'lucide-react'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '../../dialog'
 import { DialogClose } from '@radix-ui/react-dialog'
@@ -28,6 +28,7 @@ type aiConetent =
 
 const AiSearch = () => {
     const [query, setQuery] = useState('');
+    const bottomRef = useRef<HTMLDivElement>(null);
     const gradientId = useId().replace(/:/g, '')
     const gradientUrl = `url(#${gradientId})`;
     const [aiproductSearch, { isLoading }] = useAiproductSearchMutation();
@@ -40,15 +41,20 @@ const AiSearch = () => {
 
     const handleSend = async () => {
         if (!query.trim()) return;
-
         const userMessage = query;
 
         setMessage((prev) => [...prev, { role: "user", content: userMessage }]);
-        console.log(message)
         setQuery('');
+        setTimeout(() => {
+            if(!bottomRef.current) return;
+            const el = bottomRef.current;
+            el.scrollTo({
+                top: el.scrollHeight - el.clientHeight - 120,
+                behavior: 'smooth'
+            })
+        }, 50);
         try {
             const response = await aiproductSearch(userMessage).unwrap();
-            console.log(response);
             setMessage((prev) => [...prev, { role: "assistant", content: response }]);
         } catch (error) {
             console.error("AI Search error:", error);
@@ -111,7 +117,7 @@ const AiSearch = () => {
                             </div>
 
                             {/* Main Chat/Conversation Area */}
-                            <div className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-start p-3 md:p-8">
+                            <div ref={bottomRef} className="flex-1 overflow-y-auto w-full flex flex-col items-center justify-start p-3 md:p-8">
                                 {
                                     message.length === 0 && <>
                                         <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center space-y-10">
@@ -253,8 +259,7 @@ const AiSearch = () => {
                                             </div>
                                         </div>
                                     )}
-                                </div>
-
+                                </div> 
                             </div>
 
                             {/* ChatGPT Style Input Area */}
