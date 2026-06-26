@@ -19,6 +19,7 @@ import filterRouter from "./routes/filter.route";
 import webhookRouter from "./routes/webhook.route";
 import mailRouter from "./routes/testemail.route";
 import assistantRouter from "./routes/assistant.route";
+import serverRouter from "./routes/server.route";
 import helmet from "helmet";
 import { startUpCleanScheduler } from "./corn/cleanup.queue";
 import "./corn/user/cleanup.worker"
@@ -59,6 +60,7 @@ if (config.app.env === "production") {
 }
 connectDB();
 
+app.use("/api", serverRouter)
 app.use("/api/users", userRouter);
 app.use("/api/products", productRouter);
 app.use("/api/cart", cartRouter);
