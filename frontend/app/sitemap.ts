@@ -1,9 +1,7 @@
 import { MetadataRoute } from "next";
 
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     let productUrls: MetadataRoute.Sitemap = [];
-
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/?limit=500&page=1`, {
             next: { revalidate: 3600 },
@@ -24,5 +22,4 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${process.env.NEXT_PUBLIC_SITE_URL}/product`, changeFrequency: "daily", priority: 0.9 },
         ...productUrls,
     ];
-
 }
